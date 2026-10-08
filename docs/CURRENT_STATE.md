@@ -63,10 +63,29 @@
   - 42 total passing pytest unit & integration tests (`tests/test_trends_analytics.py`).
   - Live Supabase execution script (`scripts/test_phase5_live.py`).
 
-### Known Limitations & Setup:
-- Live WhatsApp testing: Recipient joined to Twilio Sandbox and webhook configured via local tunnel (`/v1/webhooks/whatsapp`).
-- Groq / Gemini & Sarvam API keys configured in `.env`.
+#### Phase 6 — Web Portals (Clinician, Coach & Demo Simulator) ✅
+- Built interactive React + TypeScript + Vite web app in `apps/web` running on port 5173.
+- **Clinician Patient Portal (`/clinician`)**:
+  - Live patient roster (Ramesh Kulkarni, Shanti Devi, Ananya Patil).
+  - ADA Glycemic Metrics cards (TIR%, Mean, CV%, MAD, Compliance %).
+  - 14-day interactive CGM curve with target zones (70–180 mg/dL) using Recharts.
+  - Weekly Clinical Synthesis preview with 1-click Doctor Sign-Off & audit log creation.
+- **Coach Approvals Desk (`/coach`)**:
+  - AI lifestyle recommendations queue with confidence badges.
+  - Number-fidelity guardrails verification indicators.
+  - 1-click `Approve & Dispatch to WhatsApp`, `Edit Copy`, and `Reject` buttons.
+  - Live nudge generator trigger.
+- **Interactive Demo Simulator (`/simulator`)**:
+  - One-click clinical emergency scenarios (Critical Hypoglycemia 54 mg/dL, Hyperglycemia 265 mg/dL, Stable Fasting 135 mg/dL).
+  - Live event stream console connected to FastAPI backend on port 8000.
+- Production build passing with 0 errors (`npm run build`).
+
+### Active Dev Servers:
+- **FastAPI Backend**: `http://localhost:8000` (API Docs: `http://localhost:8000/docs`)
+- **React Web Portal**: `http://localhost:5173`
+- **WhatsApp Webhook Tunnel**: `https://slimy-toys-grab.loca.lt/v1/webhooks/whatsapp`
 
 ### Next Steps:
-- **Phase 6 & 7:** Web portals (Next.js Clinician & Coach UI in `apps/web`).
+- **Phase 7:** End-to-end Hackathon Pitch & Demo rehearsals with live WhatsApp interaction and portal dashboards.
+
 
