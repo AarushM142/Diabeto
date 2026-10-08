@@ -2,13 +2,12 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Lock, Mail, User as UserIcon, Sparkles, ShieldCheck } from "lucide-react"
 
 // Clean SVG for Google authentication
-const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg width="18" height="18" viewBox="0 0 24 24" {...props}>
+export const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" {...props}>
     <path
       fill="#4285F4"
       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -57,19 +56,18 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
     ...props 
   }, ref) => {
     const [showPassword, setShowPassword] = React.useState(false)
+    const [emailVal, setEmailVal] = React.useState('')
+    const [nameVal, setNameVal] = React.useState('')
+    const [passwordVal, setPasswordVal] = React.useState('')
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
-      const formData = new FormData(event.currentTarget)
-      const email = formData.get("email") as string
-      const password = formData.get("password") as string
-      const name = (formData.get("name") as string) || ''
-      onEmailSubmit?.({ email, password, name, role: selectedRole })
+      onEmailSubmit?.({ email: emailVal, password: passwordVal, name: nameVal, role: selectedRole })
     }
 
     return (
       <Card ref={ref} className={cn("w-full max-w-md mx-auto border-none shadow-none bg-transparent", className)} {...props}>
-        <CardHeader className="text-left px-0 pt-0 pb-4">
+        <CardHeader className="text-left px-0 pt-0 pb-3">
           <CardTitle className="text-xl font-bold font-serif text-[var(--text-forest)]">
             {title || (isSignUp ? "Create your Diabeto Account" : "Sign in to Diabeto")}
           </CardTitle>
@@ -82,17 +80,40 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
         
         <CardContent className="px-0 py-0">
           <div className="space-y-4">
-            {/* Google Authentication */}
-            <Button 
-              variant="outline" 
+            {/* Google Authentication Button */}
+            <button 
               type="button" 
               disabled={loading}
               onClick={() => onGoogleSignIn?.()} 
-              className="w-full flex items-center justify-center gap-2.5 h-11 rounded-xl bg-white hover:bg-neutral-50 border-[var(--border-stone)] text-sm font-semibold text-[var(--text-forest)] shadow-xs transition-all"
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                height: '46px',
+                borderRadius: '12px',
+                backgroundColor: '#FFFFFF',
+                border: '1px solid var(--border-stone)',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                color: 'var(--text-forest)',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--surface-clay)'
+                e.currentTarget.style.borderColor = 'var(--accent-sage)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#FFFFFF'
+                e.currentTarget.style.borderColor = 'var(--border-stone)'
+              }}
             >
               <GoogleIcon />
               <span>Continue with Google</span>
-            </Button>
+            </button>
 
             {/* Divider */}
             <div className="relative my-2">
@@ -100,7 +121,7 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
                 <span className="w-full border-t border-[var(--border-stone)]" />
               </div>
               <div className="relative flex justify-center text-[11px] uppercase tracking-wider">
-                <span className="bg-[var(--surface-white)] px-3 text-[var(--text-dim)]">or continue with email</span>
+                <span className="bg-[var(--surface-white)] px-3 text-[var(--text-dim)] font-medium">or continue with email</span>
               </div>
             </div>
 
@@ -111,15 +132,45 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
                   <Label htmlFor="auth-name" className="text-xs font-semibold text-[var(--text-forest)]">
                     Full Name
                   </Label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-dim)]" />
-                    <Input 
+                  <div style={{ position: 'relative', width: '100%' }}>
+                    <div 
+                      style={{ 
+                        position: 'absolute', 
+                        left: '14px', 
+                        top: '50%', 
+                        transform: 'translateY(-50%)', 
+                        color: 'var(--text-dim)', 
+                        pointerEvents: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 10,
+                      }}
+                    >
+                      <UserIcon size={16} />
+                    </div>
+                    <input 
                       id="auth-name" 
                       name="name" 
                       type="text" 
+                      value={nameVal}
+                      onChange={(e) => setNameVal(e.target.value)}
                       placeholder="Dr. Rajesh Kulkarni" 
-                      className="pl-9 h-10 rounded-xl bg-[var(--surface-clay)] border-[var(--border-stone)] text-sm focus-visible:ring-1 focus-visible:ring-[var(--accent-sage)]" 
                       required 
+                      style={{
+                        width: '100%',
+                        height: '42px',
+                        paddingLeft: '44px',
+                        paddingRight: '14px',
+                        borderRadius: '12px',
+                        backgroundColor: 'var(--surface-clay)',
+                        border: '1px solid var(--border-stone)',
+                        fontSize: '0.88rem',
+                        color: 'var(--text-forest)',
+                        outline: 'none',
+                        transition: 'border-color 0.2s',
+                        boxSizing: 'border-box',
+                      }}
                     />
                   </div>
                 </div>
@@ -129,15 +180,45 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
                 <Label htmlFor="auth-email" className="text-xs font-semibold text-[var(--text-forest)]">
                   Email Address
                 </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-dim)]" />
-                  <Input 
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <div 
+                    style={{ 
+                      position: 'absolute', 
+                      left: '14px', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      color: 'var(--text-dim)', 
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 10,
+                    }}
+                  >
+                    <Mail size={16} />
+                  </div>
+                  <input 
                     id="auth-email" 
                     name="email" 
                     type="email" 
+                    value={emailVal}
+                    onChange={(e) => setEmailVal(e.target.value)}
                     placeholder="doctor@diabeto.care" 
-                    className="pl-9 h-10 rounded-xl bg-[var(--surface-clay)] border-[var(--border-stone)] text-sm focus-visible:ring-1 focus-visible:ring-[var(--accent-sage)]" 
                     required 
+                    style={{
+                      width: '100%',
+                      height: '42px',
+                      paddingLeft: '44px',
+                      paddingRight: '14px',
+                      borderRadius: '12px',
+                      backgroundColor: 'var(--surface-clay)',
+                      border: '1px solid var(--border-stone)',
+                      fontSize: '0.88rem',
+                      color: 'var(--text-forest)',
+                      outline: 'none',
+                      transition: 'border-color 0.2s',
+                      boxSizing: 'border-box',
+                    }}
                   />
                 </div>
               </div>
@@ -147,7 +228,7 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
                   <Label htmlFor="auth-password" className="text-xs font-semibold text-[var(--text-forest)]">
                     Password
                   </Label>
-                  {!isSignUp && (
+                  {!isSignUp && onEmailLink && (
                     <button 
                       type="button" 
                       onClick={() => onEmailLink?.()}
@@ -157,23 +238,67 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
                     </button>
                   )}
                 </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-dim)]" />
-                  <Input 
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <div 
+                    style={{ 
+                      position: 'absolute', 
+                      left: '14px', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      color: 'var(--text-dim)', 
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 10,
+                    }}
+                  >
+                    <Lock size={16} />
+                  </div>
+                  <input 
                     id="auth-password" 
                     name="password" 
                     type={showPassword ? "text" : "password"} 
+                    value={passwordVal}
+                    onChange={(e) => setPasswordVal(e.target.value)}
                     placeholder="••••••••" 
-                    className="pl-9 pr-10 h-10 rounded-xl bg-[var(--surface-clay)] border-[var(--border-stone)] text-sm focus-visible:ring-1 focus-visible:ring-[var(--accent-sage)]" 
                     required 
+                    style={{
+                      width: '100%',
+                      height: '42px',
+                      paddingLeft: '44px',
+                      paddingRight: '44px',
+                      borderRadius: '12px',
+                      backgroundColor: 'var(--surface-clay)',
+                      border: '1px solid var(--border-stone)',
+                      fontSize: '0.88rem',
+                      color: 'var(--text-forest)',
+                      outline: 'none',
+                      transition: 'border-color 0.2s',
+                      boxSizing: 'border-box',
+                    }}
                   />
                   <button 
                     type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center text-[var(--text-dim)] hover:text-[var(--text-forest)] bg-transparent border-none cursor-pointer"
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--text-dim)',
+                      zIndex: 10,
+                      padding: '4px',
+                    }}
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
@@ -187,7 +312,19 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
                     id="auth-role"
                     value={selectedRole}
                     onChange={(e) => onRoleChange(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-[var(--border-stone)] bg-[var(--surface-clay)] px-3 py-2 text-sm text-[var(--text-forest)] font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--accent-sage)]"
+                    style={{
+                      display: 'flex',
+                      height: '42px',
+                      width: '100%',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border-stone)',
+                      backgroundColor: 'var(--surface-clay)',
+                      padding: '0 12px',
+                      fontSize: '0.88rem',
+                      color: 'var(--text-forest)',
+                      fontWeight: 600,
+                      outline: 'none',
+                    }}
                   >
                     <option value="clinician">🩺 Clinician (Doctor / Endocrinologist)</option>
                     <option value="coach">🌿 Health Coach (Sister Kavita)</option>
@@ -201,7 +338,7 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full h-11 mt-1 rounded-xl bg-[var(--text-forest)] hover:opacity-95 text-white font-bold text-sm shadow-sm cursor-pointer transition-all"
+                className="w-full h-11 mt-2 rounded-xl bg-[var(--text-forest)] hover:opacity-95 text-white font-bold text-sm shadow-sm cursor-pointer transition-all"
               >
                 {loading ? "Authenticating..." : isSignUp ? "Create Account & Sign In" : "Sign In to Portal"}
               </Button>
@@ -233,7 +370,7 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
           </Button>
           
           <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-dim)]">
-            <ShieldCheck size={12} className="text-[var(--status-ok)]" />
+            <ShieldCheck size={12} color="var(--status-ok)" />
             <span>ABDM & HIPAA Consent Compliant • Pune Central</span>
           </div>
         </CardFooter>
