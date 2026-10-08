@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ArrowRight, ShieldCheck, Menu, X } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 
 export interface NavigationItem {
   label: string;
@@ -19,6 +19,14 @@ export interface ProgramCard {
 export interface PulseFitHeroProps {
   logo?: string;
   navigation?: NavigationItem[];
+  loginButton?: {
+    label: string;
+    onClick: () => void;
+  };
+  signupButton?: {
+    label: string;
+    onClick: () => void;
+  };
   ctaButton?: {
     label: string;
     onClick: () => void;
@@ -53,6 +61,8 @@ export function PulseFitHero({
     { label: "Coach Copilot" },
     { label: "Family Safety" },
   ],
+  loginButton,
+  signupButton,
   ctaButton,
   title,
   subtitle,
@@ -64,8 +74,6 @@ export function PulseFitHero({
   className,
   children,
 }: PulseFitHeroProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   return (
     <section
       className={cn(
@@ -81,178 +89,155 @@ export function PulseFitHero({
       {/* Paper Grain Texture Overlay */}
       <div className="paper-grain-overlay" aria-hidden="true" />
 
-      {/* Top Header */}
+      {/* Top Header with Centered Max-Width Container */}
       <motion.header
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative z-30 flex flex-row justify-between items-center px-6 lg:px-16"
+        className="relative z-30 w-full"
         style={{
-          paddingTop: "24px",
-          paddingBottom: "24px",
           borderBottom: "1px solid rgba(45, 58, 49, 0.08)",
+          backgroundColor: "rgba(249, 248, 244, 0.85)",
+          backdropFilter: "blur(10px)",
         }}
       >
-        {/* Brand Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div
-            style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "10px",
-              background: "var(--accent-sage)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#FFFFFF",
-              fontWeight: 700,
-              fontSize: "1.15rem",
-              fontFamily: "var(--font-serif)",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            d.
-          </div>
-          <div>
-            <span
-              className="font-serif"
-              style={{
-                fontSize: "1.45rem",
-                fontWeight: 700,
-                color: "var(--text-forest)",
-                letterSpacing: "-0.02em",
-                lineHeight: 1,
-                display: "block",
-              }}
-            >
-              {logo}
-            </span>
-            <span
-              style={{
-                fontSize: "0.65rem",
-                color: "var(--text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                fontWeight: 700,
-              }}
-            >
-              Senior Diabetes Platform
-            </span>
-          </div>
-        </div>
-
-        {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex flex-row items-center gap-6" aria-label="Main navigation">
-          {navigation.map((item, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={item.onClick}
-              className="hover:opacity-75 transition-opacity cursor-pointer bg-transparent border-none"
-              style={{
-                fontSize: "0.88rem",
-                fontWeight: 600,
-                color: "var(--text-forest)",
-                padding: "6px 10px",
-                borderRadius: "8px",
-              }}
-            >
-              <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                {item.label}
-                {item.hasDropdown && <ChevronDown size={14} color="var(--text-muted)" />}
-              </span>
-            </button>
-          ))}
-        </nav>
-
-        {/* Right CTA & Mobile Toggle */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {ctaButton && (
-            <button
-              type="button"
-              onClick={ctaButton.onClick}
-              className="transition-all hover:scale-105 cursor-pointer"
-              style={{
-                background: "var(--text-forest)",
-                border: "none",
-                borderRadius: "24px",
-                padding: "10px 22px",
-                fontSize: "0.85rem",
-                fontWeight: 700,
-                color: "#FFFFFF",
-                boxShadow: "var(--shadow-sm)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <ShieldCheck size={15} color="#A7F3D0" />
-              <span>{ctaButton.label}</span>
-            </button>
-          )}
-
-          {/* Mobile Menu Toggle */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden"
-            style={{
-              background: "var(--surface-clay)",
-              border: "1px solid var(--border-stone)",
-              padding: "8px",
-              borderRadius: "10px",
-              cursor: "pointer",
-              color: "var(--text-forest)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            aria-label="Toggle navigation"
-          >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
-      </motion.header>
-
-      {/* Mobile Slide-Down Menu */}
-      {mobileMenuOpen && (
         <div
-          className="lg:hidden relative z-20"
           style={{
-            background: "var(--surface-white)",
-            borderBottom: "1px solid var(--border-stone)",
-            padding: "16px 20px",
-            boxShadow: "var(--shadow-md)",
+            maxWidth: "1280px",
+            margin: "0 auto",
+            padding: "18px 32px",
             display: "flex",
-            flexDirection: "column",
-            gap: "10px",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "24px",
           }}
         >
-          {navigation.map((item, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                if (item.onClick) item.onClick();
-              }}
+          {/* Brand Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+            <div
               style={{
-                textAlign: "left",
-                padding: "10px 14px",
-                background: "var(--surface-clay)",
-                border: "none",
+                width: "38px",
+                height: "38px",
                 borderRadius: "10px",
-                fontSize: "0.9rem",
-                fontWeight: 600,
-                color: "var(--text-forest)",
-                cursor: "pointer",
+                background: "var(--accent-sage)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#FFFFFF",
+                fontWeight: 700,
+                fontSize: "1.2rem",
+                fontFamily: "var(--font-serif)",
+                boxShadow: "var(--shadow-sm)",
               }}
             >
-              {item.label}
-            </button>
-          ))}
+              d.
+            </div>
+            <div>
+              <span
+                className="font-serif"
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: 700,
+                  color: "var(--text-forest)",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                  display: "block",
+                }}
+              >
+                {logo}
+              </span>
+              <span
+                style={{
+                  fontSize: "0.66rem",
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  fontWeight: 700,
+                  marginTop: "3px",
+                  display: "block",
+                }}
+              >
+                Senior Diabetes Platform
+              </span>
+            </div>
+          </div>
+
+          {/* Desktop Center Navigation Links */}
+          <nav
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "18px",
+              flexWrap: "wrap",
+            }}
+            aria-label="Main navigation"
+          >
+            {navigation.map((item, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={item.onClick}
+                className="hover:opacity-75 transition-opacity cursor-pointer bg-transparent border-none"
+                style={{
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                  color: "var(--text-forest)",
+                  padding: "6px 8px",
+                  borderRadius: "8px",
+                }}
+              >
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* Right Action Buttons: Log In & Sign Up / Portals */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+            {loginButton && (
+              <button
+                type="button"
+                onClick={loginButton.onClick}
+                className="transition-all hover:bg-black/5 cursor-pointer"
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--border-stone)",
+                  borderRadius: "20px",
+                  padding: "8px 18px",
+                  fontSize: "0.84rem",
+                  fontWeight: 600,
+                  color: "var(--text-forest)",
+                }}
+              >
+                {loginButton.label}
+              </button>
+            )}
+
+            {(signupButton || ctaButton) && (
+              <button
+                type="button"
+                onClick={(signupButton || ctaButton)!.onClick}
+                className="transition-all hover:scale-105 cursor-pointer"
+                style={{
+                  background: "var(--text-forest)",
+                  border: "none",
+                  borderRadius: "20px",
+                  padding: "9px 20px",
+                  fontSize: "0.84rem",
+                  fontWeight: 700,
+                  color: "#FFFFFF",
+                  boxShadow: "var(--shadow-sm)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <ShieldCheck size={14} color="#A7F3D0" />
+                <span>{(signupButton || ctaButton)!.label}</span>
+              </button>
+            )}
+          </div>
         </div>
-      )}
+      </motion.header>
 
       {/* Main Hero Body */}
       {children ? (
@@ -260,7 +245,7 @@ export function PulseFitHero({
           {children}
         </div>
       ) : (
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pt-8 pb-12">
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pt-10 pb-12">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -274,7 +259,7 @@ export function PulseFitHero({
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                padding: "6px 14px",
+                padding: "6px 16px",
                 borderRadius: "20px",
                 background: "var(--accent-sage-subtle)",
                 border: "1px solid var(--accent-sage-border)",
@@ -292,12 +277,12 @@ export function PulseFitHero({
               className="font-serif"
               style={{
                 fontWeight: 700,
-                fontSize: "clamp(2.3rem, 5.2vw, 4rem)",
+                fontSize: "clamp(2.3rem, 5vw, 3.8rem)",
                 lineHeight: "1.15",
                 color: "var(--text-forest)",
                 letterSpacing: "-0.025em",
                 margin: 0,
-                maxWidth: "840px",
+                maxWidth: "860px",
               }}
             >
               {title}

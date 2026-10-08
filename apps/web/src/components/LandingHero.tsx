@@ -18,8 +18,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
           { label: 'Family Safety', onClick: () => onOpenLogin('caregiver') },
           { label: 'Admin Desk', onClick: () => onOpenLogin('admin') },
         ]}
-        ctaButton={{
-          label: 'Sign In / Portals',
+        loginButton={{
+          label: 'Log In',
+          onClick: () => onOpenLogin(),
+        }}
+        signupButton={{
+          label: 'Sign Up / Portals',
           onClick: () => onOpenLogin(),
         }}
         title="Personalized Senior Diabetes Care. Anywhere. Anytime."
