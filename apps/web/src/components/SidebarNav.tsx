@@ -20,6 +20,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
+  useSidebar,
 } from '@/components/ui/sidebar';
 
 export type ActiveTab = 'patient' | 'clinician' | 'coach' | 'caregiver' | 'simulator';
@@ -70,7 +71,15 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   currentRole,
   setCurrentRole,
 }) => {
+  const { isMobile, setOpenMobile } = useSidebar();
   const currentProfile = ROLE_PROFILES[currentRole] || ROLE_PROFILES.clinician;
+
+  const handleTabClick = (tabId: ActiveTab) => {
+    setActiveTab(tabId);
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   const navItems = [
     {
@@ -170,10 +179,11 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                   return (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton
+                        type="button"
                         isActive={isActive}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => handleTabClick(item.id)}
                         tooltip={item.label}
-                        className={`h-11 rounded-xl px-3 transition-all ${
+                        className={`h-11 rounded-xl px-3 transition-all cursor-pointer ${
                           isActive 
                             ? 'bg-[var(--accent-sage-subtle)] text-[var(--text-forest)] font-semibold shadow-xs border border-[var(--accent-sage-border)]' 
                             : 'text-[var(--text-muted)] hover:bg-[var(--surface-clay)] hover:text-[var(--text-forest)]'
@@ -279,7 +289,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              type="button"
+              onClick={() => handleTabClick(item.id)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
