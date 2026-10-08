@@ -1,6 +1,23 @@
 // Diabeto API Client for Web Portals with Multi-Tiered Authorization
 
-export type UserRole = 'clinician' | 'coach' | 'caregiver' | 'admin';
+export type UserRole = 'clinician' | 'coach' | 'caregiver' | 'patient' | 'admin';
+
+export interface User {
+  id: string;
+  role: UserRole;
+  clinic_id: string;
+  name: string;
+  email: string;
+  title: string;
+  avatar?: string;
+  linked_patient_id?: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
 
 export interface PersonaInfo {
   id: string;
@@ -117,6 +134,44 @@ export interface AuditLogItem {
 
 const API_BASE = '/v1';
 
+export const AUTH_STORAGE_KEY = 'diabeto_auth_token';
+export const USER_STORAGE_KEY = 'diabeto_user';
+
+export const getCurrentUser = (): User | null => {
+  try {
+    const raw = localStorage.getItem(USER_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const getAuthToken = (): string | null => {
+  try {
+    return localStorage.getItem(AUTH_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
+export const saveAuthSession = (token: string, user: User) => {
+  try {
+    localStorage.setItem(AUTH_STORAGE_KEY, token);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  } catch (e) {
+    console.error('Failed to persist auth session:', e);
+  }
+};
+
+export const clearAuthSession = () => {
+  try {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(USER_STORAGE_KEY);
+  } catch (e) {
+    console.error('Failed to clear auth session:', e);
+  }
+};
+
 let activeRole: UserRole = 'clinician';
 let activeUserId: string = 'doc_mehta_101';
 
@@ -125,24 +180,103 @@ export const setGlobalPersona = (role: UserRole, userId?: string) => {
   if (userId) activeUserId = userId;
 };
 
-export const getGlobalPersona = (): UserRole => activeRole;
+export const getGlobalPersona = (): UserRole => {
+  const user = getCurrentUser();
+  return user?.role || activeRole;
+};
 
 const getHeaders = (extraHeaders: Record<string, string> = {}) => {
-  return {
+  const user = getCurrentUser();
+  const token = getAuthToken();
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-User-Role': activeRole,
-    'X-User-ID': activeUserId,
+    'X-User-Role': user?.role || activeRole,
+    'X-User-ID': user?.id || activeUserId,
     ...extraHeaders,
   };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
 };
 
 export const api = {
+  getCurrentUser(): User | null {
+    return getCurrentUser();
+  },
+
+  getToken(): string | null {
+    return getAuthToken();
+  },
+
+  async login(email: string, password?: string, role?: UserRole): Promise<AuthResponse> {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, role }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Authentication failed');
+    }
+    const data: AuthResponse = await res.json();
+    saveAuthSession(data.access_token, data.user);
+    setGlobalPersona(data.user.role, data.user.id);
+    return data;
+  },
+
+  async googleAuth(email?: string, name?: string, role?: UserRole): Promise<AuthResponse> {
+    const res = await fetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name, role }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Google sign-in failed');
+    }
+    const data: AuthResponse = await res.json();
+    saveAuthSession(data.access_token, data.user);
+    setGlobalPersona(data.user.role, data.user.id);
+    return data;
+  },
+
+  async signup(name: string, email: string, password: string, role: UserRole = 'clinician'): Promise<AuthResponse> {
+    const res = await fetch(`${API_BASE}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, role }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Registration failed');
+    }
+    const data: AuthResponse = await res.json();
+    saveAuthSession(data.access_token, data.user);
+    setGlobalPersona(data.user.role, data.user.id);
+    return data;
+  },
+
+  logout() {
+    clearAuthSession();
+  },
+
   setPersona(role: UserRole, userId?: string) {
     setGlobalPersona(role, userId);
   },
 
   getPersona(): UserRole {
     return getGlobalPersona();
+  },
+
+  async getPersonas(): Promise<User[]> {
+    const res = await fetch(`${API_BASE}/auth/personas`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) return [];
+    return res.json();
   },
 
   async getHealth(): Promise<boolean> {

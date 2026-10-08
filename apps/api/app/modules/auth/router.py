@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,6 +13,24 @@ router = APIRouter(prefix="/v1", tags=["Authentication & Audit"])
 
 class TokenRequest(BaseModel):
     persona_key: str
+
+class LoginRequest(BaseModel):
+    email: str
+    password: Optional[str] = None
+    role: Optional[str] = None
+
+class GoogleAuthRequest(BaseModel):
+    credential: Optional[str] = None
+    email: Optional[str] = None
+    name: Optional[str] = None
+    role: Optional[str] = "clinician"
+
+class SignupRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    role: str = "clinician"
+    clinic_id: Optional[str] = "clinic_pune_01"
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -31,6 +50,7 @@ async def get_my_persona(current_user: dict = Depends(get_current_user)):
             "is_clinician": current_user.get("role") == "clinician",
             "is_coach": current_user.get("role") == "coach",
             "is_caregiver": current_user.get("role") == "caregiver",
+            "is_patient": current_user.get("role") == "patient",
             "is_admin": current_user.get("role") == "admin",
         }
     }
@@ -38,6 +58,75 @@ async def get_my_persona(current_user: dict = Depends(get_current_user)):
 @router.get("/auth/personas")
 async def list_predefined_personas():
     return list(PREDEFINED_PERSONAS.values())
+
+@router.post("/auth/login", response_model=TokenResponse)
+async def login(payload: LoginRequest):
+    email_clean = payload.email.lower().strip()
+    
+    # Check predefined personas by email or role
+    matched_persona = None
+    for p in PREDEFINED_PERSONAS.values():
+        if p.get("email", "").lower() == email_clean or p.get("role") == email_clean:
+            matched_persona = p.copy()
+            break
+            
+    if not matched_persona:
+        role = payload.role or "clinician"
+        matched_persona = {
+            "id": f"usr_{uuid.uuid4().hex[:8]}",
+            "role": role,
+            "clinic_id": "clinic_pune_01",
+            "name": email_clean.split("@")[0].capitalize(),
+            "email": email_clean,
+            "title": f"Verified {role.capitalize()}",
+            "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+        }
+
+    token = create_access_token(matched_persona)
+    return TokenResponse(access_token=token, user=matched_persona)
+
+@router.post("/auth/google", response_model=TokenResponse)
+async def google_auth(payload: GoogleAuthRequest):
+    email = payload.email or "user@gmail.com"
+    name = payload.name or email.split("@")[0].replace(".", " ").title()
+    role = payload.role or "clinician"
+
+    matched_persona = None
+    for p in PREDEFINED_PERSONAS.values():
+        if p.get("email", "").lower() == email.lower():
+            matched_persona = p.copy()
+            break
+
+    if not matched_persona:
+        matched_persona = {
+            "id": f"goog_{uuid.uuid4().hex[:8]}",
+            "role": role,
+            "clinic_id": "clinic_pune_01",
+            "name": name,
+            "email": email,
+            "title": f"Google Authenticated ({role.capitalize()})",
+            "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+        }
+
+    token = create_access_token(matched_persona)
+    return TokenResponse(access_token=token, user=matched_persona)
+
+@router.post("/auth/signup", response_model=TokenResponse)
+async def signup(payload: SignupRequest):
+    email_clean = payload.email.lower().strip()
+    role = payload.role or "clinician"
+    
+    new_user = {
+        "id": f"usr_{uuid.uuid4().hex[:8]}",
+        "role": role,
+        "clinic_id": payload.clinic_id or "clinic_pune_01",
+        "name": payload.name,
+        "email": email_clean,
+        "title": f"Registered {role.capitalize()}",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+    }
+    token = create_access_token(new_user)
+    return TokenResponse(access_token=token, user=new_user)
 
 @router.post("/auth/token", response_model=TokenResponse)
 async def generate_persona_token(payload: TokenRequest):

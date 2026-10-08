@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { 
   Heart, Stethoscope, Sparkles, Terminal, HeartHandshake, 
-  Globe, Type, Shield, Menu, X, Phone, ChevronRight
+  Globe, Type, Menu, X, Phone, LogOut, ShieldCheck
 } from 'lucide-react';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
-import type { UserRole } from '../api/client';
+import type { User, UserRole } from '../api/client';
 
 export type ActiveTab = 'patient' | 'clinician' | 'coach' | 'caregiver' | 'simulator';
 
@@ -17,31 +17,16 @@ interface SidebarNavProps {
   isSimpleMode: boolean;
   setIsSimpleMode: (simple: boolean) => void;
   isBackendHealthy: boolean;
-  currentRole: UserRole;
-  setCurrentRole: (role: UserRole) => void;
+  currentUser: User;
+  onLogout: () => void;
 }
 
-const ROLE_PROFILES: Record<UserRole, { name: string; title: string; avatar: string }> = {
-  clinician: {
-    name: 'Dr. Arvind Mehta',
-    title: 'Senior Diabetologist • Pune Central',
-    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&auto=format&fit=crop&q=80',
-  },
-  coach: {
-    name: 'Sister Kavita Deshmukh',
-    title: 'Care Coordinator & Nutrition Coach',
-    avatar: 'https://images.unsplash.com/photo-1594824813589-8d77c25091a1?w=100&auto=format&fit=crop&q=80',
-  },
-  caregiver: {
-    name: 'Ananya Kulkarni',
-    title: 'Primary Family Caregiver (Daughter)',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
-  },
-  admin: {
-    name: 'Clinic Admin Desk',
-    title: 'Pune Central Diabetes Clinic',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
-  },
+const ROLE_DISPLAY_NAMES: Record<UserRole, { label: string; badgeColor: string }> = {
+  clinician: { label: 'Diabetologist (MD)', badgeColor: 'var(--status-ok)' },
+  coach: { label: 'Care & Nutrition Coach', badgeColor: 'var(--terracotta)' },
+  caregiver: { label: 'Family Caregiver', badgeColor: 'var(--text-forest)' },
+  patient: { label: 'Senior Patient', badgeColor: 'var(--accent-sage)' },
+  admin: { label: 'Clinic Administrator', badgeColor: 'var(--accent-sage-dark)' },
 };
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({
@@ -52,54 +37,64 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   isSimpleMode,
   setIsSimpleMode,
   isBackendHealthy,
-  currentRole,
-  setCurrentRole,
+  currentUser,
+  onLogout,
 }) => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const currentProfile = ROLE_PROFILES[currentRole] || ROLE_PROFILES.clinician;
 
   const handleTabClick = (tabId: ActiveTab) => {
     setActiveTab(tabId);
     setMobileDrawerOpen(false);
   };
 
-  const navItems = [
+  // Define full list of portals
+  const allNavItems = [
     {
       id: 'patient' as ActiveTab,
       label: t('tabPatient', language),
       icon: Heart,
-      badge: 'Senior View',
-      color: 'var(--accent-sage)',
+      badge: 'Sanctuary',
+      allowedRoles: ['patient', 'admin'] as UserRole[],
     },
     {
       id: 'clinician' as ActiveTab,
       label: t('tabClinician', language),
       icon: Stethoscope,
-      badge: 'MD Only',
-      color: 'var(--status-ok)',
+      badge: 'EHR / MD',
+      allowedRoles: ['clinician', 'admin'] as UserRole[],
     },
     {
       id: 'coach' as ActiveTab,
       label: t('tabCoach', language),
       icon: Sparkles,
-      badge: 'Coach',
-      color: 'var(--terracotta)',
+      badge: 'Copilot',
+      allowedRoles: ['coach', 'admin'] as UserRole[],
     },
     {
       id: 'caregiver' as ActiveTab,
       label: t('tabCaregiver', language),
       icon: HeartHandshake,
       badge: 'Family',
-      color: 'var(--text-forest)',
+      allowedRoles: ['caregiver', 'admin'] as UserRole[],
     },
     {
       id: 'simulator' as ActiveTab,
       label: t('tabSimulator', language),
       icon: Terminal,
-      badge: 'Interactive',
-      color: 'var(--text-muted)',
+      badge: 'Simulate',
+      allowedRoles: ['clinician', 'coach', 'admin'] as UserRole[],
     },
   ];
+
+  // Strictly filter portals by authenticated user's role
+  const visibleNavItems = allNavItems.filter((item) =>
+    item.allowedRoles.includes(currentUser.role)
+  );
+
+  const roleMeta = ROLE_DISPLAY_NAMES[currentUser.role] || {
+    label: currentUser.role,
+    badgeColor: 'var(--text-forest)',
+  };
 
   return (
     <>
@@ -150,6 +145,21 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             <Type size={12} />
             {isSimpleMode ? '19px' : '16px'}
           </button>
+
+          <button
+            onClick={onLogout}
+            title="Sign Out"
+            type="button"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              padding: '4px',
+              color: 'var(--text-dim)',
+              cursor: 'pointer',
+            }}
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </header>
 
@@ -193,42 +203,37 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           </div>
         </div>
 
-        {/* Active Persona / Role Switcher */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-stone)' }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Shield size={12} />
-            Active Role / Persona
-          </div>
-          <select
-            value={currentRole}
-            onChange={(e) => setCurrentRole(e.target.value as UserRole)}
-            style={{
-              width: '100%',
-              padding: '8px 10px',
-              borderRadius: '10px',
+        {/* Authenticated Role Status Banner (No Dropdown Switcher) */}
+        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-stone)', background: 'var(--surface-clay)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ShieldCheck size={13} color="var(--status-ok)" />
+              Verified Role
+            </span>
+            <span style={{
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              padding: '2px 6px',
+              borderRadius: '6px',
+              background: 'var(--surface-white)',
+              color: roleMeta.badgeColor,
               border: '1px solid var(--border-stone)',
-              background: 'var(--surface-clay)',
-              fontSize: '0.8rem',
-              color: 'var(--text-forest)',
-              fontWeight: 600,
-              cursor: 'pointer',
-              outline: 'none',
-            }}
-          >
-            <option value="clinician">👨‍⚕️ Dr. Mehta (Clinician)</option>
-            <option value="coach">🌿 Sister Kavita (Coach)</option>
-            <option value="caregiver">👧 Ananya K. (Caregiver)</option>
-            <option value="admin">🏢 Clinic Administrator</option>
-          </select>
+            }}>
+              {currentUser.role.toUpperCase()}
+            </span>
+          </div>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+            {roleMeta.label}
+          </div>
         </div>
 
         {/* Navigation Portals Menu */}
         <nav style={{ flex: '1', padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
           <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 8px 6px' }}>
-            Navigation Portals
+            Authorized Portals
           </div>
 
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
 
@@ -274,7 +279,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           })}
         </nav>
 
-        {/* Footer Utilities & Profile Card */}
+        {/* Footer Utilities & Profile Card with Logout */}
         <div style={{ padding: '16px 16px', borderTop: '1px solid var(--border-stone)', display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--bg-alabaster)' }}>
           {/* Senior High-Contrast Text Toggle */}
           <button
@@ -339,31 +344,58 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             </span>
           </div>
 
-          {/* User Profile Card */}
+          {/* User Profile Card with Sign Out Button */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            justifyContent: 'space-between',
+            gap: '8px',
             padding: '8px 10px',
             borderRadius: '12px',
             background: 'var(--surface-clay)',
             marginTop: '4px',
             border: '1px solid var(--border-stone)',
           }}>
-            <img 
-              src={currentProfile.avatar} 
-              alt={currentProfile.name}
-              style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-            />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-forest)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {currentProfile.name}
-              </div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {currentProfile.title}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+              <img 
+                src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'} 
+                alt={currentUser.name}
+                style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-forest)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {currentUser.name}
+                </div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {currentUser.email}
+                </div>
               </div>
             </div>
-            <ChevronRight size={14} color="var(--text-dim)" />
+
+            <button
+              type="button"
+              onClick={onLogout}
+              title="Sign Out / Log Out"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '6px',
+                borderRadius: '8px',
+                color: 'var(--status-danger)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--status-danger-bg)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </aside>
@@ -400,9 +432,16 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               </button>
             </div>
 
+            {/* Authenticated Role Tag */}
+            <div style={{ padding: '8px 12px', background: 'var(--surface-clay)', borderRadius: '10px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', fontWeight: 700 }}>VERIFIED ACCOUNT</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-forest)' }}>{currentUser.name}</div>
+              <div style={{ fontSize: '0.72rem', color: roleMeta.badgeColor, fontWeight: 600 }}>{roleMeta.label}</div>
+            </div>
+
             {/* Mobile Nav Links */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: '1', overflowY: 'auto' }}>
-              {navItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
@@ -432,22 +471,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               })}
             </div>
 
-            {/* Mobile Persona & Language */}
-            <div style={{ borderTop: '1px solid var(--border-stone)', paddingTop: '16px' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px' }}>
-                Active Persona:
-              </div>
-              <select
-                value={currentRole}
-                onChange={(e) => setCurrentRole(e.target.value as UserRole)}
-                style={{ width: '100%', padding: '8px', borderRadius: '10px', background: 'var(--surface-clay)', marginBottom: '12px' }}
-              >
-                <option value="clinician">Dr. Mehta (Clinician)</option>
-                <option value="coach">Sister Kavita (Coach)</option>
-                <option value="caregiver">Ananya K. (Caregiver)</option>
-                <option value="admin">Administrator</option>
-              </select>
-
+            {/* Mobile Footer & Logout */}
+            <div style={{ borderTop: '1px solid var(--border-stone)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', gap: '6px' }}>
                 {(['en', 'hi', 'mr'] as Language[]).map((lang) => (
                   <button
@@ -469,6 +494,29 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                   </button>
                 ))}
               </div>
+
+              <button
+                type="button"
+                onClick={onLogout}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '10px',
+                  borderRadius: '10px',
+                  background: 'var(--status-danger-bg)',
+                  border: '1px solid var(--status-danger-border)',
+                  color: 'var(--status-danger)',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                }}
+              >
+                <LogOut size={16} />
+                Sign Out
+              </button>
             </div>
           </div>
 
@@ -478,7 +526,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
       {/* 4. Mobile Bottom Navigation Bar (Preserved for 1-thumb senior accessibility on phone viewports) */}
       <div className="mobile-bottom-nav">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
 

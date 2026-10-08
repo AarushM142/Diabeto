@@ -5,22 +5,48 @@ import { ClinicianPortal } from './components/ClinicianPortal';
 import { CoachPortal } from './components/CoachPortal';
 import { CaregiverPortal } from './components/CaregiverPortal';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
-import { api, type UserRole } from './api/client';
+import { LoginView } from './components/LoginView';
+import { api, type User, type UserRole } from './api/client';
 import type { Language } from './lib/types';
-import { Phone, Type } from 'lucide-react';
+import { Phone, Type, LogOut } from 'lucide-react';
 import { t } from './lib/i18n';
 
 export const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<User | null>(() => api.getCurrentUser());
   const [activeTab, setActiveTab] = useState<ActiveTab>('patient');
   const [language, setLanguage] = useState<Language>('en');
   const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState(false);
-  const [currentRole, setCurrentRole] = useState<UserRole>('clinician');
+
+  // Set default tab based on user's role upon login
+  const applyRoleDefaultTab = (role: UserRole) => {
+    switch (role) {
+      case 'clinician':
+        setActiveTab('clinician');
+        break;
+      case 'coach':
+        setActiveTab('coach');
+        break;
+      case 'caregiver':
+        setActiveTab('caregiver');
+        break;
+      case 'patient':
+        setActiveTab('patient');
+        break;
+      case 'admin':
+        setActiveTab('clinician');
+        break;
+    }
+  };
 
   useEffect(() => {
-    api.setPersona(currentRole);
-  }, [currentRole]);
+    if (currentUser) {
+      api.setPersona(currentUser.role, currentUser.id);
+      applyRoleDefaultTab(currentUser.role);
+    }
+  }, [currentUser?.role, currentUser?.id]);
 
+  // Periodic Backend Health Check
   useEffect(() => {
     const checkHealth = async () => {
       const healthy = await api.getHealth();
@@ -40,6 +66,21 @@ export const App: React.FC = () => {
       document.documentElement.classList.remove('simple-mode');
     }
   }, [isSimpleMode]);
+
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user);
+    applyRoleDefaultTab(user.role);
+  };
+
+  const handleLogout = () => {
+    api.logout();
+    setCurrentUser(null);
+  };
+
+  // If unauthenticated, show the dedicated Login & Role Authentication View
+  if (!currentUser) {
+    return <LoginView onLoginSuccess={handleLoginSuccess} />;
+  }
 
   const getPortalTitle = () => {
     switch (activeTab) {
@@ -72,8 +113,8 @@ export const App: React.FC = () => {
         isSimpleMode={isSimpleMode}
         setIsSimpleMode={setIsSimpleMode}
         isBackendHealthy={isBackendHealthy}
-        currentRole={currentRole}
-        setCurrentRole={setCurrentRole}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
@@ -143,6 +184,26 @@ export const App: React.FC = () => {
               <span>Senior Text</span>
               <span style={{ fontWeight: 800, color: 'var(--accent-sage-dark)' }}>{isSimpleMode ? 'ON' : 'OFF'}</span>
             </button>
+
+            {/* Sign Out Button in Header */}
+            <button
+              onClick={handleLogout}
+              className="btn btn-secondary btn-sm"
+              type="button"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                fontSize: '0.8rem',
+                borderRadius: '20px',
+                color: 'var(--text-muted)',
+              }}
+              title="Sign Out"
+            >
+              <LogOut size={13} />
+              <span>Sign Out</span>
+            </button>
           </div>
         </header>
 
@@ -150,9 +211,9 @@ export const App: React.FC = () => {
         <div style={{ flex: 1, paddingBottom: '32px' }}>
           <main style={{ position: 'relative', zIndex: 1 }}>
             {activeTab === 'patient' && <PatientPortal language={language} />}
-            {activeTab === 'clinician' && <ClinicianPortal language={language} currentRole={currentRole} />}
-            {activeTab === 'coach' && <CoachPortal language={language} currentRole={currentRole} />}
-            {activeTab === 'caregiver' && <CaregiverPortal language={language} currentRole={currentRole} />}
+            {activeTab === 'clinician' && <ClinicianPortal language={language} currentRole={currentUser.role} />}
+            {activeTab === 'coach' && <CoachPortal language={language} currentRole={currentUser.role} />}
+            {activeTab === 'caregiver' && <CaregiverPortal language={language} currentRole={currentUser.role} />}
             {activeTab === 'simulator' && <WhatsAppSimulator language={language} />}
           </main>
         </div>
@@ -178,7 +239,7 @@ export const App: React.FC = () => {
           </div>
           <div>
             <span>
-              Active Persona: <strong style={{ color: 'var(--text-forest)' }}>{currentRole.toUpperCase()}</strong> • Clinic: <strong>Pune Central (clinic_pune_01)</strong>
+              Logged in as: <strong style={{ color: 'var(--text-forest)' }}>{currentUser.name} ({currentUser.role.toUpperCase()})</strong> • Clinic: <strong>{currentUser.clinic_id}</strong>
             </span>
           </div>
         </footer>
