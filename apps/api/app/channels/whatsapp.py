@@ -248,3 +248,58 @@ async def handle_whatsapp_webhook(
         "risk_status": risk_event.severity if risk_event else "normal",
         "patient": patient_name,
     }
+
+
+from pydantic import BaseModel
+from apps.api.app.channels.sarvam_tts import (
+    generate_speech_audio,
+    map_patient_language_to_sarvam_code,
+    format_elderly_friendly_spoken_text
+)
+
+
+
+class VoiceSynthesisRequest(BaseModel):
+    text: str
+    language: Optional[str] = "en"
+    speaker: Optional[str] = None
+    pace: Optional[float] = 0.95
+
+
+class VoiceSynthesisResponse(BaseModel):
+    voice_reply: bool
+    language: str
+    spoken_text: str
+    audio_base64: Optional[str] = None
+    audio_format: str = "audio/wav"
+    audio_bytes_length: int = 0
+    delivery_status: str = "simulated"
+    fallback_to_text: bool = False
+
+
+@router.post("/voice/synthesize", response_model=VoiceSynthesisResponse, tags=["Voice Synthesis"])
+async def synthesize_voice_reply(payload: VoiceSynthesisRequest):
+    """
+    Synthesizes multilingual spoken voice audio using Sarvam AI Bulbul TTS (Bulbul v3).
+    Supports Hindi ('hi'), Marathi ('mr'), and English ('en') with safe fallback.
+    """
+    target_lang = map_patient_language_to_sarvam_code(payload.language)
+    audio_bytes, b64_audio, mime = await generate_speech_audio(
+        text=payload.text,
+        language_code=target_lang,
+        speaker=payload.speaker,
+        pace=payload.pace or 0.95
+    )
+
+    audio_success = audio_bytes is not None and len(audio_bytes) > 0
+    return VoiceSynthesisResponse(
+        voice_reply=audio_success,
+        language=target_lang,
+        spoken_text=payload.text,
+        audio_base64=b64_audio if audio_success else None,
+        audio_format=mime or "audio/wav",
+        audio_bytes_length=len(audio_bytes) if audio_success else 0,
+        delivery_status="simulated",
+        fallback_to_text=not audio_success
+    )
+
