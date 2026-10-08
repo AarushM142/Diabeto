@@ -281,11 +281,8 @@ export const api = {
 
   async getHealth(): Promise<boolean> {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(`${API_BASE}/health`, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      return res.ok;
+      const res = await fetch(`${API_BASE}/health`, { cache: 'no-store' }).catch(() => null);
+      return Boolean(res && res.ok);
     } catch {
       return false;
     }
