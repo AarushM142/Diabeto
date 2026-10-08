@@ -110,3 +110,28 @@ class ApprovalDecisionRequest(BaseModel):
 class WhatsAppWebhookEntry(BaseModel):
     object: Optional[str] = None
     entry: Optional[List[Dict[str, Any]]] = None
+
+# Patient Threshold Schemas
+class PatientThresholdUpsert(BaseModel):
+    critical_low: float = Field(70.0, description="Critical hypoglycemia threshold (mg/dL)")
+    low: float = Field(80.0, description="Low glucose warning threshold (mg/dL)")
+    high: float = Field(180.0, description="High glucose warning threshold (mg/dL)")
+    critical_high: float = Field(250.0, description="Critical hyperglycemia threshold (mg/dL)")
+    escalation_timings: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="e.g. {\"t1_minutes\": 15, \"t2_minutes\": 30}",
+    )
+
+class PatientThresholdResponse(BaseModel):
+    id: str
+    patient_id: str
+    critical_low: float
+    low: float
+    high: float
+    critical_high: float
+    escalation_timings: Dict[str, Any]
+    version: int
+
+    class Config:
+        from_attributes = True
+

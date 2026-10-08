@@ -17,6 +17,12 @@
 ### 4. Trends
 * `GET /v1/patients/{id}/trends?days=14`: Retrieve rolling glucose aggregates and summary stats.
 
-### 5. Webhooks
+### 5. Risk, Escalations & Thresholds
+* `GET /v1/patients/{id}/risks`: List active risk events for a patient.
+* `POST /v1/escalations/{id}/ack`: Acknowledge an active risk event, stopping escalation timers.
+* `PUT /v1/patients/{id}/thresholds`: Update per-patient clinical thresholds and escalation timings (Clinician role only).
+
+### 6. Webhooks
 * `GET /v1/webhooks/whatsapp`: Meta webhook handshake verification.
 * `POST /v1/webhooks/whatsapp`: Process inbound WhatsApp text/audio events.
+

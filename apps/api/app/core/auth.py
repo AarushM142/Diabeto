@@ -41,7 +41,7 @@ async def get_current_user(
         # For mock / hackathon dev mode if token is omitted, return default doctor persona
         if settings.ENVIRONMENT == "development":
             return {
-                "id": "usr_dev_clinician_01",
+                "id": "doc_mehta_101",
                 "role": "clinician",
                 "clinic_id": "clinic_pune_central",
                 "name": "Dr. Arvind Mehta",
