@@ -8,7 +8,7 @@ import { WhatsAppSimulator } from './components/WhatsAppSimulator';
 import { LoginView } from './components/LoginView';
 import { LandingHero } from './components/LandingHero';
 import { PageLoader } from './components/ui/page-loader';
-import { api, type User, type UserRole } from './api/client';
+import { api, saveAuthSession, type User, type UserRole } from './api/client';
 import type { Language } from './lib/types';
 import { Phone, Type, LogOut } from 'lucide-react';
 import { t } from './lib/i18n';
@@ -111,34 +111,38 @@ export const App: React.FC = () => {
     if (!pendingGoogleUser) return;
     const { email, name, avatar } = pendingGoogleUser;
     
+    let userToSet: User;
+    try {
+      const res = await api.googleAuth(email, name, role);
+      userToSet = res.user;
+      if (avatar) {
+        userToSet.avatar = avatar;
+      }
+    } catch (e) {
+      console.warn('Backend googleAuth call failed, creating local authenticated session:', e);
+      userToSet = {
+        id: `goog_${Date.now()}`,
+        role: role,
+        clinic_id: 'clinic_pune_01',
+        name: name,
+        email: email,
+        title: `Verified ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+        avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+      };
+      saveAuthSession('token_' + Date.now(), userToSet);
+    }
+
+    // Set authenticated state immediately so app never reverts to landing page
+    setPendingGoogleUser(null);
+    setCurrentUser(userToSet);
+    applyRoleDefaultTab(userToSet.role);
+    api.setPersona(userToSet.role, userToSet.id);
+
     triggerTransition(
       `Personalizing ${role.toUpperCase()} Sanctuary...`,
-      `Setting up verified dashboard for ${name}`,
-      async () => {
-        try {
-          const res = await api.googleAuth(email, name, role);
-          if (avatar && res.user) {
-            res.user.avatar = avatar;
-          }
-          setCurrentUser(res.user);
-          applyRoleDefaultTab(res.user.role);
-          setPendingGoogleUser(null);
-        } catch (e) {
-          console.error('Failed to complete role onboarding with backend, using local session:', e);
-          const fallbackUser: User = {
-            id: `goog_${Date.now()}`,
-            role: role,
-            clinic_id: 'clinic_pune_01',
-            name: name,
-            email: email,
-            title: `Verified ${role.charAt(0).toUpperCase() + role.slice(1)}`,
-            avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-          };
-          api.setPersona(role, fallbackUser.id);
-          setCurrentUser(fallbackUser);
-          applyRoleDefaultTab(role);
-          setPendingGoogleUser(null);
-        }
+      `Setting up verified dashboard for ${userToSet.name}`,
+      () => {
+        applyRoleDefaultTab(userToSet.role);
       }
     );
   };

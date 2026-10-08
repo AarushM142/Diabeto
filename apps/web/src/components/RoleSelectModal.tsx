@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Stethoscope, Sparkles, HeartHandshake, Heart, Shield, 
-  ArrowRight, Check, CheckCircle2
+  ArrowRight, Check, CheckCircle2, Loader2
 } from 'lucide-react';
 import type { UserRole } from '../api/client';
 
@@ -82,14 +82,24 @@ const ROLE_OPTIONS: RoleOption[] = [
 export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
   user,
   onSelectRole,
-  loading = false,
+  loading: externalLoading = false,
 }) => {
   const [selectedRole, setSelectedRole] = useState<UserRole>('clinician');
+  const [submittingRole, setSubmittingRole] = useState<UserRole | null>(null);
+
+  const handleRoleClick = (role: UserRole) => {
+    setSelectedRole(role);
+    setSubmittingRole(role);
+    onSelectRole(role);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmittingRole(selectedRole);
     onSelectRole(selectedRole);
   };
+
+  const isSubmitting = externalLoading || submittingRole !== null;
 
   return (
     <div style={{
@@ -166,7 +176,7 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
             fontWeight: 600,
             marginTop: '4px',
           }}>
-            <span>Please select your role to personalize your care dashboard</span>
+            <span>Click any role below to launch your personalized dashboard:</span>
           </div>
         </div>
 
@@ -176,53 +186,42 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
             {ROLE_OPTIONS.map((option) => {
               const Icon = option.icon;
               const isSelected = selectedRole === option.id;
+              const isThisSubmitting = submittingRole === option.id;
 
               return (
                 <div
                   key={option.id}
-                  onClick={() => setSelectedRole(option.id)}
+                  onClick={() => !isSubmitting && handleRoleClick(option.id)}
                   style={{
                     display: 'flex',
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                     gap: '14px',
                     padding: '14px 16px',
                     borderRadius: '16px',
                     border: isSelected ? '2px solid var(--accent-sage-dark)' : '1px solid var(--border-stone)',
                     backgroundColor: isSelected ? 'var(--accent-sage-subtle)' : 'var(--surface-white)',
-                    cursor: 'pointer',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
                     transition: 'all 0.18s ease',
                     boxShadow: isSelected ? '0 4px 12px rgba(45, 58, 49, 0.08)' : 'none',
                   }}
                   onMouseEnter={(e) => {
-                    if (!isSelected) {
+                    if (!isSelected && !isSubmitting) {
                       e.currentTarget.style.backgroundColor = 'var(--surface-clay)';
                       e.currentTarget.style.borderColor = 'var(--accent-sage)';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!isSelected) {
+                    if (!isSelected && !isSubmitting) {
                       e.currentTarget.style.backgroundColor = 'var(--surface-white)';
                       e.currentTarget.style.borderColor = 'var(--border-stone)';
                     }
                   }}
                 >
-                  {/* Selection Radio Dot */}
-                  <div style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    border: isSelected ? '6px solid var(--text-forest)' : '2px solid var(--border-stone)',
-                    backgroundColor: '#FFFFFF',
-                    marginTop: '2px',
-                    flexShrink: 0,
-                    transition: 'all 0.15s ease',
-                  }} />
-
                   {/* Icon Box */}
                   <div style={{
-                    width: '38px',
-                    height: '38px',
-                    borderRadius: '10px',
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '12px',
                     backgroundColor: isSelected ? 'var(--surface-white)' : 'var(--surface-clay)',
                     display: 'flex',
                     alignItems: 'center',
@@ -231,13 +230,13 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
                     flexShrink: 0,
                     border: '1px solid var(--border-stone)',
                   }}>
-                    <Icon size={18} />
+                    <Icon size={20} />
                   </div>
 
                   {/* Details */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                      <span style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+                      <span style={{ fontSize: '0.94rem', fontWeight: 700, color: 'var(--text-forest)' }}>
                         {option.title}
                       </span>
                       <span style={{
@@ -253,7 +252,7 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
                       </span>
                     </div>
 
-                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 6px', lineHeight: 1.4 }}>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 4px', lineHeight: 1.4 }}>
                       {option.description}
                     </p>
 
@@ -276,6 +275,30 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
                       ))}
                     </div>
                   </div>
+
+                  {/* Enter Action Button */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    backgroundColor: isSelected ? 'var(--text-forest)' : 'var(--surface-clay)',
+                    color: isSelected ? '#FFFFFF' : 'var(--text-forest)',
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    flexShrink: 0,
+                    gap: '6px',
+                  }}>
+                    {isThisSubmitting ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <>
+                        <span>Enter</span>
+                        <ArrowRight size={14} />
+                      </>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -284,7 +307,7 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
           {/* Enter Dashboard Submit Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             style={{
               width: '100%',
               height: '48px',
@@ -295,7 +318,7 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
               fontWeight: 700,
               fontSize: '0.95rem',
               border: 'none',
-              cursor: loading ? 'not-allowed' : 'pointer',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -304,8 +327,17 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
               transition: 'all 0.2s ease',
             }}
           >
-            <span>{loading ? 'Initializing Portal...' : `Continue to ${ROLE_OPTIONS.find(r => r.id === selectedRole)?.title.split('/')[0].trim()} Dashboard`}</span>
-            <ArrowRight size={18} />
+            {isSubmitting ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                <span>Launching Portal...</span>
+              </>
+            ) : (
+              <>
+                <span>Launch {ROLE_OPTIONS.find(r => r.id === selectedRole)?.title.split('/')[0].trim()} Portal</span>
+                <ArrowRight size={18} />
+              </>
+            )}
           </button>
         </form>
 
