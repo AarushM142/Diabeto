@@ -11,9 +11,11 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   },
 });
 
-export const signInWithGoogleOAuth = async (targetRole: string = 'clinician') => {
-  // Store target role in localStorage so upon OAuth return we know their selected role
-  localStorage.setItem('diabeto_oauth_role', targetRole);
+export const signInWithGoogleOAuth = async () => {
+  // Clear previous session storage before redirecting to avoid stale state
+  localStorage.removeItem('diabeto_user');
+  localStorage.removeItem('diabeto_auth_token');
+  localStorage.removeItem('diabeto_oauth_role');
   
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

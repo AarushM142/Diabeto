@@ -102,7 +102,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
     try {
       setGoogleLoading(true);
       setError(null);
-      await signInWithGoogleOAuth(selectedRole);
+      await signInWithGoogleOAuth();
     } catch (err: any) {
       console.error('Supabase Google OAuth error:', err);
       setError(err.message || 'Google authorization failed. Please check your Supabase Auth settings.');

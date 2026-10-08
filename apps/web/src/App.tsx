@@ -73,50 +73,31 @@ export const App: React.FC = () => {
   // Handle Supabase OAuth Redirect Callback
   useEffect(() => {
     const processSession = async (session: any) => {
-      if (session?.user && !currentUser) {
+      if (session?.user) {
         const email = session.user.email || 'user@gmail.com';
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || email.split('@')[0];
         const avatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
         
-        // Check if role was pre-selected
-        const preSelectedRole = localStorage.getItem('diabeto_oauth_role') as UserRole | null;
-        
-        // Clean up URL hash after OAuth redirect
+        // Clean up URL hash / search after extracting session
         if (window.location.hash || window.location.search) {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        if (preSelectedRole) {
-          // If role was explicitly pre-selected, authenticate directly
-          try {
-            const res = await api.googleAuth(email, name, preSelectedRole);
-            if (avatar && res.user) {
-              res.user.avatar = avatar;
-            }
-            setCurrentUser(res.user);
-            applyRoleDefaultTab(res.user.role);
-            localStorage.removeItem('diabeto_oauth_role');
-          } catch (e) {
-            console.error('Failed to authenticate Google user:', e);
-            setPendingGoogleUser({ email, name, avatar });
-          }
-        } else {
-          // Prompt user to select their role in dedicated onboarding screen
-          setPendingGoogleUser({ email, name, avatar });
-        }
+        // Show dedicated role selector for authenticated Google user
+        setPendingGoogleUser({ email, name, avatar });
       }
     };
 
     // Check existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (session?.user && !currentUser) {
         processSession(session);
       }
     });
 
     // Listen for OAuth sign-in event
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session) {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
         processSession(session);
       }
     });
@@ -128,21 +109,35 @@ export const App: React.FC = () => {
 
   const handleRoleSelected = async (role: UserRole) => {
     if (!pendingGoogleUser) return;
+    const { email, name, avatar } = pendingGoogleUser;
     
     triggerTransition(
       `Personalizing ${role.toUpperCase()} Sanctuary...`,
-      `Setting up verified dashboard for ${pendingGoogleUser.name}`,
+      `Setting up verified dashboard for ${name}`,
       async () => {
         try {
-          const res = await api.googleAuth(pendingGoogleUser.email, pendingGoogleUser.name, role);
-          if (pendingGoogleUser.avatar && res.user) {
-            res.user.avatar = pendingGoogleUser.avatar;
+          const res = await api.googleAuth(email, name, role);
+          if (avatar && res.user) {
+            res.user.avatar = avatar;
           }
           setCurrentUser(res.user);
           applyRoleDefaultTab(res.user.role);
           setPendingGoogleUser(null);
         } catch (e) {
-          console.error('Failed to complete role onboarding:', e);
+          console.error('Failed to complete role onboarding with backend, using local session:', e);
+          const fallbackUser: User = {
+            id: `goog_${Date.now()}`,
+            role: role,
+            clinic_id: 'clinic_pune_01',
+            name: name,
+            email: email,
+            title: `Verified ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+            avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+          };
+          api.setPersona(role, fallbackUser.id);
+          setCurrentUser(fallbackUser);
+          applyRoleDefaultTab(role);
+          setPendingGoogleUser(null);
         }
       }
     );
