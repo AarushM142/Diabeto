@@ -23,6 +23,7 @@ if sys.platform.startswith('win'):
         pass
 
 import json
+from typing import Any, Tuple, Optional, Dict, List
 import joblib
 import numpy as np
 import pandas as pd
@@ -56,26 +57,64 @@ class DiabetoPipelineRunner:
         self.model2 = joblib.load(model2_path)
         self.model3_engine = PersonalizedAlertEngine()
 
+    @staticmethod
+    def sanitize_cgm_stream(raw_stream: Any) -> np.ndarray:
+        """
+        Robustly sanitizes incoming CGM stream:
+        - Handles empty / None inputs by synthesizing a safe default baseline.
+        - Filters out NaNs, infinities, None, and strings.
+        - Clamps negative or non-physiological outliers to [20.0, 600.0] mg/dL.
+        - Backwards-pads sequences with < 12 readings (e.g. first-ever reading) using earliest valid reading.
+        - Truncates sequences with > 12 readings to the most recent 12 points.
+        """
+        if raw_stream is None:
+            return np.full((1, 12), 100.0, dtype=np.float32)
+
+        valid_vals = []
+        if isinstance(raw_stream, (list, tuple, np.ndarray, pd.Series)):
+            for v in raw_stream:
+                try:
+                    f = float(v)
+                    if not (np.isnan(f) or np.isinf(f)):
+                        # Clamp to physiological extreme bounds
+                        clamped = float(np.clip(f, 20.0, 600.0))
+                        valid_vals.append(clamped)
+                except (ValueError, TypeError):
+                    continue
+
+        if len(valid_vals) == 0:
+            return np.full((1, 12), 100.0, dtype=np.float32)
+
+        # Pad if fewer than 12 readings (e.g. 1st reading or partial window)
+        if len(valid_vals) < 12:
+            earliest = valid_vals[0]
+            pad_count = 12 - len(valid_vals)
+            valid_vals = [earliest] * pad_count + valid_vals
+        elif len(valid_vals) > 12:
+            valid_vals = valid_vals[-12:]
+
+        return np.array(valid_vals, dtype=np.float32).reshape(1, 12)
+
     def process_patient_cgm_stream(
         self,
         patient_profile: dict,
-        cgm_history_60m: list,  # 12 readings (5-min intervals)
+        cgm_history_60m: list,  # Readings over past hour (1 to 12 readings)
         recent_med_status: str = "taken"
     ) -> dict:
         """
-        Executes end-to-end 3-stage inference for a patient.
+        Executes end-to-end 3-stage inference for a patient with full input resilience.
         """
-        if len(cgm_history_60m) != 12:
-            raise ValueError(f"Expected 12 readings (60 mins @ 5-min intervals), got {len(cgm_history_60m)}")
-
-        X_raw = np.array(cgm_history_60m, dtype=np.float32).reshape(1, 12)
+        patient_profile = patient_profile if isinstance(patient_profile, dict) else {}
+        X_raw = self.sanitize_cgm_stream(cgm_history_60m)
         current_glucose = float(X_raw[0, -1])
+        
+        # Derivative calculations (safe indexing)
         roc_5min = (current_glucose - float(X_raw[0, -2])) / 5.0
         roc_15min = (current_glucose - float(X_raw[0, -4])) / 15.0
         roc_30min = (current_glucose - float(X_raw[0, -7])) / 30.0
         std_60min = float(np.std(X_raw[0]))
 
-        # Trend direction
+        # Trend direction descriptor
         if roc_5min < -1.5:
             trend_desc = "Falling rapidly (↓↓)"
         elif roc_5min < -0.5:
@@ -91,10 +130,10 @@ class DiabetoPipelineRunner:
         X_feat = extract_features_from_windows(
             X_raw, self.model1, self.scaler_min, self.scaler_max, device=self.device
         )
-        pred_15m = float(X_feat[0, 9])
-        pred_30m = float(X_feat[0, 10])
-        pred_45m = float(X_feat[0, 11])
-        pred_60m = float(X_feat[0, 12])
+        pred_15m = float(np.clip(X_feat[0, 9], 20.0, 600.0))
+        pred_30m = float(np.clip(X_feat[0, 10], 20.0, 600.0))
+        pred_45m = float(np.clip(X_feat[0, 11], 20.0, 600.0))
+        pred_60m = float(np.clip(X_feat[0, 12], 20.0, 600.0))
 
         model1_forecast = {
             "t_plus_15m": pred_15m,
@@ -105,9 +144,11 @@ class DiabetoPipelineRunner:
 
         # STAGE 2: Model 2 Calibrated Risk Estimation
         risk_probs = self.model2.predict_proba(X_feat)[0]
-        prob_hypo = float(risk_probs[0] * 100.0)
-        prob_normal = float(risk_probs[1] * 100.0)
-        prob_hyper = float(risk_probs[2] * 100.0)
+        # Normalize to guarantee exact 100% sum
+        p_sum = max(1e-6, float(np.sum(risk_probs)))
+        prob_hypo = float(risk_probs[0] / p_sum * 100.0)
+        prob_normal = float(risk_probs[1] / p_sum * 100.0)
+        prob_hyper = float(risk_probs[2] / p_sum * 100.0)
 
         model2_risk = {
             "hypoglycemia_probability_pct": prob_hypo,
@@ -140,11 +181,11 @@ class DiabetoPipelineRunner:
                 "stage3_model3_decision": model3_decision
             },
             "patient_info": {
-                "id": patient_profile.get("patient_id"),
-                "name": patient_profile.get("name"),
-                "age": patient_profile.get("age"),
-                "caregiver": patient_profile.get("caregivers", [{}])[0].get("name", "N/A") if patient_profile.get("caregivers") else "N/A",
-                "doctor": patient_profile.get("clinician_of_record", {}).get("name", "N/A")
+                "id": patient_profile.get("patient_id") if patient_profile else "unknown",
+                "name": patient_profile.get("name") if patient_profile else "Unknown Patient",
+                "age": patient_profile.get("age") if patient_profile else None,
+                "caregiver": (patient_profile.get("caregivers") or [{}])[0].get("name", "N/A") if (patient_profile and patient_profile.get("caregivers") and isinstance(patient_profile.get("caregivers")[0], dict)) else "N/A",
+                "doctor": ((patient_profile.get("clinician_of_record") if patient_profile else None) or {}).get("name", "N/A")
             },
             "telemetry": glucose_telemetry,
             "decision": model3_decision

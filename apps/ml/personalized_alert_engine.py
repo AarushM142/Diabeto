@@ -42,17 +42,36 @@ class PersonalizedAlertEngine:
 
     def get_patient_thresholds(self, patient_profile: Dict[str, Any]) -> Dict[str, float]:
         """
-        Safely extracts patient-specific thresholds from profile with fallbacks.
+        Safely extracts patient-specific thresholds from profile with robust fallbacks
+        and relationship validation (guarantees 20 <= critical_low < low < high < critical_high <= 600).
         """
         raw_t = patient_profile.get("thresholds", {})
         if not isinstance(raw_t, dict):
             raw_t = {}
 
+        def safe_float(val, default):
+            try:
+                f_val = float(val)
+                return f_val if not (np.isnan(f_val) or np.isinf(f_val)) else default
+            except (ValueError, TypeError):
+                return default
+
+        c_low = safe_float(raw_t.get("critical_low"), self.default_thresholds["critical_low"])
+        low = safe_float(raw_t.get("low"), self.default_thresholds["low"])
+        high = safe_float(raw_t.get("high"), self.default_thresholds["high"])
+        c_high = safe_float(raw_t.get("critical_high"), self.default_thresholds["critical_high"])
+
+        # Sanitize non-negative & logical ordering
+        c_low = max(30.0, min(120.0, c_low))
+        low = max(c_low + 5.0, min(160.0, low))
+        high = max(low + 15.0, min(350.0, high))
+        c_high = max(high + 20.0, min(600.0, c_high))
+
         return {
-            "critical_low": float(raw_t.get("critical_low", self.default_thresholds["critical_low"])),
-            "low": float(raw_t.get("low", self.default_thresholds["low"])),
-            "high": float(raw_t.get("high", self.default_thresholds["high"])),
-            "critical_high": float(raw_t.get("critical_high", self.default_thresholds["critical_high"]))
+            "critical_low": c_low,
+            "low": low,
+            "high": high,
+            "critical_high": c_high
         }
 
     def evaluate(
@@ -200,7 +219,7 @@ class PersonalizedAlertEngine:
             risk_category = RiskCategory.HYPERGLYCEMIA
             threshold_involved = high
             reason_parts.append(
-                f"Model 1 forecasts glucose rising above your upper target ({high:.0f} mg/dL) to {pred_30:.0f} mg/dL within 30 minutes ({trend_desc})."
+                f"Current glucose is {current_g:.0f} mg/dL and Model 1 forecasts glucose rising above your upper target ({high:.0f} mg/dL) to {pred_30:.0f} mg/dL within 30 minutes ({trend_desc})."
             )
 
         elif prob_hypo >= 50.0 and roc_5 < -0.5:
@@ -263,9 +282,13 @@ class PersonalizedAlertEngine:
             )
 
         # 3. Generate Simple, Safe, Elderly-Friendly Recommendations
-        patient_name = patient_profile.get("name", "Patient")
-        doc_name = patient_profile.get("clinician_of_record", {}).get("name", "your doctor")
-        cg_name = patient_profile.get("caregivers", [{}])[0].get("name", "Caregiver") if patient_profile.get("caregivers") else "your caregiver"
+        patient_name = patient_profile.get("name", "Patient") if patient_profile else "Patient"
+        clinician_info = (patient_profile.get("clinician_of_record") if patient_profile else None) or {}
+        caregivers_list = (patient_profile.get("caregivers") if patient_profile else None) or []
+        caregiver_info = caregivers_list[0] if len(caregivers_list) > 0 and isinstance(caregivers_list[0], dict) else {}
+
+        doc_name = clinician_info.get("name", "your doctor")
+        cg_name = caregiver_info.get("name", "your caregiver")
 
         if severity == AlertSeverity.CRITICAL:
             if risk_category == RiskCategory.HYPOGLYCEMIA:
@@ -328,9 +351,7 @@ class PersonalizedAlertEngine:
             ]
 
         # 4. Assemble Explainable Result Object
-        caregiver_info = patient_profile.get("caregivers", [{}])[0] if patient_profile.get("caregivers") else {}
-        clinician_info = patient_profile.get("clinician_of_record", {})
-
+        explanation_text = " ".join(reason_parts)
         return {
             "severity": severity.value,
             "risk_category": risk_category.value,
@@ -358,17 +379,20 @@ class PersonalizedAlertEngine:
                 "critical_high": c_high,
                 "threshold_involved": threshold_involved
             },
-            "reason": " ".join(reason_parts),
+            "reason": explanation_text,
+            "explanation": explanation_text,
             "recommended_actions": recommendations,
             "caregiver_escalation": {
                 "notification_required": caregiver_notify,
                 "status": "simulated",
                 "recipient_name": caregiver_info.get("name", "N/A"),
                 "recipient_phone": caregiver_info.get("phone", "N/A"),
+                "recipients": caregivers_list,
                 "channel": "WhatsApp"
             },
             "clinician_escalation": {
                 "escalation_required": clinician_escalate,
+                "notification_required": clinician_escalate,
                 "status": "simulated",
                 "doctor_name": clinician_info.get("name", "N/A"),
                 "doctor_phone": clinician_info.get("phone", "N/A"),
