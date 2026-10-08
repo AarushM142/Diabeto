@@ -4,6 +4,8 @@ from typing import Optional, Dict, Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apps.api.app.models.entities import BackgroundJob
+
 async def enqueue_job(
     session: AsyncSession,
     job_type: str,
@@ -17,26 +19,18 @@ async def enqueue_job(
     job_id = str(uuid.uuid4())
     run_timestamp = run_at or datetime.now(timezone.utc)
     
-    query = text("""
-        INSERT INTO background_jobs (id, job_type, payload, status, run_at, idempotency_key, created_at)
-        VALUES (:id, :job_type, :payload::jsonb, 'pending', :run_at, :idempotency_key, :created_at)
-        ON CONFLICT (idempotency_key) DO NOTHING
-        RETURNING id;
-    """)
-    
-    result = await session.execute(
-        query,
-        {
-            "id": job_id,
-            "job_type": job_type,
-            "payload": payload,
-            "run_at": run_timestamp,
-            "idempotency_key": idempotency_key,
-            "created_at": datetime.now(timezone.utc),
-        }
+    job = BackgroundJob(
+        id=job_id,
+        job_type=job_type,
+        payload=payload,
+        status="pending",
+        run_at=run_timestamp,
+        idempotency_key=idempotency_key,
+        created_at=datetime.now(timezone.utc),
     )
-    row = result.fetchone()
-    return row[0] if row else job_id
+    session.add(job)
+    await session.flush()
+    return job.id
 
 async def fetch_and_lock_next_job(session: AsyncSession) -> Optional[Dict[str, Any]]:
     """
