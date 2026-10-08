@@ -1,0 +1,32 @@
+{
+  "medication_reminder": {
+    "en": "Greetings {{patient_name}}, it is {{time}}. Did you take your {{medication_name}} ({{dose}})? Reply [YES] or [NO].",
+    "hi": "नमस्ते {{patient_name}} जी, {{time}} का समय हो गया है। क्या आपने अपनी {{medication_name}} ({{dose}}) ले ली है? कृपया [हाँ] या [नहीं] लिखकर बताएं।",
+    "mr": "नमस्ते {{patient_name}}, {{time}} वाजले आहेत. तुम्ही तुमची {{medication_name}} ({{dose}}) घेतली का? कृपया [होय] किंवा [नाही] उत्तर द्या."
+  },
+  "echo_confirmation": {
+    "en": "You recorded a glucose reading of {{glucose_val}} mg/dL ({{context}}). Is this correct? Reply [CONFIRM] or [RE-ENTER].",
+    "hi": "आपने {{glucose_val}} mg/dL ({{context}}) शुगर दर्ज किया है। क्या यह सही है? [सही है] या [फिर से दर्ज करें] बताएं।",
+    "mr": "तुम्ही नोंदवलेली रक्तातील साखर {{glucose_val}} mg/dL ({{context}}) आहे. हे बरोबर आहे का? [होय, बरोबर आहे] किंवा [पुन्हा नोंदवा] उत्तर द्या."
+  },
+  "missed_dose_caregiver_alert": {
+    "en": "Caregiver Alert: {{patient_name}} has not confirmed their {{medication_name}} scheduled for {{time}}. Please check in with them.",
+    "hi": "केयरगिवर सूचना: {{patient_name}} जी ने {{time}} की {{medication_name}} की पुष्टि नहीं की है। कृपया उनसे संपर्क करें।",
+    "mr": "काळजीवाहू सूचना: {{patient_name}} यांनी {{time}} ची {{medication_name}} औषध घेतल्याची पुष्टी केलेली नाही. कृपया त्यांच्याशी बोला."
+  },
+  "high_glucose_warning": {
+    "en": "Warning: Your glucose reading of {{glucose_val}} mg/dL is higher than your doctor-set limit. Please drink water and follow your care plan. A notification has been sent to your care team.",
+    "hi": "सावधानी: आपकी शुगर {{glucose_val}} mg/dL डॉक्टर द्वारा तय की गई सीमा से अधिक है। कृपया पानी पिएं। आपकी केयर टीम को सूचित कर दिया गया है।",
+    "mr": "सावधान: तुमची साखर {{glucose_val}} mg/dL डॉक्टरांनी ठरवलेल्या मर्यादेपेक्षा जास्त आहे. भरपूर पाणी प्या. तुमच्या डॉक्टरांना माहिती पाठवली आहे."
+  },
+  "critical_hypo_emergency": {
+    "en": "EMERGENCY: Your glucose level is {{glucose_val}} mg/dL (Critically Low). Immediately consume 3 teaspoons of sugar or fruit juice. If feeling dizzy, call 112 or 108 immediately. We have alerted your family.",
+    "hi": "आपातकालीन सूचना: आपकी शुगर {{glucose_val}} mg/dL (बहुत कम) है। तुरंत 3 चम्मच चीनी या फलों का जूस लें। चक्कर आने पर तुरंत 112 या 108 पर कॉल करें। आपके परिवार को सूचित कर दिया गया है।",
+    "mr": "तातडीची सूचना: तुमची साखर {{glucose_val}} mg/dL (अतिशय कमी) आहे. लगेच ३ चमचे साखर किंवा फळांचा रस प्या. चक्कर येत असल्यास ताबडतोब ११२ किंवा १०८ वर फोन करा. तुमच्या कुटुंबाला कळवले आहे."
+  },
+  "weekly_summary_greeting": {
+    "en": "Namaste {{patient_name}}, here is your weekly health summary verified by Dr. {{doctor_name}}.",
+    "hi": "नमस्ते {{patient_name}} जी, यह डॉ. {{doctor_name}} द्वारा सत्यापित आपका साप्ताहिक स्वास्थ्य सारांश है।",
+    "mr": "नमस्ते {{patient_name}}, डॉ. {{doctor_name}} यांनी तपासलेला तुमचा साप्ताहिक आरोग्य अहवाल येथे आहे."
+  }
+}
