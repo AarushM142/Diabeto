@@ -20,4 +20,3 @@ pytest>=8.1.0
 pytest-asyncio>=0.23.5
 greenlet>=3.0.0
 reportlab>=4.1.0
-twilio>=9.11.0

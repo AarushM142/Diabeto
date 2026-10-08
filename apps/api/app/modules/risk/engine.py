@@ -64,20 +64,4 @@ async def evaluate_and_record_risk(
     )
     session.add(risk_event)
     await session.flush()
-
-    # Automatically dispatch emergency escalation if severe hypoglycemia is detected
-    if risk_type == "critical_hypoglycemia":
-        from apps.api.app.modules.escalation.service import dispatch_emergency_escalation
-        try:
-            await dispatch_emergency_escalation(
-                db=session,
-                patient_id=patient_id,
-                glucose_mgdl=glucose_val,
-                risk_event_id=risk_event.id,
-                reason="Automated detection of blood glucose below critical low threshold",
-            )
-        except Exception as exc:
-            import logging
-            logging.getLogger("diabeto.risk").error(f"Failed to auto-dispatch emergency escalation: {exc}")
-
     return risk_event
