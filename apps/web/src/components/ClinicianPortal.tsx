@@ -3,7 +3,6 @@ import {
   Activity, AlertOctagon, TrendingUp, 
   Pill, FileText, UserCheck, RefreshCw, Award
 } from 'lucide-react';
-
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid 
 } from 'recharts';
@@ -65,9 +64,9 @@ export const ClinicianPortal: React.FC = () => {
   })) || [];
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
       {/* Patient Triage Roster Selector */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '14px', marginBottom: '24px', flexWrap: 'wrap' }}>
         {DEMO_PATIENTS.map((p) => {
           const isSelected = p.id === selectedPatientId;
           const isCrit = p.severity === 'critical';
@@ -77,36 +76,49 @@ export const ClinicianPortal: React.FC = () => {
             <button
               key={p.id}
               onClick={() => setSelectedPatientId(p.id)}
-              className={`glass-panel ${isSelected ? 'glass-panel-glow-emerald' : ''}`}
+              className="panel"
               style={{
                 flex: '1',
                 minWidth: '280px',
-                padding: '18px',
+                padding: '16px',
                 textAlign: 'left',
                 cursor: 'pointer',
-                borderColor: isSelected ? '#10b981' : 'rgba(255,255,255,0.08)',
-                background: isSelected ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-card)',
+                borderColor: isSelected ? 'var(--brand)' : 'var(--line)',
+                borderWidth: isSelected ? '2px' : '1px',
+                background: isSelected ? 'var(--brand-subtle)' : 'var(--surface)',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isSelected ? '#10b981' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff', fontSize: '0.85rem' }}>
+                  <div style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '6px',
+                    background: isSelected ? 'var(--brand)' : 'var(--surface-2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    color: isSelected ? '#ffffff' : 'var(--ink)',
+                    fontSize: '0.8125rem'
+                  }}>
                     {p.name.charAt(0)}
                   </div>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 700, color: isSelected ? '#34d399' : '#ffffff' }}>
+                  <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)' }}>
                     {p.name}
                   </h3>
                 </div>
                 
-                <span className={`badge ${isCrit ? 'badge-danger' : isWatch ? 'badge-warning' : 'badge-success'}`}>
-                  {isCrit ? 'Critical Hypo' : isWatch ? 'Watch Spike' : 'Stable'}
+                <span className={`status-indicator ${isCrit ? 'danger' : isWatch ? 'warn' : 'ok'}`}>
+                  <span className={`status-dot ${isCrit ? 'danger' : isWatch ? 'warn' : 'ok'}`} />
+                  {isCrit ? 'Critical' : isWatch ? 'Watch' : 'Stable'}
                 </span>
               </div>
 
-              <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--ink-2)' }}>
                 Age {p.age} • {p.gender} • {p.language} • {p.phone}
               </p>
-              <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--ink-3)', marginTop: '4px' }}>
                 {p.diagnosis}
               </p>
             </button>
@@ -115,99 +127,97 @@ export const ClinicianPortal: React.FC = () => {
       </div>
 
       {loading ? (
-        <div style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>
-          <RefreshCw className="pulse-dot" style={{ width: '24px', height: '24px', margin: '0 auto 12px' }} />
+        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--ink-2)' }}>
+          <RefreshCw className="status-dot ok" style={{ width: '20px', height: '20px', margin: '0 auto 12px' }} />
           <p>Loading clinical telemetry for {patient.name}...</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '20px' }}>
           {/* ADA Glycemic Stats Cards (12 cols) */}
-          <div style={{ gridColumn: 'span 12', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-            <div className="glass-panel" style={{ padding: '18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+          <div style={{ gridColumn: 'span 12', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+            <div className="panel" style={{ padding: '16px 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
                 <span>TIME IN RANGE (70-180)</span>
-                <TrendingUp size={16} color="#10b981" />
+                <TrendingUp size={16} color="var(--ok)" />
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#34d399', margin: '6px 0 2px' }}>
+              <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ok)', margin: '4px 0 2px' }}>
                 {trends?.glycemic_metrics.tir_percentage}%
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#64748b' }}>Target &gt;70% (ADA Guidelines)</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--ink-3)' }}>Target &gt;70% (ADA Standard)</p>
             </div>
 
-            <div className="glass-panel" style={{ padding: '18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+            <div className="panel" style={{ padding: '16px 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
                 <span>TIME BELOW RANGE (&lt;70)</span>
-                <AlertOctagon size={16} color="#f43f5e" />
+                <AlertOctagon size={16} color="var(--danger)" />
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: (trends?.glycemic_metrics.tbr_percentage || 0) > 0 ? '#fb7185' : '#ffffff', margin: '6px 0 2px' }}>
+              <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: (trends?.glycemic_metrics.tbr_percentage || 0) > 0 ? 'var(--danger)' : 'var(--ink)', margin: '4px 0 2px' }}>
                 {trends?.glycemic_metrics.tbr_percentage}%
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#64748b' }}>Target &lt;4% (Hypo Prevention)</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--ink-3)' }}>Target &lt;4% (Hypo Risk)</p>
             </div>
 
-            <div className="glass-panel" style={{ padding: '18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+            <div className="panel" style={{ padding: '16px 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
                 <span>MEAN GLUCOSE</span>
-                <Activity size={16} color="#06b6d4" />
+                <Activity size={16} color="var(--ink)" />
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#38bdf8', margin: '6px 0 2px' }}>
-                {trends?.glycemic_metrics.mean_glucose} <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>mg/dL</span>
+              <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ink)', margin: '4px 0 2px' }}>
+                {trends?.glycemic_metrics.mean_glucose} <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--ink-2)' }}>mg/dL</span>
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#64748b' }}>Median: {trends?.glycemic_metrics.median_glucose} | MAD: {trends?.glycemic_metrics.mad_glucose}</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--ink-3)' }}>Median: {trends?.glycemic_metrics.median_glucose} | MAD: {trends?.glycemic_metrics.mad_glucose}</p>
             </div>
 
-            <div className="glass-panel" style={{ padding: '18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+            <div className="panel" style={{ padding: '16px 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
                 <span>GLUCOSE VARIABILITY</span>
-                <Activity size={16} color="#f59e0b" />
+                <Activity size={16} color="var(--ink)" />
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#fbbf24', margin: '6px 0 2px' }}>
+              <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ink)', margin: '4px 0 2px' }}>
                 {trends?.glycemic_metrics.coefficient_of_variation_pct}%
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#64748b' }}>SD: ±{trends?.glycemic_metrics.standard_deviation} mg/dL</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--ink-3)' }}>SD: ±{trends?.glycemic_metrics.standard_deviation} mg/dL</p>
             </div>
 
-            <div className="glass-panel" style={{ padding: '18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+            <div className="panel" style={{ padding: '16px 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
                 <span>MEDICATION ADHERENCE</span>
-                <Pill size={16} color="#c084fc" />
+                <Pill size={16} color="var(--brand)" />
               </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#c084fc', margin: '6px 0 2px' }}>
+              <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--brand)', margin: '4px 0 2px' }}>
                 {trends?.adherence_metrics.compliance_score_pct}%
               </div>
-              <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{trends?.adherence_metrics.readings_per_day} daily log avg</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--ink-3)' }}>{trends?.adherence_metrics.readings_per_day} daily log avg</p>
             </div>
           </div>
 
           {/* Interactive Trajectory Chart (8 cols) */}
-          <div className="glass-panel" style={{ gridColumn: 'span 8', padding: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div className="panel" style={{ gridColumn: 'span 8', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
-                <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
-                  14-Day Continuous Glucose Telemetry
+                <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--ink)' }}>
+                  14-Day Blood Glucose Trend
                 </h2>
-                <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                  Green safe zone (70 - 180 mg/dL) with threshold alerts
+                <p style={{ fontSize: '0.8125rem', color: 'var(--ink-2)' }}>
+                  Target band (70 - 180 mg/dL)
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <span className="badge badge-success">Target: 70–180</span>
-                <span className="badge badge-info">{trends?.readings.length} Telemetry Points</span>
+              <div style={{ display: 'flex', gap: '8px', fontSize: '0.75rem' }}>
+                <span style={{ padding: '3px 8px', borderRadius: '4px', background: 'var(--brand-subtle)', color: 'var(--brand)', fontWeight: 600 }}>
+                  Target: 70–180
+                </span>
+                <span style={{ padding: '3px 8px', borderRadius: '4px', background: 'var(--surface-2)', color: 'var(--ink-2)', fontWeight: 500 }}>
+                  {trends?.readings.length} Points
+                </span>
               </div>
             </div>
 
             <div style={{ height: '340px', width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorGlucoseGlow" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.45}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                  <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
-                  <YAxis domain={[40, 300]} stroke="#64748b" fontSize={11} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+                  <XAxis dataKey="name" stroke="var(--ink-2)" fontSize={11} />
+                  <YAxis domain={[40, 300]} stroke="var(--ink-2)" fontSize={11} />
                   <Tooltip 
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
@@ -215,12 +225,12 @@ export const ClinicianPortal: React.FC = () => {
                         const isHypo = val < 70;
                         const isHyper = val > 180;
                         return (
-                          <div style={{ background: '#0b1329', border: '1px solid #1e293b', padding: '10px 14px', borderRadius: '10px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
-                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '4px' }}>{label}</div>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: isHypo ? '#f43f5e' : isHyper ? '#f59e0b' : '#34d399' }}>
+                          <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', padding: '10px 14px', borderRadius: '8px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--ink-2)', marginBottom: '4px' }}>{label}</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: isHypo ? 'var(--danger)' : isHyper ? 'var(--warn)' : 'var(--ok)' }}>
                               {val} mg/dL
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: '#cbd5e1', marginTop: '2px' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--ink-2)', marginTop: '2px' }}>
                               Context: {payload[0].payload.context}
                             </div>
                           </div>
@@ -229,44 +239,45 @@ export const ClinicianPortal: React.FC = () => {
                       return null;
                     }}
                   />
-                  <ReferenceLine y={180} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: 'Hyper (>180)', fill: '#f59e0b', fontSize: 10 }} />
-                  <ReferenceLine y={70} stroke="#f43f5e" strokeDasharray="4 4" label={{ value: 'Hypo (<70)', fill: '#f43f5e', fontSize: 10 }} />
-                  <Area type="monotone" dataKey="glucose" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorGlucoseGlow)" />
+                  <ReferenceLine y={180} stroke="var(--warn)" strokeDasharray="4 4" label={{ value: 'Hyper (>180)', fill: 'var(--warn)', fontSize: 10 }} />
+                  <ReferenceLine y={70} stroke="var(--danger)" strokeDasharray="4 4" label={{ value: 'Hypo (<70)', fill: 'var(--danger)', fontSize: 10 }} />
+                  <Area type="monotone" dataKey="glucose" stroke="var(--brand)" strokeWidth={2} fill="var(--chart-band)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* Clinician Weekly Synthesis Review Gate (4 cols) */}
-          <div className="glass-panel" style={{ gridColumn: 'span 4', padding: '24px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div className="panel" style={{ gridColumn: 'span 4', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FileText size={20} color="#06b6d4" />
-                <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#ffffff' }}>
-                  Weekly Clinical Synthesis
+                <FileText size={18} color="var(--brand)" />
+                <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)' }}>
+                  Weekly Synthesis
                 </h2>
               </div>
-              <span className={`badge ${summary?.status === 'verified' ? 'badge-success' : 'badge-warning'}`}>
-                {summary?.status === 'verified' ? 'Verified by MD' : 'Unverified Draft'}
+              <span className={`status-indicator ${summary?.status === 'verified' ? 'ok' : 'warn'}`}>
+                <span className={`status-dot ${summary?.status === 'verified' ? 'ok' : 'warn'}`} />
+                {summary?.status === 'verified' ? 'Verified' : 'Unverified Draft'}
               </span>
             </div>
 
-            <div style={{ flex: '1', background: 'rgba(7, 10, 19, 0.6)', padding: '16px', borderRadius: '12px', marginBottom: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <h4 style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Automated Highlights
+            <div style={{ flex: '1', background: 'var(--surface-2)', padding: '14px', borderRadius: '8px', marginBottom: '14px', border: '1px solid var(--line)' }}>
+              <h4 style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', textTransform: 'uppercase', marginBottom: '8px' }}>
+                Clinical Highlights
               </h4>
-              <ul style={{ listStyle: 'none', fontSize: '0.85rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <ul style={{ listStyle: 'none', fontSize: '0.8125rem', color: 'var(--ink)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {summary?.clinical_highlights.map((h, idx) => (
                   <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                    <span style={{ color: '#10b981', fontWeight: 700 }}>•</span>
+                    <span style={{ color: 'var(--brand)', fontWeight: 700 }}>•</span>
                     <span>{h}</span>
                   </li>
                 ))}
               </ul>
 
-              <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#38bdf8' }}>RECOMMENDED ACTION:</span>
-                <p style={{ fontSize: '0.85rem', color: '#f8fafc', marginTop: '3px', fontWeight: 500 }}>
+              <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--line)' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand)' }}>RECOMMENDED ACTION:</span>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--ink)', marginTop: '2px' }}>
                   {summary?.doctor_action_recommendation}
                 </p>
               </div>
@@ -274,7 +285,7 @@ export const ClinicianPortal: React.FC = () => {
 
             {/* Doctor Sign-Off Form */}
             <div>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', marginBottom: '6px', display: 'block' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', marginBottom: '6px', display: 'block' }}>
                 Attending Doctor Notes:
               </label>
               <textarea
@@ -282,37 +293,37 @@ export const ClinicianPortal: React.FC = () => {
                 rows={2}
                 value={doctorNotes}
                 onChange={(e) => setDoctorNotes(e.target.value)}
-                style={{ fontSize: '0.85rem', marginBottom: '12px', resize: 'none' }}
+                style={{ fontSize: '0.8125rem', marginBottom: '12px', resize: 'none' }}
               />
 
               {summary?.status === 'verified' ? (
                 <div style={{
-                  background: 'rgba(16, 185, 129, 0.12)',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  background: 'var(--ok-bg)',
+                  border: '1px solid var(--ok-border)',
                   padding: '12px',
-                  borderRadius: '10px',
+                  borderRadius: '8px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
-                  color: '#34d399',
-                  fontSize: '0.85rem',
+                  color: 'var(--ok)',
+                  fontSize: '0.8125rem',
                   fontWeight: 600,
                 }}>
-                  <Award size={22} color="#34d399" />
+                  <Award size={20} color="var(--ok)" />
                   <div>
                     <div>Clinically Verified by {summary.verified_by}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#6ee7b7' }}>Logged in Audit Trail at {new Date(summary.verified_at || '').toLocaleTimeString()}</div>
+                    <div style={{ fontSize: '0.6875rem', color: 'var(--ink-2)' }}>Logged at {new Date(summary.verified_at || '').toLocaleTimeString()}</div>
                   </div>
                 </div>
               ) : (
                 <button
                   onClick={handleVerifySummary}
                   disabled={verifying}
-                  className="btn btn-primary"
-                  style={{ width: '100%', padding: '12px' }}
+                  className="btn btn-brand"
+                  style={{ width: '100%', padding: '10px' }}
                 >
-                  <UserCheck size={18} />
-                  {verifying ? 'Signing off...' : 'Verify & Approve Clinical Synthesis'}
+                  <UserCheck size={16} />
+                  {verifying ? 'Signing off...' : 'Verify & Sign-Off'}
                 </button>
               )}
             </div>

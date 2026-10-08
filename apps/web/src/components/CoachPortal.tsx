@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, CheckCircle2, XCircle, Send, ShieldCheck, RefreshCw, Phone, MoreVertical
 } from 'lucide-react';
-
 import { api } from '../api/client';
 import type { Recommendation } from '../api/client';
 
@@ -54,7 +53,7 @@ export const CoachPortal: React.FC = () => {
         decision === 'edited' ? editedText : undefined
       );
       
-      setToastMessage(`Nudge ${decision} successfully! ${result.dispatched_to_whatsapp ? 'Dispatched to Senior WhatsApp ✅' : ''}`);
+      setToastMessage(`Nudge ${decision} successfully! ${result.dispatched_to_whatsapp ? 'Dispatched to WhatsApp ✅' : ''}`);
       setTimeout(() => setToastMessage(null), 5000);
       setIsEditing(false);
       await fetchApprovals();
@@ -70,7 +69,7 @@ export const CoachPortal: React.FC = () => {
     try {
       await api.generateNudge('pt_ramesh_001');
       await fetchApprovals();
-      setToastMessage('Generated fresh lifestyle nudge for Ramesh Kulkarni! ✨');
+      setToastMessage('Generated fresh lifestyle nudge for Ramesh Kulkarni.');
       setTimeout(() => setToastMessage(null), 4000);
     } catch (err) {
       alert('Nudge generation error: ' + err);
@@ -80,23 +79,23 @@ export const CoachPortal: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Sparkles size={24} color="#06b6d4" />
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={20} color="var(--brand)" />
             Coach Approvals Desk
           </h2>
-          <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-            Review, edit, and verify AI-generated lifestyle nudges before real-time WhatsApp delivery.
+          <p style={{ fontSize: '0.8125rem', color: 'var(--ink-2)' }}>
+            Verify AI-drafted lifestyle recommendations before sending to seniors on WhatsApp.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
           <button
             onClick={handleGenerateTestNudge}
-            className="btn btn-cyan btn-sm"
+            className="btn btn-brand btn-sm"
           >
             <Sparkles size={14} />
             Generate New Nudge
@@ -106,55 +105,43 @@ export const CoachPortal: React.FC = () => {
             className="btn btn-secondary btn-sm"
           >
             <RefreshCw size={14} />
-            Refresh Queue ({approvals.length})
+            Refresh ({approvals.length})
           </button>
         </div>
       </div>
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div style={{
-          background: 'rgba(16, 185, 129, 0.15)',
-          border: '1px solid rgba(16, 185, 129, 0.4)',
-          color: '#34d399',
-          padding: '12px 20px',
-          borderRadius: '10px',
-          marginBottom: '20px',
-          fontSize: '0.9rem',
-          fontWeight: 600,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-        }}>
-          <CheckCircle2 size={18} />
-          <span>{toastMessage}</span>
+        <div className="callout ok" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <CheckCircle2 size={16} color="var(--ok)" />
+          <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--ok)' }}>{toastMessage}</span>
         </div>
       )}
 
       {loading ? (
-        <div style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>
-          <RefreshCw className="pulse-dot" style={{ width: '24px', height: '24px', margin: '0 auto 12px' }} />
-          <p>Loading pending coach recommendations...</p>
+        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--ink-2)' }}>
+          <RefreshCw className="status-dot ok" style={{ width: '20px', height: '20px', margin: '0 auto 12px' }} />
+          <p>Loading pending recommendations...</p>
         </div>
       ) : approvals.length === 0 ? (
-        <div className="glass-panel" style={{ padding: '60px', textAlign: 'center' }}>
-          <CheckCircle2 size={48} color="#10b981" style={{ margin: '0 auto 16px', opacity: 0.8 }} />
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>
-            Approval Queue is Empty!
+        <div className="panel" style={{ padding: '60px', textAlign: 'center' }}>
+          <CheckCircle2 size={40} color="var(--ok)" style={{ margin: '0 auto 14px' }} />
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
+            Queue is All Clear
           </h3>
-          <p style={{ fontSize: '0.9rem', color: '#94a3b8', maxWidth: '480px', margin: '0 auto 20px' }}>
-            All lifestyle recommendations have been verified and dispatched. Click below to generate a new AI recommendation.
+          <p style={{ fontSize: '0.875rem', color: 'var(--ink-2)', maxWidth: '440px', margin: '0 auto 18px' }}>
+            All recommendations have been reviewed and delivered.
           </p>
-          <button onClick={handleGenerateTestNudge} className="btn btn-primary">
-            <Sparkles size={16} />
-            Generate GenAI Nudge for Ramesh
+          <button onClick={handleGenerateTestNudge} className="btn btn-brand">
+            <Sparkles size={15} />
+            Generate Nudge for Ramesh
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '20px' }}>
           {/* Left: Queue List (4 cols) */}
-          <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>
+          <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <h3 style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--ink-2)', textTransform: 'uppercase' }}>
               Pending Nudges ({approvals.length})
             </h3>
 
@@ -164,29 +151,30 @@ export const CoachPortal: React.FC = () => {
                 <div
                   key={rec.id}
                   onClick={() => handleSelect(rec)}
-                  className="glass-panel"
+                  className="panel"
                   style={{
-                    padding: '16px',
+                    padding: '14px',
                     cursor: 'pointer',
-                    borderColor: isSelected ? '#06b6d4' : 'rgba(255,255,255,0.08)',
-                    background: isSelected ? 'rgba(6, 182, 212, 0.08)' : 'var(--bg-card)',
+                    borderColor: isSelected ? 'var(--brand)' : 'var(--line)',
+                    borderWidth: isSelected ? '2px' : '1px',
+                    background: isSelected ? 'var(--brand-subtle)' : 'var(--surface)',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <strong style={{ fontSize: '0.9rem', color: isSelected ? '#38bdf8' : '#ffffff' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <strong style={{ fontSize: '0.875rem', color: 'var(--ink)' }}>
                       {rec.patient_id === 'pt_ramesh_001' ? 'Ramesh Kulkarni' : rec.patient_id}
                     </strong>
-                    <span className="badge badge-info">
+                    <span style={{ fontSize: '0.75rem', color: 'var(--brand)', fontWeight: 600 }}>
                       {rec.confidence_label}
                     </span>
                   </div>
 
-                  <p style={{ fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.4, marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--ink-2)', lineHeight: 1.4, marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     "{rec.message_text}"
                   </p>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b' }}>
-                    <span>Action: {rec.action_type}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--ink-3)' }}>
+                    <span>{rec.action_type}</span>
                     <span>{new Date(rec.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </div>
@@ -195,32 +183,32 @@ export const CoachPortal: React.FC = () => {
           </div>
 
           {/* Center: Selected Nudge Detail & Editor (4 cols) */}
-          <div className="glass-panel" style={{ gridColumn: 'span 4', padding: '24px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#ffffff' }}>
-                Review & Edit Copy
+          <div className="panel" style={{ gridColumn: 'span 4', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)' }}>
+                Review Draft
               </h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#34d399', fontSize: '0.75rem', fontWeight: 600 }}>
-                <ShieldCheck size={16} />
-                <span>Guardrails OK</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--ok)', fontSize: '0.75rem', fontWeight: 600 }}>
+                <ShieldCheck size={14} />
+                <span>Guardrails Passed</span>
               </div>
             </div>
 
             {selectedRec && (
-              <div style={{ display: 'flex', flexDirection: 'column', flex: '1', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', flex: '1', gap: '14px' }}>
                 {/* Clinical Evidence Box */}
-                <div style={{ background: 'rgba(7, 10, 19, 0.6)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase' }}>
-                    Clinical Rationale:
+                <div style={{ background: 'var(--surface-2)', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand)' }}>
+                    CLINICAL RATIONALE:
                   </span>
-                  <p style={{ fontSize: '0.85rem', color: '#cbd5e1', marginTop: '4px' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--ink)', marginTop: '2px' }}>
                     {selectedRec.reason_text}
                   </p>
                 </div>
 
                 {/* Message Textarea */}
                 <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', marginBottom: '4px' }}>
                     Message Content (Editable):
                   </label>
                   <textarea
@@ -231,17 +219,17 @@ export const CoachPortal: React.FC = () => {
                       setIsEditing(true);
                       setEditedText(e.target.value);
                     }}
-                    style={{ flex: '1', fontSize: '0.9rem', resize: 'none', lineHeight: 1.5 }}
+                    style={{ flex: '1', fontSize: '0.875rem', resize: 'none', lineHeight: 1.5 }}
                   />
                 </div>
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ display: 'flex', gap: '8px', paddingTop: '10px', borderTop: '1px solid var(--line)' }}>
                   <button
                     onClick={() => handleDecision(selectedRec.id, 'rejected')}
                     disabled={actionInProgress}
-                    className="btn btn-danger btn-sm"
-                    style={{ flex: '1' }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ flex: '1', color: 'var(--danger)', borderColor: 'var(--danger-border)' }}
                   >
                     <XCircle size={14} />
                     Reject
@@ -250,11 +238,11 @@ export const CoachPortal: React.FC = () => {
                   <button
                     onClick={() => handleDecision(selectedRec.id, isEditing ? 'edited' : 'approved')}
                     disabled={actionInProgress}
-                    className="btn btn-primary"
+                    className="btn btn-brand"
                     style={{ flex: '2' }}
                   >
-                    <Send size={16} />
-                    {isEditing ? 'Save & Send to WhatsApp' : 'Approve & Dispatch'}
+                    <Send size={15} />
+                    {isEditing ? 'Save & Send' : 'Approve & Send'}
                   </button>
                 </div>
               </div>
@@ -266,38 +254,38 @@ export const CoachPortal: React.FC = () => {
             <div className="phone-mockup">
               {/* WhatsApp Header */}
               <div className="phone-header">
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#00a884', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.9rem' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#075e54', fontWeight: 700, fontSize: '0.875rem' }}>
                   D
                 </div>
                 <div style={{ flex: '1' }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ffffff' }}>Diabeto Care</div>
-                  <div style={{ fontSize: '0.7rem', color: '#8696a0' }}>Verified Business Account</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>Diabeto Care</div>
+                  <div style={{ fontSize: '0.6875rem', opacity: 0.9 }}>WhatsApp Business</div>
                 </div>
-                <Phone size={16} color="#8696a0" />
-                <MoreVertical size={16} color="#8696a0" />
+                <Phone size={15} color="#ffffff" />
+                <MoreVertical size={15} color="#ffffff" />
               </div>
 
               {/* Chat Body */}
               <div className="phone-chat-body">
                 <div className="bubble-outbound">
                   Namaste Ramesh ji! Please send your fasting blood glucose reading.
-                  <div style={{ fontSize: '0.65rem', color: '#8696a0', textAlign: 'right', marginTop: '4px' }}>8:00 AM</div>
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--ink-2)', textAlign: 'right', marginTop: '2px' }}>8:00 AM</div>
                 </div>
 
                 <div className="bubble-inbound">
                   Mera fasting sugar 140 hai
-                  <div style={{ fontSize: '0.65rem', color: '#8696a0', textAlign: 'right', marginTop: '4px' }}>8:15 AM ✓✓</div>
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--ink-2)', textAlign: 'right', marginTop: '2px' }}>8:15 AM ✓✓</div>
                 </div>
 
                 {/* Live Nudge Preview Bubble */}
                 {selectedRec && (
-                  <div className="bubble-outbound" style={{ background: '#18383b', border: '1px solid rgba(6, 182, 212, 0.4)' }}>
-                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#38bdf8', marginBottom: '4px' }}>
-                      🌟 COACH LIFESTYLE TIP
+                  <div className="bubble-outbound" style={{ borderLeft: '3px solid var(--brand)' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand)', marginBottom: '2px' }}>
+                      Coach Recommendation
                     </div>
                     {isEditing ? editedText : selectedRec.message_text}
-                    <div style={{ fontSize: '0.65rem', color: '#8696a0', textAlign: 'right', marginTop: '6px' }}>
-                      — Verified by Care Coach • Just now
+                    <div style={{ fontSize: '0.6875rem', color: 'var(--ink-2)', textAlign: 'right', marginTop: '4px' }}>
+                      Verified by Care Coach • Just now
                     </div>
                   </div>
                 )}

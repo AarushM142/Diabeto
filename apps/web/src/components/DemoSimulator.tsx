@@ -4,7 +4,6 @@ import {
 } from 'lucide-react';
 import { api } from '../api/client';
 
-
 export const DemoSimulator: React.FC = () => {
   const [patientId, setPatientId] = useState('pt_ramesh_001');
   const [customGlucose, setCustomGlucose] = useState('140');
@@ -53,23 +52,23 @@ export const DemoSimulator: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
       <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Terminal size={24} color="#6366f1" />
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Terminal size={20} color="var(--brand)" />
           Interactive Demo & Clinical Simulator
         </h2>
-        <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-          Test deterministic safety rules, emergency escalation triggers, and GenAI lifestyle nudges live.
+        <p style={{ fontSize: '0.8125rem', color: 'var(--ink-2)' }}>
+          Test deterministic safety rules, emergency escalation triggers, and GenAI lifestyle nudges live against the running backend.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '20px' }}>
         {/* Left: Quick Scenarios & Ingestion (5 cols) */}
-        <div style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Preset Clinical Scenarios */}
-          <div className="glass-card" style={{ padding: '20px' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff', marginBottom: '14px' }}>
+          <div className="panel" style={{ padding: '20px' }}>
+            <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '14px' }}>
               One-Click Clinical Scenarios
             </h3>
 
@@ -77,13 +76,13 @@ export const DemoSimulator: React.FC = () => {
               <button
                 onClick={() => handleInject(54, 'fasting')}
                 disabled={submitting}
-                className="btn btn-danger"
-                style={{ width: '100%', justifyContent: 'flex-start', padding: '12px 16px' }}
+                className="btn btn-secondary"
+                style={{ width: '100%', justifyContent: 'flex-start', padding: '12px 16px', borderLeft: '4px solid var(--danger)' }}
               >
-                <AlertOctagon size={18} />
+                <AlertOctagon size={18} color="var(--danger)" />
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700 }}>🚨 Critical Hypoglycemia (54 mg/dL)</div>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.85 }}>Triggers Immediate T1 Caregiver Escalation</div>
+                  <div style={{ fontWeight: 600, color: 'var(--danger)' }}>Critical Hypoglycemia (54 mg/dL)</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--ink-2)' }}>Triggers Immediate T1 Caregiver Escalation</div>
                 </div>
               </button>
 
@@ -91,12 +90,12 @@ export const DemoSimulator: React.FC = () => {
                 onClick={() => handleInject(265, 'postprandial')}
                 disabled={submitting}
                 className="btn btn-secondary"
-                style={{ width: '100%', justifyContent: 'flex-start', padding: '12px 16px', borderColor: 'rgba(245, 158, 11, 0.4)' }}
+                style={{ width: '100%', justifyContent: 'flex-start', padding: '12px 16px', borderLeft: '4px solid var(--warn)' }}
               >
-                <Activity size={18} color="#fbbf24" />
+                <Activity size={18} color="var(--warn)" />
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700, color: '#fbbf24' }}>⚠️ Severe Hyperglycemia (265 mg/dL)</div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Triggers Urgent Hydration & Care Alert</div>
+                  <div style={{ fontWeight: 600, color: 'var(--warn)' }}>Severe Hyperglycemia (265 mg/dL)</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--ink-2)' }}>Triggers Urgent Hydration & Care Alert</div>
                 </div>
               </button>
 
@@ -104,39 +103,39 @@ export const DemoSimulator: React.FC = () => {
                 onClick={() => handleInject(135, 'fasting')}
                 disabled={submitting}
                 className="btn btn-secondary"
-                style={{ width: '100%', justifyContent: 'flex-start', padding: '12px 16px', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+                style={{ width: '100%', justifyContent: 'flex-start', padding: '12px 16px', borderLeft: '4px solid var(--ok)' }}
               >
-                <CheckCircle2 size={18} color="#34d399" />
+                <CheckCircle2 size={18} color="var(--ok)" />
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700, color: '#34d399' }}>✅ Stable Fasting (135 mg/dL)</div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Logs within normal senior target</div>
+                  <div style={{ fontWeight: 600, color: 'var(--ok)' }}>Stable Fasting (135 mg/dL)</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--ink-2)' }}>Logs within normal senior target</div>
                 </div>
               </button>
 
               <button
                 onClick={handleTriggerNudge}
                 disabled={submitting}
-                className="btn btn-primary"
+                className="btn btn-brand"
                 style={{ width: '100%', justifyContent: 'flex-start', padding: '12px 16px' }}
               >
                 <Sparkles size={18} />
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700 }}>✨ Trigger GenAI Nudge Generation</div>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>Generates anonymized lifestyle advice</div>
+                  <div style={{ fontWeight: 600 }}>Trigger GenAI Nudge Generation</div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>Generates lifestyle advice for coach approval</div>
                 </div>
               </button>
             </div>
           </div>
 
           {/* Custom Ingestion Box */}
-          <div className="glass-card" style={{ padding: '20px' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff', marginBottom: '14px' }}>
+          <div className="panel" style={{ padding: '20px' }}>
+            <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '14px' }}>
               Custom Telemetry Injection
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: '4px' }}>
                   Select Patient:
                 </label>
                 <select
@@ -152,7 +151,7 @@ export const DemoSimulator: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: '4px' }}>
                     Glucose (mg/dL):
                   </label>
                   <input
@@ -163,7 +162,7 @@ export const DemoSimulator: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', display: 'block', marginBottom: '4px' }}>
                     Context:
                   </label>
                   <select
@@ -193,18 +192,17 @@ export const DemoSimulator: React.FC = () => {
         </div>
 
         {/* Right: Real-Time Telemetry & Console Log (7 cols) */}
-        <div className="glass-card" style={{ gridColumn: 'span 7', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+        <div className="panel" style={{ gridColumn: 'span 7', padding: '20px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Terminal size={18} color="#10b981" />
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>
+              <Terminal size={18} color="var(--brand)" />
+              <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)' }}>
                 Live Clinical Event Stream
               </h3>
             </div>
             <button
               onClick={() => setLogs(['[Cleared Log Stream]'])}
               className="btn btn-secondary btn-sm"
-              style={{ padding: '4px 8px', fontSize: '0.75rem' }}
             >
               Clear Logs
             </button>
@@ -213,22 +211,22 @@ export const DemoSimulator: React.FC = () => {
           <div style={{
             flex: '1',
             minHeight: '440px',
-            background: '#040711',
-            borderRadius: '12px',
+            background: 'var(--surface-2)',
+            borderRadius: '8px',
             padding: '16px',
             fontFamily: 'var(--font-mono)',
-            fontSize: '0.8rem',
+            fontSize: '0.8125rem',
             lineHeight: 1.6,
-            color: '#a7f3d0',
+            color: 'var(--ink)',
             overflowY: 'auto',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid var(--line)',
           }}>
             {logs.map((l, i) => (
               <div 
                 key={i} 
                 style={{ 
                   marginBottom: '8px', 
-                  color: l.includes('🚨') ? '#fca5a5' : l.includes('⚠️') ? '#fde68a' : l.includes('✓') ? '#6ee7b7' : '#94a3b8' 
+                  color: l.includes('🚨') ? 'var(--danger)' : l.includes('⚠️') ? 'var(--warn)' : l.includes('✓') ? 'var(--ok)' : 'var(--ink-2)' 
                 }}
               >
                 {l}

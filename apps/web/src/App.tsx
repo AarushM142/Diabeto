@@ -22,7 +22,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--canvas)' }}>
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -37,19 +37,19 @@ export const App: React.FC = () => {
       </main>
 
       <footer style={{
-        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-        padding: '16px 28px',
+        borderTop: '1px solid var(--line)',
+        padding: '16px 24px',
         textAlign: 'center',
         fontSize: '0.75rem',
-        color: '#64748b',
-        background: 'rgba(5, 8, 17, 0.95)',
+        color: 'var(--ink-2)',
+        background: 'var(--surface)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
         gap: '12px',
       }}>
-        <span>Diabeto Elderly Diabetes Care Platform • Closed-Loop Clinical Safety & Multilingual WhatsApp Companion</span>
+        <span>diabeto. Elderly Diabetes Care Platform • Closed-Loop Clinical Safety</span>
         <span>Clinician of Record: <strong>Dr. Arvind Mehta, MD</strong> • Clinic: <strong>Pune Central (clinic_pune_01)</strong></span>
       </footer>
     </div>
