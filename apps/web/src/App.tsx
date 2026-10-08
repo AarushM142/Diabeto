@@ -5,16 +5,15 @@ import { ClinicianPortal } from './components/ClinicianPortal';
 import { CoachPortal } from './components/CoachPortal';
 import { CaregiverPortal } from './components/CaregiverPortal';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
-import { LoginView } from './components/LoginView';
+import { AuthView } from './components/AuthView';
 import { LandingHero } from './components/LandingHero';
+import { RoleSelectModal } from './components/RoleSelectModal';
 import { PageLoader } from './components/ui/page-loader';
 import { api, saveAuthSession, type User, type UserRole } from './api/client';
+import { supabase } from './lib/supabase';
 import type { Language } from './lib/types';
 import { Phone, Type, LogOut } from 'lucide-react';
 import { t } from './lib/i18n';
-
-import { supabase } from './lib/supabase';
-import { RoleSelectModal } from './components/RoleSelectModal';
 
 interface LoadingState {
   message: string;
@@ -30,7 +29,7 @@ interface PendingGoogleUser {
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => api.getCurrentUser());
-  const [unauthView, setUnauthView] = useState<'hero' | 'login'>('hero');
+  const [unauthView, setUnauthView] = useState<'hero' | 'auth'>('hero');
   const [preferredRole, setPreferredRole] = useState<UserRole | undefined>(undefined);
   const [pendingGoogleUser, setPendingGoogleUser] = useState<PendingGoogleUser | null>(null);
   
@@ -39,7 +38,7 @@ export const App: React.FC = () => {
   const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState(false);
 
-  // 1.0-second Loading Animation State
+  // Transition Animation State
   const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
 
   // Set default tab based on user's role upon login
@@ -70,20 +69,20 @@ export const App: React.FC = () => {
     }
   }, [currentUser?.role, currentUser?.id]);
 
-  // Handle Supabase OAuth Redirect Callback
+  // Handle Supabase Google OAuth Redirects
   useEffect(() => {
     const processSession = async (session: any) => {
-      if (session?.user) {
+      if (session?.user && !currentUser) {
         const email = session.user.email || 'user@gmail.com';
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || email.split('@')[0];
         const avatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
         
-        // Clean up URL hash / search after extracting session
+        // Clean URL after OAuth callback
         if (window.location.hash || window.location.search) {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        // Show dedicated role selector for authenticated Google user
+        // Show dedicated role onboarding modal for authenticated Google user
         setPendingGoogleUser({ email, name, avatar });
       }
     };
@@ -106,6 +105,74 @@ export const App: React.FC = () => {
       authListener?.subscription.unsubscribe();
     };
   }, [currentUser]);
+
+  // Periodic Backend Health Check
+  useEffect(() => {
+    const checkHealth = async () => {
+      const healthy = await api.getHealth();
+      setIsBackendHealthy(healthy);
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update HTML class for Simple Mode
+  useEffect(() => {
+    if (isSimpleMode) {
+      document.documentElement.classList.add('simple-mode');
+    } else {
+      document.documentElement.classList.remove('simple-mode');
+    }
+  }, [isSimpleMode]);
+
+  const triggerTransition = (message: string, subMessage: string, targetAction: () => void) => {
+    setLoadingState({
+      message,
+      subMessage,
+      targetAction,
+    });
+  };
+
+  const handleLoaderComplete = () => {
+    if (loadingState) {
+      loadingState.targetAction();
+      setLoadingState(null);
+    }
+  };
+
+  const handleOpenLogin = (role?: UserRole) => {
+    triggerTransition(
+      'Opening Verified Care Gateway...',
+      'Securing HIPAA & ABDM Clinical Gateway',
+      () => {
+        setPreferredRole(role);
+        setUnauthView('auth');
+      }
+    );
+  };
+
+  const handleBackToHero = () => {
+    triggerTransition(
+      'Returning to Platform Overview...',
+      'Pune Central Diabetes Network',
+      () => {
+        setUnauthView('hero');
+      }
+    );
+  };
+
+  const handleLoginSuccess = (user: User) => {
+    triggerTransition(
+      `Authenticating ${user.name}...`,
+      `Role: ${user.role.toUpperCase()} • Initializing Clinical Decision Support`,
+      () => {
+        setCurrentUser(user);
+        applyRoleDefaultTab(user.role);
+      }
+    );
+  };
 
   const handleRoleSelected = async (role: UserRole) => {
     if (!pendingGoogleUser) return;
@@ -132,7 +199,7 @@ export const App: React.FC = () => {
       saveAuthSession('token_' + Date.now(), userToSet);
     }
 
-    // Set authenticated state immediately so app never reverts to landing page
+    // Set state immediately so app directly enters dashboard
     setPendingGoogleUser(null);
     setCurrentUser(userToSet);
     applyRoleDefaultTab(userToSet.role);
@@ -147,75 +214,6 @@ export const App: React.FC = () => {
     );
   };
 
-  // Periodic Backend Health Check
-  useEffect(() => {
-    const checkHealth = async () => {
-      const healthy = await api.getHealth();
-      setIsBackendHealthy(healthy);
-    };
-
-    checkHealth();
-    const interval = setInterval(checkHealth, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update HTML class for Simple Mode
-  useEffect(() => {
-    if (isSimpleMode) {
-      document.documentElement.classList.add('simple-mode');
-    } else {
-      document.documentElement.classList.remove('simple-mode');
-    }
-  }, [isSimpleMode]);
-
-  // 1.5-second transition helper
-  const triggerTransition = (message: string, subMessage: string, targetAction: () => void) => {
-    setLoadingState({
-      message,
-      subMessage,
-      targetAction,
-    });
-  };
-
-  const handleLoaderComplete = () => {
-    if (loadingState) {
-      loadingState.targetAction();
-      setLoadingState(null);
-    }
-  };
-
-  const handleOpenLogin = (role?: UserRole) => {
-    triggerTransition(
-      'Loading Verified Authentication Desk...',
-      'Securing HIPAA & ABDM Clinical Gateway',
-      () => {
-        setPreferredRole(role);
-        setUnauthView('login');
-      }
-    );
-  };
-
-  const handleBackToHero = () => {
-    triggerTransition(
-      'Returning to Platform Overview...',
-      'Pune Central Diabetes Network',
-      () => {
-        setUnauthView('hero');
-      }
-    );
-  };
-
-  const handleLoginSuccess = (user: User) => {
-    triggerTransition(
-      `Authenticating ${user.name}...`,
-      `Role: ${user.role.toUpperCase()} • Initializing Clinical Decision Support`,
-      () => {
-        setCurrentUser(user);
-        applyRoleDefaultTab(user.role);
-      }
-    );
-  };
-
   const handleLogout = () => {
     triggerTransition(
       'Signing out of Diabeto...',
@@ -224,6 +222,7 @@ export const App: React.FC = () => {
         api.logout();
         supabase.auth.signOut().catch(() => {});
         setCurrentUser(null);
+        setPendingGoogleUser(null);
         setUnauthView('hero');
       }
     );
@@ -248,24 +247,24 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {/* 1.0-Second Cool Loading Animation Overlay */}
+      {/* 1.0-Second Transition Loader */}
       {loadingState && (
         <PageLoader
           message={loadingState.message}
-          durationMs={1000}
+          durationMs={900}
           onComplete={handleLoaderComplete}
         />
       )}
 
-      {/* Main App Content */}
+      {/* Main App Content Flow */}
       {pendingGoogleUser ? (
         <RoleSelectModal
           user={pendingGoogleUser}
           onSelectRole={handleRoleSelected}
         />
       ) : !currentUser ? (
-        unauthView === 'login' ? (
-          <LoginView
+        unauthView === 'auth' ? (
+          <AuthView
             onLoginSuccess={handleLoginSuccess}
             onBack={handleBackToHero}
             initialRole={preferredRole}
@@ -275,10 +274,10 @@ export const App: React.FC = () => {
         )
       ) : (
         <div className="app-container">
-          {/* Mandatory Tactile Paper Grain Overlay */}
+          {/* Paper Grain Overlay */}
           <div className="paper-grain-overlay" aria-hidden="true" />
 
-          {/* Solid In-Flow Botanical Sidebar Navigation */}
+          {/* Solid Botanical Sidebar Navigation */}
           <SidebarNav
             activeTab={activeTab}
             setActiveTab={setActiveTab}
