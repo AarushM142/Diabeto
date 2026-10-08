@@ -50,12 +50,435 @@
       {
         "date": "2026-09-24",
         "readings": [
-          { "type": "glucose", "context": "fasting", "value": 112, "time": "07:30", "reported_by": "patient" },
-          { "type": "glucose", "context": "post_lunch", "value": 148, "time": "14:15", "reported_by": "patient" }
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 112,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 148,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
         ],
         "medication_logs": [
-          { "time": "08:35", "status": "taken", "drug": "Metformin 500mg" },
-          { "time": "20:40", "status": "taken", "drug": "Metformin 500mg" }
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-25",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 108,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 155,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-26",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 116,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 142,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-27",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 121,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 160,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-28",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 110,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 151,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-29",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 115,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 145,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-30",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 118,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 158,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-01",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 105,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 150,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-02",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 113,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 163,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-03",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 120,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 147,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-04",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 107,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 154,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "missed",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-05",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 117,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 141,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-06",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 111,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 159,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-07",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 114,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 152,
+            "time": "14:15",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:35",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          },
+          {
+            "time": "20:40",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
         ]
       }
     ]
@@ -107,7 +530,540 @@
         "scheduled_time": "20:00"
       }
     ],
-    "history_14_days": []
+    "history_14_days": [
+      {
+        "date": "2026-09-24",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 172,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 218,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 268,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-25",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 168,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 225,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 275,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "missed",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-26",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 181,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 232,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 282,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "missed",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-27",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 176,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 240,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 264,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-28",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 185,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 228,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 289,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-29",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 188,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 235,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 276,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-30",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 174,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 220,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 270,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-01",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 169,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 238,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 285,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-02",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 183,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 245,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 292,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "missed",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-03",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 179,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 230,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 271,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "missed",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-04",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 190,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 242,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 287,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-05",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 186,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 236,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 279,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-06",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 171,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 224,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 266,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-07",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 177,
+            "time": "07:15",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 231,
+            "time": "14:00",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_dinner",
+            "value": 284,
+            "time": "22:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Metformin 1000mg"
+          },
+          {
+            "time": "20:00",
+            "status": "taken",
+            "drug": "Glimepiride 1mg"
+          }
+        ]
+      }
+    ]
   },
   {
     "patient_id": "pt_ananya_003",
@@ -148,8 +1104,449 @@
         "dosage": "50mg",
         "instructions": "Morning",
         "scheduled_time": "08:00"
+      },
+      {
+        "drug_name": "Metformin",
+        "dosage": "500mg",
+        "instructions": "After dinner",
+        "scheduled_time": "20:00"
       }
     ],
-    "history_14_days": []
+    "history_14_days": [
+      {
+        "date": "2026-09-24",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 128,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 136,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-25",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 132,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 140,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-26",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 125,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 133,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-27",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 137,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 145,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-28",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 130,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 138,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-29",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 124,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 132,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-30",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 139,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 145,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-01",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 126,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 134,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-02",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 133,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 141,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-03",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 129,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 137,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-04",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 136,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 144,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-05",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 121,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 129,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-06",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 134,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 142,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      },
+      {
+        "date": "2026-10-07",
+        "readings": [
+          {
+            "type": "glucose",
+            "context": "fasting",
+            "value": 58,
+            "time": "07:30",
+            "reported_by": "patient"
+          },
+          {
+            "type": "glucose",
+            "context": "post_lunch",
+            "value": 132,
+            "time": "14:00",
+            "reported_by": "patient"
+          }
+        ],
+        "medication_logs": [
+          {
+            "time": "08:05",
+            "status": "taken",
+            "drug": "Vildagliptin 50mg"
+          },
+          {
+            "time": "20:10",
+            "status": "taken",
+            "drug": "Metformin 500mg"
+          }
+        ]
+      }
+    ]
   }
 ]
