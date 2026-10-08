@@ -18,7 +18,7 @@ interface LadderStep {
   badgeBg: string;
   icon: React.ElementType;
   title: string;
-  paragraphs: string[];
+  paragraph: string;
   highlights: string[];
   statsChip: {
     label: string;
@@ -40,15 +40,11 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
       badgeBg: 'var(--accent-sage-subtle)',
       icon: Heart,
       title: '19px High-Contrast Sanctuary with Marathi & Hindi Voice AI',
-      paragraphs: [
-        'Traditional healthcare apps are built for tech-savvy millennials, leaving Indian elders overwhelmed by tiny fonts, complex navigation menus, and constant English tech jargon. Diabeto Senior Sanctuary reimagines digital diabetes care from the ground up with a 19px high-contrast tactile design created specifically for seniors with arthritis, low vision, and tremors.',
-        'Seniors simply speak naturally in Marathi, Hindi, or English—whether via WhatsApp voice note or our one-touch microphone. Sarvam AI and Gemini transcribe the speech, parse the glucose reading (e.g. "माझा आजचा शुगर ११८ आहे"), and automatically classify fasting versus post-meal readings without requiring typing. An instant 1-tap SOS button dispatches urgent location-pinned alerts directly to family members and emergency responders.',
-      ],
+      paragraph: 'Built specifically for seniors with arthritis, low vision, and tremors. Speak naturally in Marathi, Hindi, or English—Sarvam AI and Gemini transcribe readings and log fasting vs. post-meal records automatically.',
       highlights: [
-        '19px High-Contrast Senior Typography with tactile buttons',
+        '19px High-Contrast Senior UI & tactile action buttons',
         'Sarvam AI Marathi & Hindi speech-to-text voice logging',
-        'Automatic fasting vs. postprandial contextual categorization',
-        '1-Tap SOS emergency family broadcast with GPS coordination',
+        '1-Tap SOS instant family emergency alert dispatch',
       ],
       statsChip: {
         label: 'Live Senior Sensor',
@@ -66,21 +62,17 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
       badgeColor: 'var(--status-ok)',
       badgeBg: 'var(--status-ok-bg)',
       icon: Stethoscope,
-      title: 'Continuous Glycemic TIR Analytics & 1-Click Verification Sign-Off',
-      paragraphs: [
-        'Endocrinologists frequently struggle with incomplete or inaccurate handwritten paper diaries. Diabeto transforms fragmented glucose measurements into clinical-grade glycemic analytics, automatically calculating Time-in-Range (TIR > 70%), Time-Above-Range (TAR), and Time-Below-Range (TBR) alongside glycemic variability (CV%) and Mean Absolute Deviation (MAD).',
-        'Our clinical decision support engine proactively flags nocturnal hypoglycemia risks and multi-day glycemic instability before they turn critical. At the end of each week, clinicians receive an AI-prepared 7-day clinical summary with longitudinal highlights, allowing Dr. Mehta to review, modify dosage recommendations, and apply an authenticated digital verification signature in under 30 seconds.',
-      ],
+      title: 'Continuous Glycemic TIR Analytics & 1-Click Verification',
+      paragraph: 'Converts daily readings into clinical Time-in-Range (TIR > 70%), TAR, and TBR metrics with automated nocturnal hypoglycemia alerts and 1-click MD verification.',
       highlights: [
-        'Real-time Time-in-Range (TIR / TAR / TBR) ambulatory analytics',
+        'Real-time TIR, TAR, and TBR ambulatory analytics',
         'Nocturnal hypoglycemia early warning risk detection',
-        'Automated 7-day comprehensive summary preparation',
-        'One-click clinician digital signature with immutable audit logs',
+        '1-Click authenticated 7-day clinical sign-off',
       ],
       statsChip: {
         label: 'Glycemic Time-in-Range',
         value: '82.4% TIR',
-        sub: 'Above Clinical Target (>70%) • Hypo Risk: Low (3.4%)',
+        sub: 'Above Target (>70%) • Hypo Risk: Low (3.4%)',
         statusColor: 'var(--status-ok)',
       },
       ctaLabel: 'Open Clinician EHR Desk',
@@ -93,21 +85,17 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
       badgeColor: 'var(--terracotta)',
       badgeBg: 'var(--surface-clay)',
       icon: Sparkles,
-      title: 'Human-in-the-Loop Nudge Queue with Regional Indian Nutrition',
-      paragraphs: [
-        'Generic lifestyle advice fails when it ignores Indian cultural realities—family celebrations, festival sweets (modak, gulab jamun), fasting days (Ekadashi, Navratri), and carbohydrate-rich staples like jowar bhakri, dal, and rice. Diabeto Coach Copilot equips care coordinators like Sister Kavita with an AI-assisted behavioral intervention engine.',
-        'Before any nudges or diet corrections reach the patient’s WhatsApp, they pass through a human-in-the-loop review queue. Coaches review recommendations with 90%+ confidence ratings, customize them to match family meal patterns, and verify that all nutritional guidance adheres to the prescribing doctor’s clinical constraints.',
-      ],
+      title: 'Human-in-the-Loop Nudges with Regional Indian Nutrition',
+      paragraph: 'AI-assisted behavioral nudge queue adapted to regional Indian diets, festival feasts, and fasting rituals—fully verified by care coordinators before delivery.',
       highlights: [
-        'Human-in-the-loop WhatsApp nudge approval workspace',
-        'Cultural Indian cuisine & festival fasting guardrails',
-        'Personalized post-meal micro-intervention timing (10-min walks)',
-        'Doctor-supervised adherence and medication tracking',
+        'Human-in-the-loop WhatsApp nudge approval queue',
+        'Cultural Indian diet & festival fasting guardrails',
+        'Doctor-supervised adherence & medication tracking',
       ],
       statsChip: {
         label: 'Coach Copilot Queue',
         value: '94% Match',
-        sub: 'Marathi Regional Diet Prompt • Doctor Supervised',
+        sub: 'Regional Diet Prompt • Doctor Supervised',
         statusColor: 'var(--terracotta)',
       },
       ctaLabel: 'View Coach Copilot Desk',
@@ -120,16 +108,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
       badgeColor: 'var(--text-forest)',
       badgeBg: 'var(--surface-clay)',
       icon: HeartHandshake,
-      title: 'Real-Time Peace of Mind for Sons & Daughters Everywhere',
-      paragraphs: [
-        'For adult children living away from aging parents, the chronic anxiety of a sudden hypoglycemic event or missed medication is constant. The Diabeto Family Portal provides daughter Ananya with a continuous peace-of-mind status dashboard showing whether morning fasting sugar was taken, breakfast was logged, and medications were confirmed.',
-        'If a critical glucose threshold is crossed, Diabeto triggers a multi-tier escalation: Tier 1 alerts the senior via voice reminder; Tier 2 notifies the caregiver with WhatsApp and SMS telemetry; Tier 3 escalates to the clinic and emergency contacts. Granular consent controls guarantee full transparency while respecting parental independence.',
-      ],
+      title: 'Real-Time Peace of Mind for Sons & Daughters',
+      paragraph: 'Live peace-of-mind dashboard tracking morning fasting checks and meals. Automated multi-tier escalation dispatches voice, SMS, and WhatsApp alerts if risks arise.',
       highlights: [
-        'Live Peace-of-Mind Status Badge (Fasting sugar & meals confirmed)',
-        'Multi-Tier automated escalation protocols for hypo/hyper risks',
-        'Direct 1-tap bridge to Dr. Mehta and Sister Kavita',
-        'Granular privacy and health data consent management',
+        'Daily peace-of-mind fasting & meal status checks',
+        'Multi-tier automated hypo/hyper risk escalation',
+        'Direct 1-tap connection to clinician and care coach',
       ],
       statsChip: {
         label: 'Family Safety Status',
@@ -220,43 +204,43 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
       <section style={{
         maxWidth: '1240px',
         margin: '0 auto',
-        padding: '100px 32px 120px',
+        padding: '70px 24px 90px',
         position: 'relative',
         zIndex: 10,
       }}>
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.7 }}
-          style={{ textAlign: 'center', marginBottom: '90px', maxWidth: '820px', margin: '0 auto 90px' }}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 60px' }}
         >
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '6px 16px',
+            padding: '5px 14px',
             borderRadius: '20px',
             background: 'var(--accent-sage-subtle)',
             border: '1px solid var(--accent-sage-border)',
-            fontSize: '0.78rem',
+            fontSize: '0.76rem',
             fontWeight: 700,
             color: 'var(--text-forest)',
-            marginBottom: '18px',
+            marginBottom: '14px',
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
           }}>
-            <Activity size={14} color="var(--status-ok)" />
+            <Activity size={13} color="var(--status-ok)" />
             <span>The Connected Senior Care Ladder</span>
           </div>
 
-          <h2 className="font-serif" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.4rem)', fontWeight: 700, color: 'var(--text-forest)', letterSpacing: '-0.025em', margin: 0, lineHeight: 1.16 }}>
+          <h2 className="font-serif" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, color: 'var(--text-forest)', letterSpacing: '-0.025em', margin: 0, lineHeight: 1.18 }}>
             Engineered for Indian Elders.<br />Trusted by Endocrinologists.
           </h2>
 
-          <p style={{ fontSize: '1.08rem', color: 'var(--text-muted)', lineHeight: 1.65, marginTop: '18px', marginBottom: 0 }}>
-            Follow the journey: from senior-friendly voice interaction at home to real-time doctor sign-offs, coach diet nudges, and family peace of mind.
+          <p style={{ fontSize: '1rem', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: '14px', marginBottom: 0 }}>
+            From senior voice interaction at home to real-time clinician sign-offs, coach diet nudges, and family peace of mind.
           </p>
         </motion.div>
 
@@ -266,8 +250,8 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
             className="hidden lg:block"
             style={{
               position: 'absolute',
-              top: '40px',
-              bottom: '40px',
+              top: '30px',
+              bottom: '30px',
               left: '50%',
               transform: 'translateX(-50%)',
               width: '2px',
@@ -278,7 +262,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
           />
 
           {/* Zigzag Staggered Blocks: Block 1 Left, Block 2 Right, Block 3 Left, Block 4 Right */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '80px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
             {ladderSteps.map((step, index) => {
               const isLeft = index % 2 === 0;
               const Icon = step.icon;
@@ -300,62 +284,62 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
                     style={{
                       position: 'absolute',
                       left: '50%',
-                      top: '44px',
+                      top: '36px',
                       transform: 'translate(-50%, -50%)',
-                      width: '28px',
-                      height: '28px',
+                      width: '24px',
+                      height: '24px',
                       borderRadius: '50%',
                       background: 'var(--surface-white)',
                       border: '3px solid var(--text-forest)',
-                      boxShadow: '0 0 14px rgba(45, 58, 49, 0.25)',
+                      boxShadow: '0 0 12px rgba(45, 58, 49, 0.2)',
                       alignItems: 'center',
                       justifyContent: 'center',
                       zIndex: 3,
                     }}
                   >
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: step.badgeColor }} />
+                    <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: step.badgeColor }} />
                   </div>
 
                   {/* Staggered Narrative Card (Occupies Left or Right) */}
                   <motion.div
-                    initial={{ opacity: 0, x: isLeft ? -50 : 50, y: 35 }}
+                    initial={{ opacity: 0, x: isLeft ? -40 : 40, y: 25 }}
                     whileInView={{ opacity: 1, x: 0, y: 0 }}
                     viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    transition={{ duration: 0.6, ease: 'easeOut' }}
                     style={{
                       width: '100%',
-                      maxWidth: '560px',
+                      maxWidth: '540px',
                       backgroundColor: 'var(--surface-white)',
-                      borderRadius: '26px',
+                      borderRadius: '22px',
                       border: '1px solid var(--border-stone)',
-                      padding: '38px 34px',
-                      boxShadow: 'var(--shadow-lg)',
+                      padding: '28px 26px',
+                      boxShadow: 'var(--shadow-md)',
                       position: 'relative',
                     }}
                   >
                     {/* Step Badge & Role Tag */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '14px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{
-                          fontSize: '0.8rem',
+                          fontSize: '0.76rem',
                           fontWeight: 800,
                           fontFamily: 'monospace',
                           color: '#FFFFFF',
                           background: 'var(--text-forest)',
-                          padding: '4px 9px',
-                          borderRadius: '8px',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
                         }}>
                           {step.stepNumber}
                         </span>
                         <span style={{
-                          fontSize: '0.72rem',
+                          fontSize: '0.7rem',
                           fontWeight: 700,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.06em',
+                          letterSpacing: '0.05em',
                           color: step.badgeColor,
                           background: step.badgeBg,
-                          padding: '4px 10px',
-                          borderRadius: '8px',
+                          padding: '3px 9px',
+                          borderRadius: '6px',
                           border: '1px solid var(--border-stone)',
                         }}>
                           {step.badge}
@@ -363,50 +347,46 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
                       </div>
 
                       <div style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '10px',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
                         background: 'var(--surface-clay)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: 'var(--text-forest)',
                       }}>
-                        <Icon size={18} />
+                        <Icon size={16} />
                       </div>
                     </div>
 
                     {/* Headline */}
-                    <h3 className="font-serif" style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-forest)', letterSpacing: '-0.02em', lineHeight: 1.25, margin: '0 0 18px' }}>
+                    <h3 className="font-serif" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-forest)', letterSpacing: '-0.02em', lineHeight: 1.25, margin: '0 0 12px' }}>
                       {step.title}
                     </h3>
 
-                    {/* Rich Narrative Paragraphs */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '22px' }}>
-                      {step.paragraphs.map((p, pIdx) => (
-                        <p key={pIdx} style={{ fontSize: '0.94rem', color: 'var(--text-muted)', lineHeight: 1.7, margin: 0 }}>
-                          {p}
-                        </p>
-                      ))}
-                    </div>
+                    {/* Crisp Narrative Paragraph */}
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 16px' }}>
+                      {step.paragraph}
+                    </p>
 
                     {/* Feature Checkmark Highlights */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', background: 'var(--surface-clay)', borderRadius: '16px', border: '1px solid var(--border-stone)', marginBottom: '22px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 14px', background: 'var(--surface-clay)', borderRadius: '14px', border: '1px solid var(--border-stone)', marginBottom: '16px' }}>
                       {step.highlights.map((item, hIdx) => (
-                        <div key={hIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.84rem', color: 'var(--text-forest)', fontWeight: 600, lineHeight: 1.4 }}>
-                          <CheckCircle2 size={16} color="var(--status-ok)" className="shrink-0" style={{ marginTop: '2px' }} />
+                        <div key={hIdx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', color: 'var(--text-forest)', fontWeight: 600, lineHeight: 1.3 }}>
+                          <CheckCircle2 size={15} color="var(--status-ok)" className="shrink-0" />
                           <span>{item}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Live Status Telemetry Chip */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--accent-sage-subtle)', borderRadius: '14px', border: '1px solid var(--accent-sage-border)', marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--accent-sage-subtle)', borderRadius: '12px', border: '1px solid var(--accent-sage-border)', marginBottom: '18px' }}>
                       <div>
-                        <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>{step.statsChip.label}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-forest)', fontWeight: 600 }}>{step.statsChip.sub}</div>
+                        <div style={{ fontSize: '0.64rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>{step.statsChip.label}</div>
+                        <div style={{ fontSize: '0.74rem', color: 'var(--text-forest)', fontWeight: 600 }}>{step.statsChip.sub}</div>
                       </div>
-                      <span style={{ fontSize: '1.05rem', fontWeight: 800, color: step.statsChip.statusColor, fontFamily: 'var(--font-serif)' }}>
+                      <span style={{ fontSize: '0.98rem', fontWeight: 800, color: step.statsChip.statusColor, fontFamily: 'var(--font-serif)' }}>
                         {step.statsChip.value}
                       </span>
                     </div>
@@ -420,12 +400,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
                         width: '100%',
                         background: 'var(--text-forest)',
                         color: '#FFFFFF',
-                        padding: '13px 24px',
-                        borderRadius: '16px',
+                        padding: '11px 20px',
+                        borderRadius: '14px',
                         border: 'none',
                         fontWeight: 700,
-                        fontSize: '0.88rem',
-                        boxShadow: 'var(--shadow-md)',
+                        fontSize: '0.84rem',
+                        boxShadow: 'var(--shadow-sm)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -433,7 +413,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
                       }}
                     >
                       <span>{step.ctaLabel}</span>
-                      <ArrowRight size={16} color="#FFFFFF" />
+                      <ArrowRight size={15} color="#FFFFFF" />
                     </button>
                   </motion.div>
                 </div>

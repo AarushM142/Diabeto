@@ -245,28 +245,25 @@ export function PulseFitHero({
           {children}
         </div>
       ) : (
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pt-10 pb-12">
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pt-16 md:pt-24 pb-14">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
             className="flex flex-col items-center text-center max-w-4xl"
-            style={{ gap: "24px" }}
+            style={{ gap: "28px" }}
           >
-            {/* Top Verified Clinic Pill */}
-
-
             {/* Title with Serif Editorial Typography */}
             <h1
               className="font-serif"
               style={{
                 fontWeight: 700,
                 fontSize: "clamp(2.3rem, 5vw, 3.8rem)",
-                lineHeight: "1.15",
+                lineHeight: "1.16",
                 color: "var(--text-forest)",
                 letterSpacing: "-0.025em",
                 margin: 0,
-                maxWidth: "860px",
+                maxWidth: "880px",
               }}
             >
               {title}
@@ -275,10 +272,10 @@ export function PulseFitHero({
             {/* Subtitle */}
             <p
               style={{
-                fontSize: "clamp(0.95rem, 1.8vw, 1.15rem)",
+                fontSize: "clamp(0.98rem, 1.8vw, 1.15rem)",
                 lineHeight: "1.65",
                 color: "var(--text-muted)",
-                maxWidth: "680px",
+                maxWidth: "700px",
                 margin: 0,
               }}
             >
@@ -291,7 +288,7 @@ export function PulseFitHero({
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="flex flex-col sm:flex-row items-center gap-4 mt-2"
+                className="flex flex-col sm:flex-row items-center gap-4 mt-3"
               >
                 {primaryAction && (
                   <button
@@ -353,6 +350,7 @@ export function PulseFitHero({
                   color: "var(--text-dim)",
                   fontStyle: "italic",
                   margin: 0,
+                  marginTop: "4px",
                 }}
               >
                 {disclaimer}
@@ -365,7 +363,7 @@ export function PulseFitHero({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.55 }}
-                className="flex flex-row items-center justify-center gap-3 pt-2"
+                className="flex flex-row items-center justify-center gap-3 pt-3"
               >
                 <div className="flex flex-row -space-x-2">
                   {socialProof.avatars.map((avatar, index) => (
@@ -409,8 +407,8 @@ export function PulseFitHero({
           transition={{ duration: 0.8, delay: 0.65 }}
           className="relative z-10 w-full overflow-hidden"
           style={{
-            paddingTop: "24px",
-            paddingBottom: "48px",
+            paddingTop: "48px",
+            paddingBottom: "56px",
           }}
         >
           {/* Gradient Overlays */}
