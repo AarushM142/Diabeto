@@ -14,6 +14,7 @@ import { Phone, Type, LogOut } from 'lucide-react';
 import { t } from './lib/i18n';
 
 import { supabase } from './lib/supabase';
+import { RoleSelectModal } from './components/RoleSelectModal';
 
 interface LoadingState {
   message: string;
@@ -21,17 +22,24 @@ interface LoadingState {
   targetAction: () => void;
 }
 
+interface PendingGoogleUser {
+  email: string;
+  name: string;
+  avatar?: string;
+}
+
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => api.getCurrentUser());
   const [unauthView, setUnauthView] = useState<'hero' | 'login'>('hero');
   const [preferredRole, setPreferredRole] = useState<UserRole | undefined>(undefined);
+  const [pendingGoogleUser, setPendingGoogleUser] = useState<PendingGoogleUser | null>(null);
   
   const [activeTab, setActiveTab] = useState<ActiveTab>('patient');
   const [language, setLanguage] = useState<Language>('en');
   const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState(false);
 
-  // 1.5-second Loading Animation State
+  // 1.0-second Loading Animation State
   const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
 
   // Set default tab based on user's role upon login
@@ -65,26 +73,36 @@ export const App: React.FC = () => {
   // Handle Supabase OAuth Redirect Callback
   useEffect(() => {
     const processSession = async (session: any) => {
-      if (session?.user) {
+      if (session?.user && !currentUser) {
         const email = session.user.email || 'user@gmail.com';
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || email.split('@')[0];
         const avatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
-        const role = (localStorage.getItem('diabeto_oauth_role') as UserRole) || 'clinician';
         
-        try {
-          const res = await api.googleAuth(email, name, role);
-          if (avatar && res.user) {
-            res.user.avatar = avatar;
+        // Check if role was pre-selected
+        const preSelectedRole = localStorage.getItem('diabeto_oauth_role') as UserRole | null;
+        
+        // Clean up URL hash after OAuth redirect
+        if (window.location.hash || window.location.search) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        if (preSelectedRole) {
+          // If role was explicitly pre-selected, authenticate directly
+          try {
+            const res = await api.googleAuth(email, name, preSelectedRole);
+            if (avatar && res.user) {
+              res.user.avatar = avatar;
+            }
+            setCurrentUser(res.user);
+            applyRoleDefaultTab(res.user.role);
+            localStorage.removeItem('diabeto_oauth_role');
+          } catch (e) {
+            console.error('Failed to authenticate Google user:', e);
+            setPendingGoogleUser({ email, name, avatar });
           }
-          setCurrentUser(res.user);
-          applyRoleDefaultTab(res.user.role);
-          
-          // Clean up URL hash after OAuth redirect
-          if (window.location.hash || window.location.search) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        } catch (e) {
-          console.error('Failed to sync Supabase Google user with backend:', e);
+        } else {
+          // Prompt user to select their role in dedicated onboarding screen
+          setPendingGoogleUser({ email, name, avatar });
         }
       }
     };
@@ -106,7 +124,29 @@ export const App: React.FC = () => {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [currentUser]);
+
+  const handleRoleSelected = async (role: UserRole) => {
+    if (!pendingGoogleUser) return;
+    
+    triggerTransition(
+      `Personalizing ${role.toUpperCase()} Sanctuary...`,
+      `Setting up verified dashboard for ${pendingGoogleUser.name}`,
+      async () => {
+        try {
+          const res = await api.googleAuth(pendingGoogleUser.email, pendingGoogleUser.name, role);
+          if (pendingGoogleUser.avatar && res.user) {
+            res.user.avatar = pendingGoogleUser.avatar;
+          }
+          setCurrentUser(res.user);
+          applyRoleDefaultTab(res.user.role);
+          setPendingGoogleUser(null);
+        } catch (e) {
+          console.error('Failed to complete role onboarding:', e);
+        }
+      }
+    );
+  };
 
   // Periodic Backend Health Check
   useEffect(() => {
@@ -219,7 +259,12 @@ export const App: React.FC = () => {
       )}
 
       {/* Main App Content */}
-      {!currentUser ? (
+      {pendingGoogleUser ? (
+        <RoleSelectModal
+          user={pendingGoogleUser}
+          onSelectRole={handleRoleSelected}
+        />
+      ) : !currentUser ? (
         unauthView === 'login' ? (
           <LoginView
             onLoginSuccess={handleLoginSuccess}
