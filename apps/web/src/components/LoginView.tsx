@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { 
   Shield, Stethoscope, Sparkles, HeartHandshake, Heart, 
-  ArrowRight, ArrowLeft, CheckCircle2, Building, AlertCircle, X, User as UserIcon
+  ArrowRight, ArrowLeft, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { api, type User, type UserRole } from '../api/client';
-import { AuthForm, GoogleIcon } from './ui/sign-in';
+import { AuthForm } from './ui/sign-in';
+import { signInWithGoogleOAuth } from '../lib/supabase';
 
 interface LoginViewProps {
   onLoginSuccess: (user: User) => void;
@@ -21,8 +22,6 @@ interface DemoRole {
   icon: React.ElementType;
   badge: string;
   badgeColor: string;
-  description: string;
-  clinic: string;
 }
 
 const DEMO_ROLES: DemoRole[] = [
@@ -35,8 +34,6 @@ const DEMO_ROLES: DemoRole[] = [
     icon: Stethoscope,
     badge: 'MD Gated Portal',
     badgeColor: 'var(--status-ok)',
-    description: 'EHR Glycemic Dashboard, Clinical Summaries Verification, TIR/TAR/TBR Analytics & Prescriptions',
-    clinic: 'Pune Central Diabetes Clinic',
   },
   {
     role: 'coach',
@@ -47,8 +44,6 @@ const DEMO_ROLES: DemoRole[] = [
     icon: Sparkles,
     badge: 'Care Specialist',
     badgeColor: 'var(--terracotta)',
-    description: 'WhatsApp Nudge Approval Queue, Dietary & Lifestyle Interventions, Patient Protocol Tracking',
-    clinic: 'Pune Central Diabetes Clinic',
   },
   {
     role: 'caregiver',
@@ -59,8 +54,6 @@ const DEMO_ROLES: DemoRole[] = [
     icon: HeartHandshake,
     badge: 'Family Portal',
     badgeColor: 'var(--text-forest)',
-    description: 'Peace-of-Mind Live Status, Real-Time Emergency Escalation, Consent & Glucose Transparency',
-    clinic: 'Linked: Ramesh Kulkarni',
   },
   {
     role: 'patient',
@@ -71,8 +64,6 @@ const DEMO_ROLES: DemoRole[] = [
     icon: Heart,
     badge: 'Senior Sanctuary',
     badgeColor: 'var(--accent-sage)',
-    description: '19px High-Contrast Glucose Logging, Hindi/Marathi/English Guidance, 1-Tap Doctor Booking',
-    clinic: 'Pune Central Patient #pt_001',
   },
   {
     role: 'admin',
@@ -83,25 +74,16 @@ const DEMO_ROLES: DemoRole[] = [
     icon: Shield,
     badge: 'Admin Audit',
     badgeColor: 'var(--accent-sage-dark)',
-    description: 'System Audit Trail, Cross-Role Oversight, Patient Onboarding, Compliance Verification',
-    clinic: 'Pune Central Clinic Admin',
   },
 ];
 
 export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, initialRole }) => {
-  const [activeTab, setActiveTab] = useState<'quick' | 'auth'>('auth');
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup' | 'demo'>('signin');
   const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole || 'clinician');
   
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Google OAuth Interactive Modal State
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [googleMode, setGoogleMode] = useState<'choose' | 'custom'>('choose');
-  const [googleEmail, setGoogleEmail] = useState('arh2007144@gmail.com');
-  const [googleName, setGoogleName] = useState('Aarush Kulkarni');
-  const [googleRole, setGoogleRole] = useState<UserRole>(initialRole || 'clinician');
 
   const handleQuickLogin = async (demoRole: DemoRole) => {
     try {
@@ -116,27 +98,16 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
     }
   };
 
-  const executeGoogleAuth = async (email: string, name: string, role: UserRole) => {
+  const handleGoogleOAuth = async () => {
     try {
-      setLoading(true);
+      setGoogleLoading(true);
       setError(null);
-      const res = await api.googleAuth(email, name, role);
-      setShowGoogleModal(false);
-      onLoginSuccess(res.user);
+      await signInWithGoogleOAuth(selectedRole);
     } catch (err: any) {
-      setError(err.message || 'Google authentication failed');
-    } finally {
-      setLoading(false);
+      console.error('Supabase Google OAuth error:', err);
+      setError(err.message || 'Google authorization failed. Please check your Supabase Auth settings.');
+      setGoogleLoading(false);
     }
-  };
-
-  const handleGoogleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!googleEmail) {
-      setError('Please enter your Google account email');
-      return;
-    }
-    await executeGoogleAuth(googleEmail, googleName || googleEmail.split('@')[0], googleRole);
   };
 
   return (
@@ -153,323 +124,17 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
       {/* Paper grain backdrop */}
       <div className="paper-grain-overlay" aria-hidden="true" />
 
-      {/* Google OAuth Modal */}
-      {showGoogleModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(5px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '16px',
-        }}>
-          <div style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: '24px',
-            width: '100%',
-            maxWidth: '440px',
-            padding: '32px 28px',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            position: 'relative',
-            border: '1px solid #E5E7EB',
-          }}>
-            <button
-              type="button"
-              onClick={() => setShowGoogleModal(false)}
-              style={{
-                position: 'absolute',
-                right: '18px',
-                top: '18px',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#6B7280',
-                padding: '4px',
-              }}
-            >
-              <X size={20} />
-            </button>
-
-            <div style={{ textAlign: 'center', marginBottom: '22px' }}>
-              <div style={{
-                display: 'inline-flex',
-                padding: '12px',
-                borderRadius: '50%',
-                backgroundColor: '#F3F4F6',
-                marginBottom: '12px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-              }}>
-                <GoogleIcon style={{ width: '30px', height: '30px' }} />
-              </div>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#111827', margin: '0 0 6px', fontFamily: 'var(--font-sans)' }}>
-                Sign in with Google
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: '#6B7280', margin: 0 }}>
-                Choose an account to continue to <strong style={{ color: 'var(--text-forest)' }}>Diabeto Care</strong>
-              </p>
-            </div>
-
-            {googleMode === 'choose' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {/* Detected / Primary Google Account */}
-                <button
-                  type="button"
-                  onClick={() => executeGoogleAuth(googleEmail, googleName, googleRole)}
-                  disabled={loading}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    padding: '14px 16px',
-                    borderRadius: '16px',
-                    border: '1px solid #E5E7EB',
-                    backgroundColor: '#FFFFFF',
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.18s ease',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#F9FAFB';
-                    e.currentTarget.style.borderColor = '#4285F4';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#FFFFFF';
-                    e.currentTarget.style.borderColor = '#E5E7EB';
-                  }}
-                >
-                  <div style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '50%',
-                    backgroundColor: '#4285F4',
-                    color: '#FFFFFF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    flexShrink: 0,
-                  }}>
-                    {googleName.charAt(0).toUpperCase()}
-                  </div>
-
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#111827' }}>
-                        {googleName}
-                      </span>
-                      <span style={{
-                        fontSize: '0.65rem',
-                        fontWeight: 700,
-                        padding: '1px 6px',
-                        borderRadius: '4px',
-                        backgroundColor: 'var(--accent-sage-subtle)',
-                        color: 'var(--text-forest)',
-                      }}>
-                        {googleRole.toUpperCase()}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: '#6B7280', marginTop: '2px' }}>
-                      {googleEmail}
-                    </div>
-                  </div>
-
-                  <ArrowRight size={16} color="#9CA3AF" />
-                </button>
-
-                {/* Switch to Custom Account Input Form */}
-                <button
-                  type="button"
-                  onClick={() => setGoogleMode('custom')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px 16px',
-                    borderRadius: '14px',
-                    border: '1px dashed #D1D5DB',
-                    backgroundColor: 'transparent',
-                    cursor: 'pointer',
-                    color: '#4B5563',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    justifyContent: 'center',
-                    marginTop: '4px',
-                  }}
-                >
-                  <UserIcon size={16} />
-                  <span>Use another Google account</span>
-                </button>
-
-                {/* Role Picker for Quick Account */}
-                <div style={{ marginTop: '8px', padding: '10px 12px', backgroundColor: 'var(--surface-clay)', borderRadius: '12px' }}>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-forest)', marginBottom: '4px' }}>
-                    Signing in as Healthcare Role:
-                  </label>
-                  <select
-                    value={googleRole}
-                    onChange={(e) => setGoogleRole(e.target.value as UserRole)}
-                    style={{
-                      width: '100%',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-stone)',
-                      fontSize: '0.82rem',
-                      backgroundColor: '#FFFFFF',
-                      color: 'var(--text-forest)',
-                      fontWeight: 600,
-                      outline: 'none',
-                    }}
-                  >
-                    <option value="clinician">🩺 Clinician (Doctor / Endocrinologist)</option>
-                    <option value="coach">🌿 Health Coach (Sister Kavita)</option>
-                    <option value="caregiver">👧 Family Caregiver (Daughter / Son)</option>
-                    <option value="patient">👴 Senior Patient (Sanctuary)</option>
-                    <option value="admin">🏢 Clinic Administrator Desk</option>
-                  </select>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleGoogleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
-                    Google Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={googleEmail}
-                    onChange={(e) => setGoogleEmail(e.target.value)}
-                    placeholder="e.g. arh2007144@gmail.com"
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '12px',
-                      border: '1px solid #D1D5DB',
-                      fontSize: '0.88rem',
-                      backgroundColor: '#F9FAFB',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    value={googleName}
-                    onChange={(e) => setGoogleName(e.target.value)}
-                    placeholder="e.g. Aarush Kulkarni"
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '12px',
-                      border: '1px solid #D1D5DB',
-                      fontSize: '0.88rem',
-                      backgroundColor: '#F9FAFB',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
-                    Select Healthcare Role
-                  </label>
-                  <select
-                    value={googleRole}
-                    onChange={(e) => setGoogleRole(e.target.value as UserRole)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      borderRadius: '12px',
-                      border: '1px solid #D1D5DB',
-                      fontSize: '0.85rem',
-                      backgroundColor: '#F9FAFB',
-                      color: '#111827',
-                      fontWeight: 600,
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <option value="clinician">🩺 Clinician (Doctor / Endocrinologist)</option>
-                    <option value="coach">🌿 Health Coach (Sister Kavita)</option>
-                    <option value="caregiver">👧 Family Caregiver (Daughter / Son)</option>
-                    <option value="patient">👴 Senior Patient (Sanctuary)</option>
-                    <option value="admin">🏢 Clinic Administrator Desk</option>
-                  </select>
-                </div>
-
-                <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
-                  <button
-                    type="button"
-                    onClick={() => setGoogleMode('choose')}
-                    style={{
-                      flex: 1,
-                      padding: '10px',
-                      borderRadius: '12px',
-                      border: '1px solid #D1D5DB',
-                      backgroundColor: 'transparent',
-                      color: '#4B5563',
-                      fontWeight: 600,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                      flex: 2,
-                      padding: '10px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      backgroundColor: '#4285F4',
-                      color: '#FFFFFF',
-                      fontWeight: 700,
-                      fontSize: '0.88rem',
-                      cursor: loading ? 'not-allowed' : 'pointer',
-                      boxShadow: '0 2px 8px rgba(66, 133, 244, 0.3)',
-                    }}
-                  >
-                    {loading ? 'Signing in...' : 'Sign In with Google'}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            <div style={{ marginTop: '20px', paddingTop: '14px', borderTop: '1px solid #F3F4F6', fontSize: '0.72rem', color: '#9CA3AF', textAlign: 'center', lineHeight: 1.4 }}>
-              To continue, Google will share your name, email address, language preference, and profile picture with Diabeto.
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Container Card */}
+      {/* Main Clean Card */}
       <div style={{
         position: 'relative',
         zIndex: 10,
         width: '100%',
-        maxWidth: '480px',
+        maxWidth: '420px',
         backgroundColor: 'var(--surface-white)',
-        borderRadius: '24px',
+        borderRadius: '20px',
         border: '1px solid var(--border-stone)',
         boxShadow: 'var(--shadow-lg)',
-        padding: '32px 28px',
+        padding: '28px 24px',
       }}>
         {onBack && (
           <button
@@ -479,62 +144,47 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '10px',
+              padding: '5px 10px',
+              borderRadius: '8px',
               border: '1px solid var(--border-stone)',
               backgroundColor: 'var(--surface-clay)',
               color: 'var(--text-forest)',
-              fontSize: '0.78rem',
+              fontSize: '0.75rem',
               fontWeight: 600,
               cursor: 'pointer',
-              marginBottom: '16px',
+              marginBottom: '14px',
             }}
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft size={13} />
             Back to Overview
           </button>
         )}
 
-        {/* Platform Header */}
-        <div style={{ textAlign: 'center', marginBottom: '22px' }}>
+        {/* Brand Header */}
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '14px',
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
             background: 'var(--accent-sage)',
             color: '#FFFFFF',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1.5rem',
+            fontSize: '1.4rem',
             fontFamily: 'var(--font-serif)',
             fontWeight: 700,
             boxShadow: 'var(--shadow-sm)',
-            marginBottom: '10px',
+            marginBottom: '8px',
           }}>
             d.
           </div>
-          <h1 className="font-serif" style={{ fontSize: '1.85rem', fontWeight: 700, color: 'var(--text-forest)', margin: 0, letterSpacing: '-0.02em' }}>
+          <h1 className="font-serif" style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-forest)', margin: 0, letterSpacing: '-0.02em' }}>
             diabeto.
           </h1>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginTop: '4px', marginBottom: 0 }}>
-            Role-Based Senior Diabetes Precision Care Platform
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '3px', marginBottom: 0 }}>
+            Senior Diabetes Precision Care Platform
           </p>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: 'var(--surface-clay)',
-            padding: '3px 10px',
-            borderRadius: '10px',
-            fontSize: '0.72rem',
-            color: 'var(--text-forest)',
-            fontWeight: 600,
-            marginTop: '8px',
-          }}>
-            <Building size={11} />
-            Pune Central Diabetes Network
-          </div>
         </div>
 
         {/* Error Notification */}
@@ -542,121 +192,156 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            gap: '8px',
             backgroundColor: 'var(--status-danger-bg)',
             border: '1px solid var(--status-danger-border)',
             color: 'var(--status-danger)',
-            padding: '10px 14px',
-            borderRadius: '12px',
-            fontSize: '0.82rem',
-            marginBottom: '18px',
+            padding: '10px 12px',
+            borderRadius: '10px',
+            fontSize: '0.8rem',
+            marginBottom: '16px',
           }}>
-            <AlertCircle size={16} className="shrink-0" />
-            <span>{error}</span>
+            <AlertCircle size={15} className="shrink-0" />
+            <span style={{ flex: 1 }}>{error}</span>
           </div>
         )}
 
-        {/* Tab Switcher */}
+        {/* 3-Way Minimal Tab Switcher */}
         <div style={{
           display: 'flex',
           backgroundColor: 'var(--surface-clay)',
-          padding: '4px',
-          borderRadius: '12px',
-          marginBottom: '20px',
+          padding: '3px',
+          borderRadius: '10px',
+          marginBottom: '18px',
+          gap: '2px',
         }}>
           <button
             type="button"
-            onClick={() => { setActiveTab('auth'); setError(null); }}
+            onClick={() => { setActiveTab('signin'); setError(null); }}
             style={{
               flex: 1,
-              padding: '9px 12px',
-              borderRadius: '9px',
+              padding: '7px 10px',
+              borderRadius: '8px',
               border: 'none',
-              background: activeTab === 'auth' ? 'var(--surface-white)' : 'transparent',
-              color: activeTab === 'auth' ? 'var(--text-forest)' : 'var(--text-muted)',
-              fontWeight: activeTab === 'auth' ? 700 : 500,
-              fontSize: '0.84rem',
+              background: activeTab === 'signin' ? 'var(--surface-white)' : 'transparent',
+              color: activeTab === 'signin' ? 'var(--text-forest)' : 'var(--text-muted)',
+              fontWeight: activeTab === 'signin' ? 700 : 500,
+              fontSize: '0.8rem',
               cursor: 'pointer',
-              boxShadow: activeTab === 'auth' ? 'var(--shadow-sm)' : 'none',
-              transition: 'all 0.2s ease',
+              boxShadow: activeTab === 'signin' ? 'var(--shadow-sm)' : 'none',
+              transition: 'all 0.15s ease',
             }}
           >
-            🔑 Google / Email Login
+            Sign In
           </button>
           <button
             type="button"
-            onClick={() => { setActiveTab('quick'); setError(null); }}
+            onClick={() => { setActiveTab('signup'); setError(null); }}
             style={{
               flex: 1,
-              padding: '9px 12px',
-              borderRadius: '9px',
+              padding: '7px 10px',
+              borderRadius: '8px',
               border: 'none',
-              background: activeTab === 'quick' ? 'var(--surface-white)' : 'transparent',
-              color: activeTab === 'quick' ? 'var(--text-forest)' : 'var(--text-muted)',
-              fontWeight: activeTab === 'quick' ? 700 : 500,
-              fontSize: '0.84rem',
+              background: activeTab === 'signup' ? 'var(--surface-white)' : 'transparent',
+              color: activeTab === 'signup' ? 'var(--text-forest)' : 'var(--text-muted)',
+              fontWeight: activeTab === 'signup' ? 700 : 500,
+              fontSize: '0.8rem',
               cursor: 'pointer',
-              boxShadow: activeTab === 'quick' ? 'var(--shadow-sm)' : 'none',
-              transition: 'all 0.2s ease',
+              boxShadow: activeTab === 'signup' ? 'var(--shadow-sm)' : 'none',
+              transition: 'all 0.15s ease',
             }}
           >
-            ⚡ Quick Verified Roles
+            Sign Up
+          </button>
+          <button
+            type="button"
+            onClick={() => { setActiveTab('demo'); setError(null); }}
+            style={{
+              flex: 1,
+              padding: '7px 10px',
+              borderRadius: '8px',
+              border: 'none',
+              background: activeTab === 'demo' ? 'var(--surface-white)' : 'transparent',
+              color: activeTab === 'demo' ? 'var(--text-forest)' : 'var(--text-muted)',
+              fontWeight: activeTab === 'demo' ? 700 : 500,
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              boxShadow: activeTab === 'demo' ? 'var(--shadow-sm)' : 'none',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            ⚡ Demo Roles
           </button>
         </div>
 
-        {/* Tab 1: AuthForm (Google & Email Auth) */}
-        {activeTab === 'auth' && (
-          <div style={{ width: '100%' }}>
-            <AuthForm
-              isSignUp={isRegistering}
-              selectedRole={selectedRole}
-              loading={loading}
-              onRoleChange={(r) => setSelectedRole(r as UserRole)}
-              onToggleMode={() => {
-                setIsRegistering(!isRegistering);
+        {/* Tab 1: Sign In */}
+        {activeTab === 'signin' && (
+          <AuthForm
+            isSignUp={false}
+            selectedRole={selectedRole}
+            loading={loading}
+            googleLoading={googleLoading}
+            onRoleChange={(r) => setSelectedRole(r as UserRole)}
+            onToggleMode={() => {
+              setActiveTab('signup');
+              setError(null);
+            }}
+            onEmailSubmit={async (data) => {
+              try {
+                setLoading(true);
                 setError(null);
-              }}
-              onEmailSubmit={async (data) => {
-                try {
-                  setLoading(true);
-                  setError(null);
-                  const targetRole = (data.role as UserRole) || selectedRole;
-                  if (isRegistering) {
-                    const res = await api.signup(data.name || 'Healthcare User', data.email, data.password || 'password123', targetRole);
-                    onLoginSuccess(res.user);
-                  } else {
-                    const res = await api.login(data.email, data.password || 'password123', targetRole);
-                    onLoginSuccess(res.user);
-                  }
-                } catch (err: any) {
-                  setError(err.message || 'Authentication failed. Please check your credentials.');
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              onGoogleSignIn={() => {
-                setError(null);
-                setGoogleRole(selectedRole);
-                setShowGoogleModal(true);
-              }}
-              onEmailLink={() => {
-                setError(null);
-                alert('✨ Magic link dispatched to your email! Opening clinician session...');
-                api.login('dr.mehta@diabeto.care', 'password123', selectedRole).then(res => onLoginSuccess(res.user));
-              }}
-            />
-          </div>
+                const res = await api.login(data.email, data.password || 'password123', (data.role as UserRole) || selectedRole);
+                onLoginSuccess(res.user);
+              } catch (err: any) {
+                setError(err.message || 'Authentication failed. Please check your credentials.');
+              } finally {
+                setLoading(false);
+              }
+            }}
+            onGoogleSignIn={handleGoogleOAuth}
+            onForgotPassword={() => {
+              setError(null);
+              alert('✨ Password reset link dispatched to your email address.');
+            }}
+          />
         )}
 
-        {/* Tab 2: Quick Demo Roles */}
-        {activeTab === 'quick' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600 }}>
-              1-Click instant access to pre-configured persona dashboards:
+        {/* Tab 2: Sign Up */}
+        {activeTab === 'signup' && (
+          <AuthForm
+            isSignUp={true}
+            selectedRole={selectedRole}
+            loading={loading}
+            googleLoading={googleLoading}
+            onRoleChange={(r) => setSelectedRole(r as UserRole)}
+            onToggleMode={() => {
+              setActiveTab('signin');
+              setError(null);
+            }}
+            onEmailSubmit={async (data) => {
+              try {
+                setLoading(true);
+                setError(null);
+                const res = await api.signup(data.name || 'Healthcare User', data.email, data.password || 'password123', (data.role as UserRole) || selectedRole);
+                onLoginSuccess(res.user);
+              } catch (err: any) {
+                setError(err.message || 'Registration failed.');
+              } finally {
+                setLoading(false);
+              }
+            }}
+            onGoogleSignIn={handleGoogleOAuth}
+          />
+        )}
+
+        {/* Tab 3: Quick Demo Roles */}
+        {activeTab === 'demo' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600 }}>
+              1-Click instant access to persona dashboards:
             </div>
 
             {DEMO_ROLES.map((demo) => {
-              const Icon = demo.icon;
               return (
                 <button
                   key={demo.role}
@@ -666,14 +351,14 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px 14px',
-                    borderRadius: '14px',
+                    gap: '10px',
+                    padding: '10px 12px',
+                    borderRadius: '12px',
                     border: '1px solid var(--border-stone)',
                     backgroundColor: 'var(--surface-white)',
                     cursor: loading ? 'not-allowed' : 'pointer',
                     textAlign: 'left',
-                    transition: 'all 0.18s ease',
+                    transition: 'all 0.15s ease',
                     width: '100%',
                   }}
                   onMouseEnter={(e) => {
@@ -685,46 +370,28 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
                     e.currentTarget.style.borderColor = 'var(--border-stone)';
                   }}
                 >
-                  <div style={{ position: 'relative', width: '40px', height: '40px', flexShrink: 0 }}>
-                    <img
-                      src={demo.avatar}
-                      alt={demo.name}
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        border: '2px solid var(--surface-white)',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-                      }}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '-2px',
-                      right: '-2px',
-                      width: '16px',
-                      height: '16px',
+                  <img
+                    src={demo.avatar}
+                    alt={demo.name}
+                    style={{
+                      width: '36px',
+                      height: '36px',
                       borderRadius: '50%',
-                      background: 'var(--surface-white)',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                      <Icon size={10} color={demo.badgeColor} />
-                    </div>
-                  </div>
+                      objectFit: 'cover',
+                      flexShrink: 0,
+                    }}
+                  />
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-forest)' }}>
                         {demo.name}
                       </span>
                       <span style={{
-                        fontSize: '0.62rem',
+                        fontSize: '0.6rem',
                         fontWeight: 700,
-                        padding: '1px 6px',
-                        borderRadius: '5px',
+                        padding: '1px 5px',
+                        borderRadius: '4px',
                         background: 'var(--surface-clay)',
                         color: demo.badgeColor,
                         border: '1px solid var(--border-stone)',
@@ -732,44 +399,32 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
                         {demo.badge}
                       </span>
                     </div>
-
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {demo.title}
                     </div>
                   </div>
 
-                  <div style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    background: 'var(--surface-clay)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}>
-                    <ArrowRight size={14} color="var(--text-forest)" />
-                  </div>
+                  <ArrowRight size={14} color="var(--text-dim)" />
                 </button>
               );
             })}
           </div>
         )}
 
-        {/* Security / Compliance Footnote */}
+        {/* Clean Security Compliance Footnote */}
         <div style={{
-          marginTop: '22px',
-          paddingTop: '14px',
+          marginTop: '18px',
+          paddingTop: '12px',
           borderTop: '1px solid var(--border-stone)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '8px',
-          fontSize: '0.72rem',
+          gap: '6px',
+          fontSize: '0.7rem',
           color: 'var(--text-dim)',
         }}>
-          <CheckCircle2 size={13} color="var(--status-ok)" />
-          <span>Role-Based Access Control • HIPAA & Consent Enforced</span>
+          <CheckCircle2 size={12} color="var(--status-ok)" />
+          <span>ABDM & HIPAA Consent Compliant • Pune Central</span>
         </div>
       </div>
     </div>

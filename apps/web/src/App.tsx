@@ -13,6 +13,8 @@ import type { Language } from './lib/types';
 import { Phone, Type, LogOut } from 'lucide-react';
 import { t } from './lib/i18n';
 
+import { supabase } from './lib/supabase';
+
 interface LoadingState {
   message: string;
   subMessage?: string;
@@ -59,6 +61,33 @@ export const App: React.FC = () => {
       applyRoleDefaultTab(currentUser.role);
     }
   }, [currentUser?.role, currentUser?.id]);
+
+  // Handle Supabase OAuth Redirect Callback
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user && !currentUser) {
+        const email = session.user.email || 'user@gmail.com';
+        const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || email.split('@')[0];
+        const avatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
+        const role = (localStorage.getItem('diabeto_oauth_role') as UserRole) || 'clinician';
+        
+        try {
+          const res = await api.googleAuth(email, name, role);
+          if (avatar && res.user) {
+            res.user.avatar = avatar;
+          }
+          setCurrentUser(res.user);
+          applyRoleDefaultTab(res.user.role);
+        } catch (e) {
+          console.error('Failed to sync Supabase Google user with backend:', e);
+        }
+      }
+    });
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, [currentUser]);
 
   // Periodic Backend Health Check
   useEffect(() => {
@@ -135,6 +164,7 @@ export const App: React.FC = () => {
       'Clearing session credentials securely',
       () => {
         api.logout();
+        supabase.auth.signOut().catch(() => {});
         setCurrentUser(null);
         setUnauthView('hero');
       }

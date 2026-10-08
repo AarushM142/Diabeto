@@ -21,8 +21,8 @@ export default function AuthFormDemo() {
     console.log("Form submitted:", data)
   }
   
-  const handleEmailLink = () => {
-    console.log("Requesting email link...")
+  const handleForgotPassword = () => {
+    console.log("Requesting password reset...")
   }
 
   return (
@@ -30,7 +30,7 @@ export default function AuthFormDemo() {
         <AuthForm 
           onGoogleSignIn={handleGoogleSignIn}
           onEmailSubmit={handleEmailSubmit}
-          onEmailLink={handleEmailLink}
+          onForgotPassword={handleForgotPassword}
           className="shadow-xl"
         />
     </div>
