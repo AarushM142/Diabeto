@@ -6,6 +6,7 @@ from apps.api.app.modules.ingestion.router import router as ingestion_router
 from apps.api.app.modules.adherence.router import router as adherence_router
 from apps.api.app.modules.approvals.router import router as approvals_router
 from apps.api.app.modules.trend.router import router as trend_router
+from apps.api.app.modules.escalation.router import router as escalation_router
 from apps.api.app.channels.whatsapp import router as whatsapp_router
 
 app = FastAPI(
@@ -30,6 +31,7 @@ app.include_router(ingestion_router)
 app.include_router(adherence_router)
 app.include_router(approvals_router)
 app.include_router(trend_router)
+app.include_router(escalation_router)
 app.include_router(whatsapp_router)
 
 @app.get("/health", tags=["Health"])

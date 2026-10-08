@@ -27,10 +27,11 @@ class Settings(BaseSettings):
     GROQ_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
 
-    # WhatsApp Channel
+    # WhatsApp & Twilio IVR / Voice / SMS Channel
     TWILIO_ACCOUNT_SID: Optional[str] = None
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_WHATSAPP_NUMBER: Optional[str] = "whatsapp:+14155238886"
+    TWILIO_PHONE_NUMBER: Optional[str] = "+14155238886"
 
     META_WA_PHONE_NUMBER_ID: Optional[str] = None
     META_WA_ACCESS_TOKEN: Optional[str] = None
