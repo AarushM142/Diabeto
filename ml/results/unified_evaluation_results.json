@@ -1,0 +1,767 @@
+{
+  "lstm_overall": {
+    "rmse": 15.09,
+    "mae": 10.26,
+    "med_ae": 6.93,
+    "mape": 7.87,
+    "r2": 0.9263,
+    "bias": 1.4,
+    "pct_within_10": 65.1,
+    "pct_within_15": 79.6,
+    "pct_within_20": 87.0,
+    "pct_within_30": 94.2,
+    "sample_count": 68363
+  },
+  "persistence_overall": {
+    "rmse": 19.64,
+    "mae": 13.22,
+    "med_ae": 8.4,
+    "mape": 9.53,
+    "r2": 0.8753,
+    "bias": 0.18,
+    "pct_within_10": 56.1,
+    "pct_within_15": 70.0,
+    "pct_within_20": 78.9,
+    "pct_within_30": 89.0,
+    "sample_count": 68363
+  },
+  "improvement": {
+    "mae_improvement_mgdl": 2.96,
+    "mae_improvement_pct": 22.39,
+    "rmse_improvement_mgdl": 4.55,
+    "rmse_improvement_pct": 23.17,
+    "lstm_beats_persistence": true
+  },
+  "per_patient": {
+    "ohio_575": {
+      "lstm": {
+        "rmse": 21.43,
+        "mae": 14.88,
+        "med_ae": 10.34,
+        "mape": 12.11,
+        "r2": 0.8638,
+        "bias": 2.74,
+        "pct_within_10": 48.7,
+        "pct_within_15": 64.7,
+        "pct_within_20": 75.4,
+        "pct_within_30": 87.5,
+        "sample_count": 13056
+      },
+      "persistence": {
+        "rmse": 25.4,
+        "mae": 17.97,
+        "med_ae": 12.0,
+        "mape": 13.86,
+        "r2": 0.8087,
+        "bias": 0.8,
+        "pct_within_10": 45.2,
+        "pct_within_15": 57.8,
+        "pct_within_20": 67.1,
+        "pct_within_30": 81.1,
+        "sample_count": 13056
+      }
+    },
+    "shanghai_2001": {
+      "lstm": {
+        "rmse": 10.06,
+        "mae": 7.32,
+        "med_ae": 5.41,
+        "mape": 5.39,
+        "r2": 0.9063,
+        "bias": 1.31,
+        "pct_within_10": 75.4,
+        "pct_within_15": 88.6,
+        "pct_within_20": 94.4,
+        "pct_within_30": 98.5,
+        "sample_count": 7563
+      },
+      "persistence": {
+        "rmse": 14.55,
+        "mae": 10.61,
+        "med_ae": 7.68,
+        "mape": 7.59,
+        "r2": 0.804,
+        "bias": -0.06,
+        "pct_within_10": 59.5,
+        "pct_within_15": 76.8,
+        "pct_within_20": 85.7,
+        "pct_within_30": 94.5,
+        "sample_count": 7563
+      }
+    },
+    "shanghai_2002": {
+      "lstm": {
+        "rmse": 15.32,
+        "mae": 10.13,
+        "med_ae": 6.48,
+        "mape": 5.95,
+        "r2": 0.9344,
+        "bias": -1.99,
+        "pct_within_10": 66.0,
+        "pct_within_15": 80.3,
+        "pct_within_20": 87.5,
+        "pct_within_30": 94.1,
+        "sample_count": 1693
+      },
+      "persistence": {
+        "rmse": 22.88,
+        "mae": 15.16,
+        "med_ae": 9.72,
+        "mape": 8.79,
+        "r2": 0.8535,
+        "bias": 0.09,
+        "pct_within_10": 50.9,
+        "pct_within_15": 66.6,
+        "pct_within_20": 77.7,
+        "pct_within_30": 85.8,
+        "sample_count": 1693
+      }
+    },
+    "shanghai_2020": {
+      "lstm": {
+        "rmse": 15.32,
+        "mae": 10.32,
+        "med_ae": 6.77,
+        "mape": 7.37,
+        "r2": 0.8825,
+        "bias": 1.42,
+        "pct_within_10": 66.3,
+        "pct_within_15": 80.5,
+        "pct_within_20": 87.2,
+        "pct_within_30": 92.9,
+        "sample_count": 1597
+      },
+      "persistence": {
+        "rmse": 22.15,
+        "mae": 14.44,
+        "med_ae": 7.92,
+        "mape": 9.84,
+        "r2": 0.7545,
+        "bias": 0.14,
+        "pct_within_10": 55.9,
+        "pct_within_15": 67.9,
+        "pct_within_20": 76.5,
+        "pct_within_30": 86.1,
+        "sample_count": 1597
+      }
+    },
+    "shanghai_2021": {
+      "lstm": {
+        "rmse": 17.82,
+        "mae": 12.7,
+        "med_ae": 9.03,
+        "mape": 7.06,
+        "r2": 0.9334,
+        "bias": -3.79,
+        "pct_within_10": 54.4,
+        "pct_within_15": 70.5,
+        "pct_within_20": 80.4,
+        "pct_within_30": 91.5,
+        "sample_count": 3385
+      },
+      "persistence": {
+        "rmse": 23.95,
+        "mae": 17.01,
+        "med_ae": 11.76,
+        "mape": 9.67,
+        "r2": 0.8796,
+        "bias": 0.21,
+        "pct_within_10": 44.7,
+        "pct_within_15": 58.4,
+        "pct_within_20": 69.5,
+        "pct_within_30": 82.8,
+        "sample_count": 3385
+      }
+    },
+    "shanghai_2023": {
+      "lstm": {
+        "rmse": 14.74,
+        "mae": 10.71,
+        "med_ae": 7.69,
+        "mape": 6.64,
+        "r2": 0.8826,
+        "bias": -0.97,
+        "pct_within_10": 60.3,
+        "pct_within_15": 75.8,
+        "pct_within_20": 84.8,
+        "pct_within_30": 94.3,
+        "sample_count": 1583
+      },
+      "persistence": {
+        "rmse": 20.03,
+        "mae": 14.93,
+        "med_ae": 11.16,
+        "mape": 8.97,
+        "r2": 0.7832,
+        "bias": 0.35,
+        "pct_within_10": 45.8,
+        "pct_within_15": 62.1,
+        "pct_within_20": 74.2,
+        "pct_within_30": 87.6,
+        "sample_count": 1583
+      }
+    },
+    "shanghai_2029": {
+      "lstm": {
+        "rmse": 10.18,
+        "mae": 7.78,
+        "med_ae": 6.52,
+        "mape": 7.41,
+        "r2": 0.9242,
+        "bias": 3.51,
+        "pct_within_10": 72.9,
+        "pct_within_15": 90.9,
+        "pct_within_20": 95.4,
+        "pct_within_30": 98.4,
+        "sample_count": 2456
+      },
+      "persistence": {
+        "rmse": 13.04,
+        "mae": 8.86,
+        "med_ae": 5.88,
+        "mape": 7.35,
+        "r2": 0.8756,
+        "bias": 0.06,
+        "pct_within_10": 70.3,
+        "pct_within_15": 82.8,
+        "pct_within_20": 88.9,
+        "pct_within_30": 96.1,
+        "sample_count": 2456
+      }
+    },
+    "shanghai_2037": {
+      "lstm": {
+        "rmse": 13.32,
+        "mae": 9.05,
+        "med_ae": 5.73,
+        "mape": 6.96,
+        "r2": 0.8045,
+        "bias": 2.64,
+        "pct_within_10": 71.4,
+        "pct_within_15": 82.3,
+        "pct_within_20": 87.8,
+        "pct_within_30": 94.8,
+        "sample_count": 3994
+      },
+      "persistence": {
+        "rmse": 18.29,
+        "mae": 11.8,
+        "med_ae": 6.48,
+        "mape": 8.67,
+        "r2": 0.6315,
+        "bias": -0.06,
+        "pct_within_10": 63.0,
+        "pct_within_15": 74.3,
+        "pct_within_20": 82.0,
+        "pct_within_30": 89.1,
+        "sample_count": 3994
+      }
+    },
+    "shanghai_2052": {
+      "lstm": {
+        "rmse": 16.17,
+        "mae": 11.36,
+        "med_ae": 7.82,
+        "mape": 7.87,
+        "r2": 0.9118,
+        "bias": -0.33,
+        "pct_within_10": 60.0,
+        "pct_within_15": 74.7,
+        "pct_within_20": 83.8,
+        "pct_within_30": 92.9,
+        "sample_count": 3727
+      },
+      "persistence": {
+        "rmse": 25.87,
+        "mae": 18.11,
+        "med_ae": 12.24,
+        "mape": 11.7,
+        "r2": 0.7744,
+        "bias": -0.11,
+        "pct_within_10": 42.9,
+        "pct_within_15": 58.4,
+        "pct_within_20": 69.3,
+        "pct_within_30": 81.9,
+        "sample_count": 3727
+      }
+    },
+    "shanghai_2060": {
+      "lstm": {
+        "rmse": 8.6,
+        "mae": 6.3,
+        "med_ae": 4.95,
+        "mape": 6.85,
+        "r2": 0.9038,
+        "bias": 3.96,
+        "pct_within_10": 83.8,
+        "pct_within_15": 93.1,
+        "pct_within_20": 96.7,
+        "pct_within_30": 98.9,
+        "sample_count": 3980
+      },
+      "persistence": {
+        "rmse": 10.29,
+        "mae": 7.24,
+        "med_ae": 4.8,
+        "mape": 7.1,
+        "r2": 0.8623,
+        "bias": 0.02,
+        "pct_within_10": 75.2,
+        "pct_within_15": 87.8,
+        "pct_within_20": 93.6,
+        "pct_within_30": 98.1,
+        "sample_count": 3980
+      }
+    },
+    "shanghai_2074": {
+      "lstm": {
+        "rmse": 8.78,
+        "mae": 6.57,
+        "med_ae": 5.19,
+        "mape": 5.94,
+        "r2": 0.9332,
+        "bias": 3.05,
+        "pct_within_10": 81.1,
+        "pct_within_15": 93.1,
+        "pct_within_20": 96.7,
+        "pct_within_30": 99.1,
+        "sample_count": 6329
+      },
+      "persistence": {
+        "rmse": 11.9,
+        "mae": 7.6,
+        "med_ae": 4.68,
+        "mape": 6.31,
+        "r2": 0.8773,
+        "bias": -0.07,
+        "pct_within_10": 75.7,
+        "pct_within_15": 87.0,
+        "pct_within_20": 92.0,
+        "pct_within_30": 96.6,
+        "sample_count": 6329
+      }
+    },
+    "shanghai_2082": {
+      "lstm": {
+        "rmse": 11.88,
+        "mae": 8.3,
+        "med_ae": 5.67,
+        "mape": 6.06,
+        "r2": 0.8792,
+        "bias": 1.66,
+        "pct_within_10": 71.5,
+        "pct_within_15": 85.1,
+        "pct_within_20": 90.9,
+        "pct_within_30": 96.8,
+        "sample_count": 3121
+      },
+      "persistence": {
+        "rmse": 16.96,
+        "mae": 11.79,
+        "med_ae": 8.28,
+        "mape": 8.26,
+        "r2": 0.754,
+        "bias": 0.39,
+        "pct_within_10": 56.6,
+        "pct_within_15": 73.2,
+        "pct_within_20": 83.2,
+        "pct_within_30": 92.8,
+        "sample_count": 3121
+      }
+    },
+    "shanghai_2086": {
+      "lstm": {
+        "rmse": 13.33,
+        "mae": 9.8,
+        "med_ae": 7.46,
+        "mape": 6.57,
+        "r2": 0.9473,
+        "bias": -0.62,
+        "pct_within_10": 63.1,
+        "pct_within_15": 81.2,
+        "pct_within_20": 89.1,
+        "pct_within_30": 95.6,
+        "sample_count": 3995
+      },
+      "persistence": {
+        "rmse": 21.13,
+        "mae": 15.77,
+        "med_ae": 12.6,
+        "mape": 10.12,
+        "r2": 0.8675,
+        "bias": -0.05,
+        "pct_within_10": 42.6,
+        "pct_within_15": 58.8,
+        "pct_within_20": 71.5,
+        "pct_within_30": 87.0,
+        "sample_count": 3995
+      }
+    },
+    "shanghai_2087": {
+      "lstm": {
+        "rmse": 8.63,
+        "mae": 6.8,
+        "med_ae": 5.76,
+        "mape": 6.93,
+        "r2": 0.8508,
+        "bias": 4.43,
+        "pct_within_10": 79.8,
+        "pct_within_15": 93.2,
+        "pct_within_20": 97.4,
+        "pct_within_30": 99.6,
+        "sample_count": 3997
+      },
+      "persistence": {
+        "rmse": 10.48,
+        "mae": 7.33,
+        "med_ae": 5.04,
+        "mape": 6.93,
+        "r2": 0.7801,
+        "bias": 0.11,
+        "pct_within_10": 74.4,
+        "pct_within_15": 86.8,
+        "pct_within_20": 93.6,
+        "pct_within_30": 98.0,
+        "sample_count": 3997
+      }
+    },
+    "shanghai_2093": {
+      "lstm": {
+        "rmse": 13.03,
+        "mae": 9.91,
+        "med_ae": 7.83,
+        "mape": 9.91,
+        "r2": 0.7774,
+        "bias": 5.07,
+        "pct_within_10": 62.2,
+        "pct_within_15": 80.0,
+        "pct_within_20": 89.2,
+        "pct_within_30": 96.6,
+        "sample_count": 3998
+      },
+      "persistence": {
+        "rmse": 16.33,
+        "mae": 11.25,
+        "med_ae": 7.2,
+        "mape": 10.42,
+        "r2": 0.6502,
+        "bias": 0.02,
+        "pct_within_10": 61.1,
+        "pct_within_15": 74.4,
+        "pct_within_20": 82.0,
+        "pct_within_30": 91.8,
+        "sample_count": 3998
+      }
+    },
+    "shanghai_2095": {
+      "lstm": {
+        "rmse": 21.31,
+        "mae": 15.99,
+        "med_ae": 11.93,
+        "mape": 7.83,
+        "r2": 0.9105,
+        "bias": -7.21,
+        "pct_within_10": 43.0,
+        "pct_within_15": 58.9,
+        "pct_within_20": 70.3,
+        "pct_within_30": 84.7,
+        "sample_count": 3889
+      },
+      "persistence": {
+        "rmse": 24.49,
+        "mae": 18.3,
+        "med_ae": 14.4,
+        "mape": 9.12,
+        "r2": 0.8818,
+        "bias": 0.07,
+        "pct_within_10": 38.1,
+        "pct_within_15": 54.2,
+        "pct_within_20": 66.1,
+        "pct_within_30": 81.3,
+        "sample_count": 3889
+      }
+    }
+  },
+  "range_breakdown": {
+    "low_hypo_lt70": {
+      "lstm": {
+        "rmse": 18.61,
+        "mae": 14.41,
+        "med_ae": 11.83,
+        "mape": 25.13,
+        "r2": -5.0725,
+        "bias": 13.97,
+        "pct_within_10": 39.1,
+        "pct_within_15": 65.2,
+        "pct_within_20": 79.5,
+        "pct_within_30": 92.7,
+        "sample_count": 2191
+      },
+      "persistence": {
+        "rmse": 16.11,
+        "mae": 10.42,
+        "med_ae": 6.6,
+        "mape": 18.02,
+        "r2": -3.5479,
+        "bias": 6.76,
+        "pct_within_10": 66.2,
+        "pct_within_15": 78.9,
+        "pct_within_20": 85.4,
+        "pct_within_30": 94.1,
+        "sample_count": 2191
+      }
+    },
+    "target_normal_70_180": {
+      "lstm": {
+        "rmse": 12.67,
+        "mae": 8.78,
+        "med_ae": 6.2,
+        "mape": 7.49,
+        "r2": 0.7934,
+        "bias": 3.28,
+        "pct_within_10": 70.7,
+        "pct_within_15": 84.4,
+        "pct_within_20": 90.7,
+        "pct_within_30": 96.4,
+        "sample_count": 52518
+      },
+      "persistence": {
+        "rmse": 16.59,
+        "mae": 11.23,
+        "med_ae": 7.2,
+        "mape": 9.21,
+        "r2": 0.6457,
+        "bias": 1.35,
+        "pct_within_10": 61.2,
+        "pct_within_15": 75.3,
+        "pct_within_20": 83.5,
+        "pct_within_30": 92.3,
+        "sample_count": 52518
+      }
+    },
+    "high_hyper_gt180": {
+      "lstm": {
+        "rmse": 21.61,
+        "mae": 15.3,
+        "med_ae": 10.61,
+        "mape": 6.58,
+        "r2": 0.7484,
+        "bias": -7.83,
+        "pct_within_10": 47.7,
+        "pct_within_15": 63.3,
+        "pct_within_20": 73.8,
+        "pct_within_30": 86.1,
+        "sample_count": 13654
+      },
+      "persistence": {
+        "rmse": 28.81,
+        "mae": 21.29,
+        "med_ae": 16.0,
+        "mape": 9.4,
+        "r2": 0.5528,
+        "bias": -5.34,
+        "pct_within_10": 35.0,
+        "pct_within_15": 48.6,
+        "pct_within_20": 60.3,
+        "pct_within_30": 75.7,
+        "sample_count": 13654
+      }
+    }
+  },
+  "roc_breakdown": {
+    "rapidly_falling_lt_neg1_5": {
+      "lstm": {
+        "rmse": 28.92,
+        "mae": 20.7,
+        "med_ae": 15.93,
+        "mape": 16.41,
+        "r2": 0.7483,
+        "bias": 3.82,
+        "pct_within_10": 32.3,
+        "pct_within_15": 47.6,
+        "pct_within_20": 60.9,
+        "pct_within_30": 79.0,
+        "sample_count": 1751
+      },
+      "persistence": {
+        "rmse": 44.5,
+        "mae": 37.32,
+        "med_ae": 34.32,
+        "mape": 29.84,
+        "r2": 0.4041,
+        "bias": 30.68,
+        "pct_within_10": 12.0,
+        "pct_within_15": 18.3,
+        "pct_within_20": 25.2,
+        "pct_within_30": 42.8,
+        "sample_count": 1751
+      }
+    },
+    "stable_neg1_5_to_pos1_5": {
+      "lstm": {
+        "rmse": 13.52,
+        "mae": 9.44,
+        "med_ae": 6.62,
+        "mape": 7.46,
+        "r2": 0.9349,
+        "bias": 1.58,
+        "pct_within_10": 67.5,
+        "pct_within_15": 82.0,
+        "pct_within_20": 89.2,
+        "pct_within_30": 95.6,
+        "sample_count": 63967
+      },
+      "persistence": {
+        "rmse": 16.65,
+        "mae": 11.54,
+        "med_ae": 7.68,
+        "mape": 8.61,
+        "r2": 0.9013,
+        "bias": 0.73,
+        "pct_within_10": 59.1,
+        "pct_within_15": 73.6,
+        "pct_within_20": 82.6,
+        "pct_within_30": 92.3,
+        "sample_count": 63967
+      }
+    },
+    "rapidly_rising_gt_pos1_5": {
+      "lstm": {
+        "rmse": 30.16,
+        "mae": 23.3,
+        "med_ae": 19.35,
+        "mape": 12.35,
+        "r2": 0.7713,
+        "bias": -4.5,
+        "pct_within_10": 28.1,
+        "pct_within_15": 41.1,
+        "pct_within_20": 51.6,
+        "pct_within_30": 69.8,
+        "sample_count": 2645
+      },
+      "persistence": {
+        "rmse": 44.18,
+        "mae": 37.66,
+        "med_ae": 36.0,
+        "mape": 18.3,
+        "r2": 0.5093,
+        "bias": -33.2,
+        "pct_within_10": 13.2,
+        "pct_within_15": 19.2,
+        "pct_within_20": 25.9,
+        "pct_within_30": 40.7,
+        "sample_count": 2645
+      }
+    }
+  },
+  "cohort_breakdown": {
+    "ohio_t1d": {
+      "lstm": {
+        "rmse": 21.43,
+        "mae": 14.88,
+        "med_ae": 10.34,
+        "mape": 12.11,
+        "r2": 0.8638,
+        "bias": 2.74,
+        "pct_within_10": 48.7,
+        "pct_within_15": 64.7,
+        "pct_within_20": 75.4,
+        "pct_within_30": 87.5,
+        "sample_count": 13056
+      },
+      "persistence": {
+        "rmse": 25.4,
+        "mae": 17.97,
+        "med_ae": 12.0,
+        "mape": 13.86,
+        "r2": 0.8087,
+        "bias": 0.8,
+        "pct_within_10": 45.2,
+        "pct_within_15": 57.8,
+        "pct_within_20": 67.1,
+        "pct_within_30": 81.1,
+        "sample_count": 13056
+      },
+      "patient_count": 1
+    },
+    "shanghai_t2d": {
+      "lstm": {
+        "rmse": 13.15,
+        "mae": 9.17,
+        "med_ae": 6.42,
+        "mape": 6.87,
+        "r2": 0.9428,
+        "bias": 1.09,
+        "pct_within_10": 68.9,
+        "pct_within_15": 83.1,
+        "pct_within_20": 89.7,
+        "pct_within_30": 95.8,
+        "sample_count": 55307
+      },
+      "persistence": {
+        "rmse": 18.01,
+        "mae": 12.09,
+        "med_ae": 7.56,
+        "mape": 8.51,
+        "r2": 0.8928,
+        "bias": 0.04,
+        "pct_within_10": 58.7,
+        "pct_within_15": 72.9,
+        "pct_within_20": 81.7,
+        "pct_within_30": 90.9,
+        "sample_count": 55307
+      },
+      "patient_count": 15
+    }
+  },
+  "multi_horizon": {
+    "15_min (+3 steps)": {
+      "horizon_minutes": 15,
+      "lstm_rmse": 9.3,
+      "lstm_mae": 6.34,
+      "lstm_r2": 0.9721,
+      "persist_rmse": 10.89,
+      "persist_mae": 7.18,
+      "persist_r2": 0.9618,
+      "sample_count": 68675
+    },
+    "30_min (+6 steps)": {
+      "horizon_minutes": 30,
+      "lstm_rmse": 15.09,
+      "lstm_mae": 10.26,
+      "lstm_r2": 0.9263,
+      "persist_rmse": 19.64,
+      "persist_mae": 13.22,
+      "persist_r2": 0.8753,
+      "sample_count": 68363
+    },
+    "45_min (+9 steps)": {
+      "horizon_minutes": 45,
+      "lstm_rmse": 22.09,
+      "lstm_mae": 15.08,
+      "lstm_r2": 0.8416,
+      "persist_rmse": 26.9,
+      "persist_mae": 18.24,
+      "persist_r2": 0.7652,
+      "sample_count": 68051
+    },
+    "60_min (+12 steps)": {
+      "horizon_minutes": 60,
+      "lstm_rmse": 28.29,
+      "lstm_mae": 19.33,
+      "lstm_r2": 0.7395,
+      "persist_rmse": 32.98,
+      "persist_mae": 22.54,
+      "persist_r2": 0.6459,
+      "sample_count": 67739
+    }
+  },
+  "dataset_split": {
+    "n_train_patients": 74,
+    "n_val_patients": 16,
+    "n_test_patients": 16,
+    "n_train_samples": 278850,
+    "n_val_samples": 69067,
+    "n_test_samples": 68363
+  }
+}
