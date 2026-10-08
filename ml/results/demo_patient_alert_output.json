@@ -1,15 +1,80 @@
 {
+  "pipeline_stages": {
+    "stage1_model1_forecast": {
+      "t_plus_15m": 84.52677917480469,
+      "t_plus_30m": 85.01303100585938,
+      "t_plus_45m": 85.39797973632812,
+      "t_plus_60m": 85.67150115966797
+    },
+    "stage2_model2_risk": {
+      "hypoglycemia_probability_pct": 92.72208199346554,
+      "in_range_probability_pct": 7.252092066355299,
+      "hyperglycemia_probability_pct": 0.02582594017917059
+    },
+    "stage3_model3_decision": {
+      "severity": "WARNING",
+      "risk_category": "HYPOGLYCEMIA",
+      "current_glucose": 84.0,
+      "trend_rate_of_change_mgdl_min": -0.8,
+      "trend_descriptor": "Falling (\u2193)",
+      "predicted_glucose_30min": 85.0,
+      "trajectory_forecast": {
+        "plus_15min": 84.5,
+        "plus_30min": 85.0,
+        "plus_45min": 85.4,
+        "plus_60min": 85.7,
+        "trajectory_min": 84.5,
+        "trajectory_max": 85.7
+      },
+      "model2_risk_probabilities": {
+        "hypoglycemia_pct": 92.7,
+        "in_range_pct": 7.3,
+        "hyperglycemia_pct": 0.0
+      },
+      "patient_thresholds_applied": {
+        "critical_low": 70.0,
+        "low": 80.0,
+        "high": 180.0,
+        "critical_high": 250.0,
+        "threshold_involved": 80.0
+      },
+      "reason": "Model 2 flags high trajectory hypoglycemia risk (93%) due to rapid downward rate of change (-0.8 mg/dL/min), though current glucose (84 mg/dL) is above threshold.",
+      "recommended_actions": [
+        "1. Check your blood glucose with a meter.",
+        "2. Prepare a light snack if feeling hungry or shaky.",
+        "3. Recheck glucose in 20-30 minutes.",
+        "4. Avoid strenuous physical exertion until levels stabilize."
+      ],
+      "caregiver_escalation": {
+        "notification_required": true,
+        "status": "simulated",
+        "recipient_name": "Rohit Kulkarni",
+        "recipient_phone": "+919822222222",
+        "channel": "WhatsApp"
+      },
+      "clinician_escalation": {
+        "escalation_required": false,
+        "status": "simulated",
+        "doctor_name": "Dr. Arvind Mehta",
+        "doctor_phone": "+919811111111",
+        "protocol": "Standard Care Protocol"
+      },
+      "safety_disclaimer": "Diabeto is a decision support tool and never autonomously prescribes medication, insulin doses, or diagnostic determinations."
+    }
+  },
   "patient_info": {
     "id": "pt_ramesh_001",
     "name": "Ramesh Kulkarni",
     "age": 68,
     "caregiver": "Rohit Kulkarni",
-    "caregiver_phone": "+919822222222",
     "doctor": "Dr. Arvind Mehta"
   },
   "telemetry": {
     "current_glucose": 84.0,
-    "recent_rate_of_change_mgdl_min": -0.8,
+    "roc_5min": -0.8,
+    "roc_15min": -0.6666666666666666,
+    "roc_30min": -0.8,
+    "std_60min": 18.818578720092773,
     "trend_descriptor": "Falling (\u2193)",
     "history_60m": [
       142.0,
@@ -26,35 +91,54 @@
       84.0
     ]
   },
-  "model1_forecast": {
-    "t_plus_15m": 84.5,
-    "t_plus_30m": 85.0,
-    "t_plus_45m": 85.4,
-    "t_plus_60m": 85.7
-  },
-  "model2_risk": {
-    "risk_category": "HIGH_HYPOGLYCEMIA_RISK",
-    "severity": "CRITICAL_URGENT",
-    "hypoglycemia_probability_pct": 92.7,
-    "in_range_probability_pct": 7.3,
-    "hyperglycemia_probability_pct": 0.0
-  },
-  "thresholds_applied": {
-    "critical_low": 70,
-    "low": 80,
-    "high": 180,
-    "critical_high": 250
-  },
-  "clinical_decision_support": {
-    "alert_title": "[CRITICAL ALERT] IMPENDING HYPOGLYCEMIA",
-    "caregiver_notified": true,
-    "clinician_escalated": false,
-    "action_recommendations": [
-      "1. Immediately check glucose with a fingerstick blood glucose meter.",
-      "2. Have 15 grams of fast-acting carbohydrate (e.g., 1/2 cup fruit juice, 4 glucose tabs, or 3 tsp sugar in water).",
-      "3. Rest safely and recheck glucose in exactly 15 minutes (Rule of 15).",
-      "4. Caregiver has been automatically alerted via WhatsApp.",
-      "[Safety Rule]: Do NOT self-administer insulin or delay treatment."
-    ]
+  "decision": {
+    "severity": "WARNING",
+    "risk_category": "HYPOGLYCEMIA",
+    "current_glucose": 84.0,
+    "trend_rate_of_change_mgdl_min": -0.8,
+    "trend_descriptor": "Falling (\u2193)",
+    "predicted_glucose_30min": 85.0,
+    "trajectory_forecast": {
+      "plus_15min": 84.5,
+      "plus_30min": 85.0,
+      "plus_45min": 85.4,
+      "plus_60min": 85.7,
+      "trajectory_min": 84.5,
+      "trajectory_max": 85.7
+    },
+    "model2_risk_probabilities": {
+      "hypoglycemia_pct": 92.7,
+      "in_range_pct": 7.3,
+      "hyperglycemia_pct": 0.0
+    },
+    "patient_thresholds_applied": {
+      "critical_low": 70.0,
+      "low": 80.0,
+      "high": 180.0,
+      "critical_high": 250.0,
+      "threshold_involved": 80.0
+    },
+    "reason": "Model 2 flags high trajectory hypoglycemia risk (93%) due to rapid downward rate of change (-0.8 mg/dL/min), though current glucose (84 mg/dL) is above threshold.",
+    "recommended_actions": [
+      "1. Check your blood glucose with a meter.",
+      "2. Prepare a light snack if feeling hungry or shaky.",
+      "3. Recheck glucose in 20-30 minutes.",
+      "4. Avoid strenuous physical exertion until levels stabilize."
+    ],
+    "caregiver_escalation": {
+      "notification_required": true,
+      "status": "simulated",
+      "recipient_name": "Rohit Kulkarni",
+      "recipient_phone": "+919822222222",
+      "channel": "WhatsApp"
+    },
+    "clinician_escalation": {
+      "escalation_required": false,
+      "status": "simulated",
+      "doctor_name": "Dr. Arvind Mehta",
+      "doctor_phone": "+919811111111",
+      "protocol": "Standard Care Protocol"
+    },
+    "safety_disclaimer": "Diabeto is a decision support tool and never autonomously prescribes medication, insulin doses, or diagnostic determinations."
   }
 }
