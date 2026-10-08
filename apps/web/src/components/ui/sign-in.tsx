@@ -43,13 +43,31 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => {
 }
 
 export interface AuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
-  onEmailSubmit?: (data: { email: string; password?: string }) => void
+  title?: string
+  description?: string
+  isSignUp?: boolean
+  selectedRole?: string
+  onRoleChange?: (role: string) => void
+  onToggleMode?: () => void
+  onEmailSubmit?: (data: { email: string; password?: string; name?: string; role?: string }) => void
   onSocialSignIn?: (provider: 'google' | 'microsoft' | 'apple' | 'sso') => void
   onEmailLink?: () => void
 }
 
 const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
-  ({ className, onEmailSubmit, onSocialSignIn, onEmailLink, ...props }, ref) => {
+  ({ 
+    className, 
+    title,
+    description,
+    isSignUp = false,
+    selectedRole = 'clinician',
+    onRoleChange,
+    onToggleMode,
+    onEmailSubmit, 
+    onSocialSignIn, 
+    onEmailLink, 
+    ...props 
+  }, ref) => {
     const [showPassword, setShowPassword] = React.useState(false)
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -57,15 +75,20 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
       const formData = new FormData(event.currentTarget)
       const email = formData.get("email") as string
       const password = formData.get("password") as string
-      onEmailSubmit?.({ email, password })
+      const name = (formData.get("name") as string) || ''
+      onEmailSubmit?.({ email, password, name, role: selectedRole })
     }
 
     return (
       <Card ref={ref} className={cn("w-full max-w-md mx-auto", className)} {...props}>
         <CardHeader className="text-left">
-          <CardTitle className="text-2xl">Sign in with email</CardTitle>
+          <CardTitle className="text-2xl">
+            {title || (isSignUp ? "Create your account" : "Sign in with email")}
+          </CardTitle>
           <CardDescription>
-            Make a new doc to bring your words, data, and teams together. For free.
+            {description || (isSignUp 
+              ? "Join the Diabeto senior diabetes care network today." 
+              : "Access verified clinical dashboards, care protocols, and patient insights.")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -74,18 +97,18 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Sign in with</Label>
               <div className="grid grid-cols-4 gap-2">
-                <Button variant="outline" type="button" onClick={() => onSocialSignIn?.('google')}>
+                <Button variant="outline" type="button" onClick={() => onSocialSignIn?.('google')} title="Google">
                   <GoogleIcon className="size-4 fill-primary" />
                 </Button>
-                <Button variant="outline" type="button" onClick={() => onSocialSignIn?.('microsoft')}>
+                <Button variant="outline" type="button" onClick={() => onSocialSignIn?.('microsoft')} title="Microsoft">
                   <MicrosoftIcon className="size-4 fill-primary" />
                 </Button>
-                <Button variant="outline" type="button" onClick={() => onSocialSignIn?.('apple')}>
+                <Button variant="outline" type="button" onClick={() => onSocialSignIn?.('apple')} title="Apple">
                   <AppleIcon className="size-5" />
                 </Button>
-                <Button variant="outline" type="button" onClick={() => onSocialSignIn?.('sso')}>
+                <Button variant="outline" type="button" onClick={() => onSocialSignIn?.('sso')} title="Single Sign-On">
                   <KeyRound className="h-5 w-5" />
-                  <span className="ml-1.5">SSO</span>
+                  <span className="ml-1.5 text-xs font-semibold">SSO</span>
                 </Button>
               </div>
             </div>
@@ -102,6 +125,13 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
 
             {/* Email Form */}
             <form onSubmit={handleFormSubmit} className="space-y-4">
+              {isSignUp && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input id="name" name="name" type="text" placeholder="Dr. Rajesh Kulkarni" required />
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -109,10 +139,13 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
                   <Input id="email" name="email" type="email" placeholder="jdoe.mobbin@gmail.com" className="pl-9" required />
                 </div>
               </div>
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <a href="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</a>
+                  {!isSignUp && (
+                    <a href="#" className="text-sm font-medium text-primary hover:underline">Forgot password?</a>
+                  )}
                 </div>
                 <div className="relative">
                   <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -128,8 +161,41 @@ const AuthForm = React.forwardRef<HTMLDivElement, AuthFormProps>(
                   </Button>
                 </div>
               </div>
-              <Button type="submit" className="w-full">Sign In</Button>
+
+              {onRoleChange && (
+                <div className="space-y-2">
+                  <Label htmlFor="role">Account Role</Label>
+                  <select
+                    id="role"
+                    value={selectedRole}
+                    onChange={(e) => onRoleChange(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="clinician">🩺 Clinician (Doctor / Endocrinologist)</option>
+                    <option value="coach">🌿 Health Coach / Care Coordinator</option>
+                    <option value="caregiver">👧 Family Caregiver</option>
+                    <option value="patient">👴 Senior Patient (Sanctuary)</option>
+                    <option value="admin">🏢 Clinic Administrator</option>
+                  </select>
+                </div>
+              )}
+
+              <Button type="submit" className="w-full">
+                {isSignUp ? "Create Account & Sign In" : "Sign In"}
+              </Button>
             </form>
+
+            {onToggleMode && (
+              <div className="text-center pt-1">
+                <button
+                  type="button"
+                  onClick={onToggleMode}
+                  className="text-xs text-primary underline hover:opacity-80 transition-opacity bg-transparent border-none cursor-pointer"
+                >
+                  {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign up for free"}
+                </button>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex-col items-start space-y-4">
