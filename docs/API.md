@@ -14,15 +14,21 @@
 * `GET /v1/approvals`: List pending coach recommendations.
 * `POST /v1/approvals/{id}/decision`: Record approval, edit, or rejection.
 
-### 4. Trends
-* `GET /v1/patients/{id}/trends?days=14`: Retrieve rolling glucose aggregates and summary stats.
+### 4. Trends & Analytics
+* `GET /v1/patients/{id}/trends?days=14`: Retrieve comprehensive ADA glycemic metrics (TIR%, TAR%, TBR%, Mean, Median, MAD, CV%, SD), context breakdown (fasting, postprandial), adherence score, and individual readings.
 
-### 5. Risk, Escalations & Thresholds
+### 5. Weekly Clinical Synthesis & Doctor Verification Gate
+* `POST /v1/patients/{id}/weekly-summary`: Generate an automated clinical weekly synthesis for a patient (defaults to `unverified`).
+* `GET /v1/patients/{id}/weekly-summary`: Fetch the latest weekly synthesis and verification status.
+* `POST /v1/patients/{id}/weekly-summary/verify`: Clinician sign-off gate. Marks summary as `verified`, attaches doctor notes, and records an immutable `audit_logs` entry.
+
+### 6. Risk, Escalations & Thresholds
 * `GET /v1/patients/{id}/risks`: List active risk events for a patient.
 * `POST /v1/escalations/{id}/ack`: Acknowledge an active risk event, stopping escalation timers.
 * `PUT /v1/patients/{id}/thresholds`: Update per-patient clinical thresholds and escalation timings (Clinician role only).
 
-### 6. Webhooks
+### 7. Webhooks
 * `GET /v1/webhooks/whatsapp`: Meta webhook handshake verification.
-* `POST /v1/webhooks/whatsapp`: Process inbound WhatsApp text/audio events.
+* `POST /v1/webhooks/whatsapp`: Process inbound WhatsApp text/audio events (supports TwiML XML instant response and Sarvam STT).
+
 

@@ -135,3 +135,59 @@ class PatientThresholdResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# Phase 5: Trend, Analytics & Weekly Summary Schemas
+class GlycemicMetrics(BaseModel):
+    total_readings: int
+    mean_glucose: float
+    median_glucose: float
+    mad_glucose: float
+    min_glucose: float
+    max_glucose: float
+    standard_deviation: float
+    coefficient_of_variation_pct: float
+    tir_percentage: float
+    tar_percentage: float
+    tbr_percentage: float
+    clinical_status: str
+
+class AdherenceMetrics(BaseModel):
+    active_medication_count: int
+    total_confirmed_doses: int
+    compliance_score_pct: float
+    readings_per_day: float
+    status: str
+
+class ReadingItem(BaseModel):
+    measured_at: datetime
+    mgdl: float
+    context: str
+
+class TrendAnalyticsResponse(BaseModel):
+    patient_id: str
+    days: int
+    glycemic_metrics: GlycemicMetrics
+    context_breakdowns: Dict[str, Any]
+    adherence_metrics: AdherenceMetrics
+    readings: List[ReadingItem]
+
+class WeeklySummaryResponse(BaseModel):
+    patient_id: str
+    patient_name: str
+    age: int
+    period_days: int
+    generated_at: str
+    status: str # unverified, verified
+    verified_by: Optional[str] = None
+    verified_at: Optional[str] = None
+    clinician_notes: Optional[str] = None
+    glycemic_metrics: GlycemicMetrics
+    context_breakdowns: Dict[str, Any]
+    adherence_metrics: AdherenceMetrics
+    risk_events_count: int
+    clinical_highlights: List[str]
+    doctor_action_recommendation: str
+
+class VerifyWeeklySummaryRequest(BaseModel):
+    notes: Optional[str] = None
+
+

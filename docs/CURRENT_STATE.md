@@ -1,6 +1,6 @@
 # Current Project State
 
-## Status: Phase 4 Complete ✅
+## Status: Phase 5 Complete ✅
 
 ### What Is Built:
 
@@ -42,11 +42,31 @@
   - 34 pytest unit tests (`tests/test_risk_escalation.py`, `tests/test_risk_engine.py`, `tests/test_guardrails.py`, `tests/test_phase3_pipeline.py`).
   - Live pipeline integration script (`scripts/test_phase4_live.py`).
 
+#### Phase 5 — Trends, Analytics & Clinician Synthesis Engine ✅
+- Clinical ADA Glycemic Metrics Engine (`apps/api/app/modules/trend/analytics.py`):
+  - Time-in-Range (TIR %), Time-Above-Range (TAR %), Time-Below-Range (TBR %).
+  - Mean, Median, Median Absolute Deviation (MAD), Standard Deviation, Coefficient of Variation (CV%).
+  - Contextual glucose breakdowns (fasting, postprandial, bedtime, random).
+  - Medication & logging adherence scoring (7d/14d compliance %).
+- Automated Weekly Clinical Synthesis Generator (`apps/api/app/modules/trend/weekly_summary.py`):
+  - Structured, bulleted clinical highlights for physicians.
+  - Doctor action recommendations based on glycemic status.
+- Clinician-in-the-Loop Sign-Off Gate (`POST /v1/patients/{id}/weekly-summary/verify`):
+  - Role-protected verification endpoint (`clinician`/`doctor`/`admin`).
+  - Immutable audit trail recording (`audit_logs` table).
+- Phase 5 API Endpoints:
+  - `GET /v1/patients/{id}/trends?days=14`
+  - `POST /v1/patients/{id}/weekly-summary`
+  - `GET /v1/patients/{id}/weekly-summary`
+  - `POST /v1/patients/{id}/weekly-summary/verify`
+- Test suites:
+  - 42 total passing pytest unit & integration tests (`tests/test_trends_analytics.py`).
+  - Live Supabase execution script (`scripts/test_phase5_live.py`).
+
 ### Known Limitations & Setup:
 - Live WhatsApp testing: Recipient joined to Twilio Sandbox and webhook configured via local tunnel (`/v1/webhooks/whatsapp`).
 - Groq / Gemini & Sarvam API keys configured in `.env`.
 
 ### Next Steps:
-- **Phase 5:** Trends & Analytical rollups (rolling aggregates, median/MAD baselines).
 - **Phase 6 & 7:** Web portals (Next.js Clinician & Coach UI in `apps/web`).
 
