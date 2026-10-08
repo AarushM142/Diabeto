@@ -1,0 +1,168 @@
+{
+  "info": {
+    "name": "Diabeto API Test Suite",
+    "_postman_id": "diabeto-api-collection-v1",
+    "description": "API requests for testing FastAPI Ingestion, Patient Management, Rules, and Approvals.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health & Webhooks",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "WhatsApp Inbound Webhook (Text)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"object\": \"whatsapp_business_account\",\n  \"entry\": [{\n    \"id\": \"WHATSAPP_BUSINESS_ACCOUNT_ID\",\n    \"changes\": [{\n      \"value\": {\n        \"messaging_product\": \"whatsapp\",\n        \"metadata\": {\"display_phone_number\": \"919800000001\", \"phone_number_id\": \"123456\"},\n        \"contacts\": [{\"profile\": {\"name\": \"Ramesh Kulkarni\"}, \"wa_id\": \"919800000001\"}],\n        \"messages\": [{\n          \"from\": \"919800000001\",\n          \"id\": \"wamid.HBgLMTEyMjMzNDQ1NQ==\",\n          \"timestamp\": \"1728400000\",\n          \"text\": {\"body\": \"Fasting sugar 125\"},\n          \"type\": \"text\"\n        }]\n      },\n      \"field\": \"messages\"\n    }]\n  }]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/webhooks/whatsapp",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "webhooks", "whatsapp"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Patients & Events",
+      "item": [
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ramesh Kulkarni\",\n  \"phone\": \"+919800000001\",\n  \"clinic_id\": \"clinic_pune_01\",\n  \"language\": \"mr\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/patients",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "patients"]
+            }
+          }
+        },
+        {
+          "name": "Log Normal Glucose Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"glucose\",\n  \"value\": {\n    \"mgdl\": 120,\n    \"context\": \"fasting\"\n  },\n  \"measured_at\": \"2026-10-08T08:00:00Z\",\n  \"reported_by\": \"patient\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/patients/pt_ramesh_001/events",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "patients", "pt_ramesh_001", "events"]
+            }
+          }
+        },
+        {
+          "name": "Log High Risk Glucose Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"glucose\",\n  \"value\": {\n    \"mgdl\": 290,\n    \"context\": \"post_dinner\"\n  },\n  \"measured_at\": \"2026-10-08T21:00:00Z\",\n  \"reported_by\": \"patient\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/patients/pt_shanti_002/events",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "patients", "pt_shanti_002", "events"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Approvals & Trends",
+      "item": [
+        {
+          "name": "Get Pending Approvals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/v1/approvals",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "approvals"]
+            }
+          }
+        },
+        {
+          "name": "Post Approval Decision",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\",\n  \"feedback\": \"Looks good for the patient.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/v1/approvals/rec_12345/decision",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["v1", "approvals", "rec_12345", "decision"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

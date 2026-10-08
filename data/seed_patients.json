@@ -1,0 +1,155 @@
+[
+  {
+    "patient_id": "pt_ramesh_001",
+    "name": "Ramesh Kulkarni",
+    "age": 68,
+    "gender": "male",
+    "language": "mr",
+    "phone": "+919800000001",
+    "clinic_id": "clinic_pune_central",
+    "clinician_of_record": {
+      "doctor_id": "doc_mehta_101",
+      "name": "Dr. Arvind Mehta",
+      "phone": "+919811111111"
+    },
+    "caregivers": [
+      {
+        "caregiver_id": "cg_rohit_201",
+        "name": "Rohit Kulkarni",
+        "relationship": "son",
+        "phone": "+919822222222",
+        "permissions": {
+          "view_adherence": true,
+          "view_alerts": true,
+          "view_raw_glucose": false,
+          "can_log_on_behalf": true
+        }
+      }
+    ],
+    "thresholds": {
+      "critical_low": 70,
+      "low": 80,
+      "high": 180,
+      "critical_high": 250
+    },
+    "medications": [
+      {
+        "drug_name": "Metformin",
+        "dosage": "500mg",
+        "instructions": "After breakfast",
+        "scheduled_time": "08:30"
+      },
+      {
+        "drug_name": "Metformin",
+        "dosage": "500mg",
+        "instructions": "After dinner",
+        "scheduled_time": "20:30"
+      }
+    ],
+    "history_14_days": [
+      {
+        "date": "2026-09-24",
+        "readings": [
+          { "type": "glucose", "context": "fasting", "value": 112, "time": "07:30", "reported_by": "patient" },
+          { "type": "glucose", "context": "post_lunch", "value": 148, "time": "14:15", "reported_by": "patient" }
+        ],
+        "medication_logs": [
+          { "time": "08:35", "status": "taken", "drug": "Metformin 500mg" },
+          { "time": "20:40", "status": "taken", "drug": "Metformin 500mg" }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_id": "pt_shanti_002",
+    "name": "Shanti Sharma",
+    "age": 72,
+    "gender": "female",
+    "language": "hi",
+    "phone": "+919800000002",
+    "clinic_id": "clinic_pune_central",
+    "clinician_of_record": {
+      "doctor_id": "doc_mehta_101",
+      "name": "Dr. Arvind Mehta",
+      "phone": "+919811111111"
+    },
+    "caregivers": [
+      {
+        "caregiver_id": "cg_pooja_202",
+        "name": "Pooja Sharma",
+        "relationship": "daughter",
+        "phone": "+919833333333",
+        "permissions": {
+          "view_adherence": true,
+          "view_alerts": true,
+          "view_raw_glucose": true,
+          "can_log_on_behalf": true
+        }
+      }
+    ],
+    "thresholds": {
+      "critical_low": 70,
+      "low": 90,
+      "high": 200,
+      "critical_high": 260
+    },
+    "medications": [
+      {
+        "drug_name": "Metformin",
+        "dosage": "1000mg",
+        "instructions": "After breakfast",
+        "scheduled_time": "08:00"
+      },
+      {
+        "drug_name": "Glimepiride",
+        "dosage": "1mg",
+        "instructions": "After dinner",
+        "scheduled_time": "20:00"
+      }
+    ],
+    "history_14_days": []
+  },
+  {
+    "patient_id": "pt_ananya_003",
+    "name": "Ananya Sen",
+    "age": 75,
+    "gender": "female",
+    "language": "en",
+    "phone": "+919800000003",
+    "clinic_id": "clinic_pune_central",
+    "clinician_of_record": {
+      "doctor_id": "doc_mehta_101",
+      "name": "Dr. Arvind Mehta",
+      "phone": "+919811111111"
+    },
+    "caregivers": [
+      {
+        "caregiver_id": "cg_amit_203",
+        "name": "Amit Sen",
+        "relationship": "son",
+        "phone": "+919844444444",
+        "permissions": {
+          "view_adherence": true,
+          "view_alerts": true,
+          "view_raw_glucose": true,
+          "can_log_on_behalf": true
+        }
+      }
+    ],
+    "thresholds": {
+      "critical_low": 70,
+      "low": 80,
+      "high": 180,
+      "critical_high": 250
+    },
+    "medications": [
+      {
+        "drug_name": "Vildagliptin",
+        "dosage": "50mg",
+        "instructions": "Morning",
+        "scheduled_time": "08:00"
+      }
+    ],
+    "history_14_days": []
+  }
+]
