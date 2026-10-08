@@ -72,10 +72,15 @@ async def get_patient_trends(
     contexts = calculate_context_breakdowns(events)
     adherence = calculate_adherence_metrics(events, schedules, days=days)
 
+    # Check consent masking for caregiver
+    user_role = user.get("role", "")
+    consent_flags = patient.consent_flags or {}
+    view_raw = consent_flags.get("view_raw_glucose", True)
+
     readings = [
         {
             "measured_at": e.measured_at,
-            "mgdl": float(e.value.get("mgdl", 0)),
+            "mgdl": float(e.value.get("mgdl", 0)) if (user_role != "caregiver" or view_raw) else 0.0,
             "context": str(e.value.get("context", "fasting")),
         }
         for e in events

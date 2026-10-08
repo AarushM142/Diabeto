@@ -6,9 +6,11 @@ import { api } from '../api/client';
 import type { Recommendation } from '../api/client';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
+import type { UserRole } from '../api/client';
 
 interface CoachPortalProps {
   language: Language;
+  currentRole?: UserRole;
 }
 
 const formatActionType = (raw: string): string => {
@@ -22,7 +24,7 @@ const formatActionType = (raw: string): string => {
   return map[raw] || raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
 
-export const CoachPortal: React.FC<CoachPortalProps> = ({ language }) => {
+export const CoachPortal: React.FC<CoachPortalProps> = ({ language, currentRole = 'coach' }) => {
   const [approvals, setApprovals] = useState<Recommendation[]>([]);
   const [selectedRecId, setSelectedRecId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +33,8 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language }) => {
   const [coachFeedback] = useState('Encouraging tone for senior.');
   const [actionInProgress, setActionInProgress] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const canReviewAndDispatch = currentRole === 'coach' || currentRole === 'clinician' || currentRole === 'admin';
 
   const fetchApprovals = async () => {
     setLoading(true);
@@ -112,8 +116,10 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language }) => {
         <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
           <button
             onClick={handleGenerateTestNudge}
+            disabled={!canReviewAndDispatch}
             className="btn btn-primary"
-            style={{ padding: '8px 18px' }}
+            style={{ padding: '8px 18px', opacity: canReviewAndDispatch ? 1 : 0.6 }}
+            title={!canReviewAndDispatch ? 'Coach authorization required' : undefined}
           >
             <Sparkles size={14} />
             {t('generateNudge', language)}
@@ -128,6 +134,13 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language }) => {
           </button>
         </div>
       </div>
+
+      {/* RBAC Notice if unauthorized */}
+      {!canReviewAndDispatch && (
+        <div className="botanical-callout warning" style={{ marginBottom: '24px' }}>
+          <strong>Restricted Access (Read-Only Mode):</strong> You are currently signed in with the <em>{currentRole}</em> persona. Only Diabetes Care Coaches, Clinicians, and Clinic Administrators are authorized to edit, approve, and dispatch clinical recommendations to seniors via WhatsApp.
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toastMessage && (
@@ -249,9 +262,10 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language }) => {
                 <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid var(--border-stone)', marginTop: 'auto' }}>
                   <button
                     onClick={() => handleDecision(selectedRec.id, 'rejected')}
-                    disabled={actionInProgress}
+                    disabled={actionInProgress || !canReviewAndDispatch}
                     className="btn btn-secondary btn-sm"
-                    style={{ flex: '1', color: 'var(--status-danger)', borderColor: 'var(--status-danger-border)', whiteSpace: 'nowrap' }}
+                    style={{ flex: '1', color: 'var(--status-danger)', borderColor: 'var(--status-danger-border)', whiteSpace: 'nowrap', opacity: canReviewAndDispatch ? 1 : 0.5 }}
+                    title={!canReviewAndDispatch ? 'Coach authorization required' : undefined}
                   >
                     <XCircle size={14} />
                     {t('reject', language)}
@@ -259,12 +273,13 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language }) => {
 
                   <button
                     onClick={() => handleDecision(selectedRec.id, isEditing ? 'edited' : 'approved')}
-                    disabled={actionInProgress}
+                    disabled={actionInProgress || !canReviewAndDispatch}
                     className="btn btn-primary"
-                    style={{ flex: '2', whiteSpace: 'nowrap', padding: '10px 16px' }}
+                    style={{ flex: '2', whiteSpace: 'nowrap', padding: '10px 16px', opacity: canReviewAndDispatch ? 1 : 0.5 }}
+                    title={!canReviewAndDispatch ? 'Coach authorization required' : undefined}
                   >
                     <Send size={14} />
-                    {isEditing ? 'Save & Send' : 'Approve & Send'}
+                    {!canReviewAndDispatch ? 'Coach Auth Required' : isEditing ? 'Save & Send' : 'Approve & Send'}
                   </button>
                 </div>
               </div>

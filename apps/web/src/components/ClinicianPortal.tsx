@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Activity, AlertOctagon, TrendingUp, 
-  Pill, FileText, UserCheck, RefreshCw, Award
+  Pill, FileText, UserCheck, RefreshCw, Award, Lock, ShieldCheck, History
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid 
 } from 'recharts';
-import { api } from '../api/client';
-import type { TrendAnalytics, WeeklySummary } from '../api/client';
+import { api, type TrendAnalytics, type WeeklySummary, type UserRole, type AuditLogItem } from '../api/client';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
 
 interface ClinicianPortalProps {
   language: Language;
+  currentRole: UserRole;
 }
 
 const DEMO_PATIENTS = [
@@ -21,15 +21,18 @@ const DEMO_PATIENTS = [
   { id: 'pt_ananya_003', name: 'Ananya Patil', age: 65, gender: 'F', language: 'Marathi', phone: '+91 9800000003', diagnosis: 'Type 2 Diabetes + Hypo Unawareness', severity: 'critical' },
 ];
 
-export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language }) => {
+export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, currentRole }) => {
   const [selectedPatientId, setSelectedPatientId] = useState('pt_ramesh_001');
   const [trends, setTrends] = useState<TrendAnalytics | null>(null);
   const [summary, setSummary] = useState<WeeklySummary | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
   const [doctorNotes, setDoctorNotes] = useState('Patient stable on current regimen. Continue daily fasting logs and morning Metformin.');
 
   const patient = DEMO_PATIENTS.find(p => p.id === selectedPatientId) || DEMO_PATIENTS[0];
+  const isAuthorizedDoctor = currentRole === 'clinician' || currentRole === 'admin';
 
   const fetchData = async () => {
     setLoading(true);
@@ -40,6 +43,10 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language }) =>
       ]);
       setTrends(trendData);
       setSummary(summaryData);
+      if (isAuthorizedDoctor) {
+        const logs = await api.getAuditLogs().catch(() => []);
+        setAuditLogs(logs);
+      }
     } catch (err) {
       console.error('Error loading patient data:', err);
     } finally {
@@ -49,13 +56,19 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language }) =>
 
   useEffect(() => {
     fetchData();
-  }, [selectedPatientId]);
+  }, [selectedPatientId, currentRole]);
 
   const handleVerifySummary = async () => {
+    if (!isAuthorizedDoctor) {
+      alert(`Forbidden: Active role '${currentRole.toUpperCase()}' cannot sign off on doctor summaries.`);
+      return;
+    }
     setVerifying(true);
     try {
       const updated = await api.verifyWeeklySummary(selectedPatientId, doctorNotes);
       setSummary(updated);
+      const logs = await api.getAuditLogs().catch(() => []);
+      setAuditLogs(logs);
     } catch (err) {
       alert('Verification failed: ' + err);
     } finally {
@@ -71,7 +84,35 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language }) =>
 
   return (
     <div style={{ padding: '36px 32px', maxWidth: '1440px', margin: '0 auto' }}>
-      {/* Patient Triage Roster Selector */}
+      {/* Role Authorization Banner */}
+      {!isAuthorizedDoctor && (
+        <div className="botanical-callout warn" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Lock size={18} color="var(--terracotta)" />
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-forest)' }}>
+              Viewing in Read-Only Mode as <strong>{currentRole.toUpperCase()}</strong>. Clinical verification and threshold modifications require <strong>CLINICIAN</strong> authorization.
+            </span>
+          </div>
+          <span className="status-pill warn">Read-Only View</span>
+        </div>
+      )}
+
+      {/* Patient Triage Roster Selector & Audit Toggle */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <h3 className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--text-forest)', margin: 0 }}>
+          Assigned Clinical Roster (Pune Central)
+        </h3>
+        {isAuthorizedDoctor && (
+          <button
+            onClick={() => setShowAuditLogs(!showAuditLogs)}
+            className="btn btn-secondary btn-sm"
+          >
+            <History size={14} />
+            {showAuditLogs ? 'Hide Audit Logs' : `Audit Trail (${auditLogs.length})`}
+          </button>
+        )}
+      </div>
+
       <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' }}>
         {DEMO_PATIENTS.map((p) => {
           const isSelected = p.id === selectedPatientId;
@@ -132,6 +173,34 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language }) =>
           );
         })}
       </div>
+
+      {/* Audit Log Drawer */}
+      {showAuditLogs && (
+        <div className="botanical-card" style={{ padding: '24px', marginBottom: '32px', background: 'var(--surface-clay)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+            <ShieldCheck size={20} color="var(--accent-sage-dark)" />
+            <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', margin: 0 }}>
+              Clinical Governance & Audit Trail
+            </h3>
+          </div>
+
+          <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {auditLogs.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No audit events recorded yet.</p>
+            ) : (
+              auditLogs.map((l) => (
+                <div key={l.id} style={{ background: 'var(--surface-white)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--border-stone)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
+                  <div>
+                    <strong style={{ color: 'var(--text-forest)' }}>{l.action}</strong> by <code>{l.actor_id}</code> ({l.actor_role})
+                    <span style={{ color: 'var(--text-muted)', marginLeft: '8px' }}>Target: {l.target_type} ({l.target_id})</span>
+                  </div>
+                  <span style={{ color: 'var(--text-dim)', fontSize: '0.72rem' }}>{new Date(l.created_at).toLocaleTimeString()}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -290,7 +359,7 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language }) =>
               </div>
             </div>
 
-            {/* Doctor Sign-Off Form */}
+            {/* Doctor Sign-Off Form with RBAC Check */}
             <div>
               <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>
                 {t('doctorNotes', language)}
@@ -299,8 +368,9 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language }) =>
                 className="textarea-botanical"
                 rows={2}
                 value={doctorNotes}
+                disabled={!isAuthorizedDoctor}
                 onChange={(e) => setDoctorNotes(e.target.value)}
-                style={{ fontSize: '0.85rem', marginBottom: '14px', resize: 'none' }}
+                style={{ fontSize: '0.85rem', marginBottom: '14px', resize: 'none', opacity: isAuthorizedDoctor ? 1 : 0.7 }}
               />
 
               {summary?.status === 'verified' ? (
@@ -325,12 +395,15 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language }) =>
               ) : (
                 <button
                   onClick={handleVerifySummary}
-                  disabled={verifying}
+                  disabled={verifying || !isAuthorizedDoctor}
                   className="btn btn-primary"
                   style={{ width: '100%', padding: '12px' }}
                 >
-                  <UserCheck size={16} />
-                  {verifying ? 'Signing off...' : t('verifyButton', language)}
+                  {isAuthorizedDoctor ? <UserCheck size={16} /> : <Lock size={16} />}
+                  {isAuthorizedDoctor 
+                    ? (verifying ? 'Signing off...' : t('verifyButton', language))
+                    : 'Doctor Sign-off Required'
+                  }
                 </button>
               )}
             </div>

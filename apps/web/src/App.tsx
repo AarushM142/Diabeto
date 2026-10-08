@@ -4,7 +4,7 @@ import { ClinicianPortal } from './components/ClinicianPortal';
 import { CoachPortal } from './components/CoachPortal';
 import { CaregiverPortal } from './components/CaregiverPortal';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
-import { api } from './api/client';
+import { api, type UserRole } from './api/client';
 import type { Language } from './lib/types';
 
 export const App: React.FC = () => {
@@ -12,6 +12,11 @@ export const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>('en');
   const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState(false);
+  const [currentRole, setCurrentRole] = useState<UserRole>('clinician');
+
+  useEffect(() => {
+    api.setPersona(currentRole);
+  }, [currentRole]);
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -46,18 +51,20 @@ export const App: React.FC = () => {
         isSimpleMode={isSimpleMode}
         setIsSimpleMode={setIsSimpleMode}
         isBackendHealthy={isBackendHealthy}
+        currentRole={currentRole}
+        setCurrentRole={setCurrentRole}
       />
 
       <main style={{ flex: '1', position: 'relative', zIndex: 1 }}>
-        {activeTab === 'clinician' && <ClinicianPortal language={language} />}
-        {activeTab === 'coach' && <CoachPortal language={language} />}
-        {activeTab === 'caregiver' && <CaregiverPortal language={language} />}
+        {activeTab === 'clinician' && <ClinicianPortal language={language} currentRole={currentRole} />}
+        {activeTab === 'coach' && <CoachPortal language={language} currentRole={currentRole} />}
+        {activeTab === 'caregiver' && <CaregiverPortal language={language} currentRole={currentRole} />}
         {activeTab === 'simulator' && <WhatsAppSimulator language={language} />}
       </main>
 
       <footer style={{
         borderTop: '1px solid var(--border-stone)',
-        padding: '24px 32px',
+        padding: '20px 32px',
         textAlign: 'center',
         fontSize: '0.8125rem',
         color: 'var(--text-muted)',
@@ -72,9 +79,11 @@ export const App: React.FC = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="font-serif" style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-forest)' }}>diabeto.</span>
-          <span>• Botanical Diabetes Care Platform & Clinical Guardrails</span>
+          <span>• Botanical Diabetes Care Platform & Multi-Tiered Authorization</span>
         </div>
-        <span>Clinician of Record: <strong>Dr. Arvind Mehta, MD</strong> • Clinic: <strong>Pune Central (clinic_pune_01)</strong></span>
+        <span>
+          Authenticated as: <strong style={{ color: 'var(--text-forest)' }}>{currentRole.toUpperCase()}</strong> • Clinic: <strong>Pune Central (clinic_pune_01)</strong>
+        </span>
       </footer>
     </div>
   );

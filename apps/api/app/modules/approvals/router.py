@@ -5,7 +5,8 @@ from sqlalchemy import select
 from apps.api.app.core.database import get_db
 from apps.api.app.models.entities import Recommendation, Approval, Patient
 from apps.api.app.schemas.schemas import RecommendationResponse, ApprovalDecisionRequest
-from apps.api.app.core.auth import get_current_user
+from apps.api.app.core.auth import get_current_user, require_role
+from apps.api.app.core.permissions import log_audit_entry
 from apps.api.app.channels.twilio_client import send_whatsapp_message
 from apps.api.app.modules.ai_gateway.llm_client import create_and_queue_recommendation
 
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/v1", tags=["Approvals Desk"])
 async def trigger_nudge_generation(
     patient_id: str,
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(require_role("coach", "clinician", "admin")),
 ):
     """
     Manually triggers AI lifestyle nudge generation for a patient and places it in the Coach Approval queue.
@@ -28,7 +29,7 @@ async def trigger_nudge_generation(
 @router.get("/approvals", response_model=List[RecommendationResponse])
 async def list_pending_approvals(
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(require_role("coach", "clinician", "admin")),
 ):
     """
     Fetches all AI-generated lifestyle nudges awaiting Coach / Clinician approval.
@@ -46,7 +47,7 @@ async def submit_approval_decision(
     recommendation_id: str,
     payload: ApprovalDecisionRequest,
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(require_role("coach", "clinician", "admin")),
 ):
     """
     Records a human Coach / Doctor review decision:
@@ -77,6 +78,16 @@ async def submit_approval_decision(
     )
     db.add(approval)
     await db.flush()
+
+    await log_audit_entry(
+        db=db,
+        actor_id=user.get("id", "usr_coach_01"),
+        actor_role=user.get("role", "coach"),
+        action=f"recommendation_{payload.decision}",
+        target_type="recommendation",
+        target_id=recommendation_id,
+        details={"feedback": payload.feedback, "is_edited": bool(payload.edited_text)},
+    )
 
     # If approved or edited, dispatch directly to Senior via WhatsApp
     if payload.decision in ("approved", "edited"):

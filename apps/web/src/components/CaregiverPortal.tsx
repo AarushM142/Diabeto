@@ -1,16 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   HeartHandshake, CheckCircle2, Phone, MessageSquare, ShieldCheck, 
-  Clock, Pill, Calendar, HeartPulse, AlertCircle
+  Clock, Pill, Calendar, HeartPulse, AlertCircle, Eye, EyeOff, Lock
 } from 'lucide-react';
+import { api, type UserRole, type TrendAnalytics } from '../api/client';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
 
 interface CaregiverPortalProps {
   language: Language;
+  currentRole?: UserRole;
 }
 
-export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language }) => {
+export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language, currentRole = 'caregiver' }) => {
+  const [trends, setTrends] = useState<TrendAnalytics | null>(null);
+  const [allowRawGlucose, setAllowRawGlucose] = useState<boolean>(true);
+  const [updatingConsent, setUpdatingConsent] = useState<boolean>(false);
+  const [consentSuccessToast, setConsentSuccessToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadTrends = async () => {
+      try {
+        const data = await api.getTrends('pt_ramesh_001', 7);
+        setTrends(data);
+      } catch (err) {
+        console.error('Failed to load caregiver trends:', err);
+      }
+    };
+    loadTrends();
+  }, [allowRawGlucose, currentRole]);
+
+  const handleToggleConsent = async () => {
+    setUpdatingConsent(true);
+    const newFlag = !allowRawGlucose;
+    try {
+      await api.updatePatientConsent('pt_ramesh_001', {
+        view_raw_glucose: newFlag,
+        emergency_escalation: true,
+      });
+      setAllowRawGlucose(newFlag);
+      setConsentSuccessToast(newFlag ? 'Consent granted: Raw numerical values visible' : 'Privacy consent enabled: Qualitative summaries only');
+      setTimeout(() => setConsentSuccessToast(null), 4000);
+    } catch (err) {
+      console.error('Consent update error:', err);
+    } finally {
+      setUpdatingConsent(false);
+    }
+  };
   return (
     <div style={{ padding: '40px 24px', maxWidth: '960px', margin: '0 auto' }}>
       {/* Top Banner: Is my parent OK? */}
@@ -69,6 +105,41 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language }) =>
         </div>
       </div>
 
+      {/* Toast Alert for Consent */}
+      {consentSuccessToast && (
+        <div className="botanical-callout ok" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <CheckCircle2 size={16} color="var(--status-ok)" />
+          <span>{consentSuccessToast}</span>
+        </div>
+      )}
+
+      {/* DPDP Consent & Access Governance Card */}
+      <div className="botanical-card" style={{ padding: '16px 24px', marginBottom: '24px', background: 'var(--surface-clay)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <ShieldCheck size={20} color="var(--accent-sage-dark)" />
+          <div>
+            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-forest)' }}>
+              DPDP Privacy & Patient Relationship Scope
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              {allowRawGlucose 
+                ? 'Consent active: Patient Ramesh has authorized family members to view exact blood glucose numbers.'
+                : 'Privacy-first mode: Qualitative status displayed to prevent caregiver anxiety as per senior preference.'}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleToggleConsent}
+          disabled={updatingConsent}
+          className="btn btn-secondary btn-sm"
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '6px 14px' }}
+        >
+          {allowRawGlucose ? <EyeOff size={14} /> : <Eye size={14} />}
+          {allowRawGlucose ? 'Mask to Qualitative (DPDP)' : 'Request Raw Number Access'}
+        </button>
+      </div>
+
       {/* Main Status Grid (Botanical 3-Col Layout) */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', marginBottom: '28px' }}>
         {/* Latest Sugar Reading */}
@@ -80,9 +151,22 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language }) =>
             <HeartPulse size={20} color="var(--accent-sage)" strokeWidth={1.5} />
           </div>
 
-          <div className="font-serif tabular" style={{ fontSize: '2.8rem', fontWeight: 600, color: 'var(--text-forest)', lineHeight: 1 }}>
-            140 <span style={{ fontSize: '1rem', fontFamily: 'var(--font-sans)', fontWeight: 400, color: 'var(--text-muted)' }}>mg/dL</span>
-          </div>
+          {allowRawGlucose ? (
+            <div className="font-serif tabular" style={{ fontSize: '2.8rem', fontWeight: 600, color: 'var(--text-forest)', lineHeight: 1 }}>
+              {trends?.glycemic_metrics?.mean_glucose ? Math.round(trends.glycemic_metrics.mean_glucose) : 140}{' '}
+              <span style={{ fontSize: '1rem', fontFamily: 'var(--font-sans)', fontWeight: 400, color: 'var(--text-muted)' }}>mg/dL</span>
+            </div>
+          ) : (
+            <div style={{ padding: '8px 0' }}>
+              <div className="font-serif" style={{ fontSize: '1.8rem', fontWeight: 600, color: 'var(--status-ok)', lineHeight: 1.2 }}>
+                {trends?.glycemic_metrics?.clinical_status === 'Optimal' ? 'Normal Fasting' : 'Gentle Steady'}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}>
+                <Lock size={12} /> Numerical value masked per patient consent
+              </div>
+            </div>
+          )}
+
           <div style={{ fontSize: '0.85rem', color: 'var(--status-ok)', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
             <CheckCircle2 size={15} />
             <span>{t('targetRange', language)}</span>
@@ -102,7 +186,8 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language }) =>
           </div>
 
           <div className="font-serif tabular" style={{ fontSize: '2.8rem', fontWeight: 600, color: 'var(--text-forest)', lineHeight: 1 }}>
-            100% <span style={{ fontSize: '1rem', fontFamily: 'var(--font-sans)', fontWeight: 400, color: 'var(--text-muted)' }}>Taken</span>
+            {trends?.adherence_metrics?.compliance_score_pct ?? 100}%{' '}
+            <span style={{ fontSize: '1rem', fontFamily: 'var(--font-sans)', fontWeight: 400, color: 'var(--text-muted)' }}>Taken</span>
           </div>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-forest)', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
             <CheckCircle2 size={15} color="var(--status-ok)" />
@@ -123,7 +208,7 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language }) =>
           </div>
 
           <div className="font-serif tabular" style={{ fontSize: '2.8rem', fontWeight: 600, color: 'var(--text-forest)', lineHeight: 1 }}>
-            7 <span style={{ fontSize: '1rem', fontFamily: 'var(--font-sans)', fontWeight: 400, color: 'var(--text-muted)' }}>{t('streakDays', language)}</span>
+            {trends?.days ?? 7} <span style={{ fontSize: '1rem', fontFamily: 'var(--font-sans)', fontWeight: 400, color: 'var(--text-muted)' }}>{t('streakDays', language)}</span>
           </div>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-forest)', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
             <ShieldCheck size={15} color="var(--accent-sage)" />

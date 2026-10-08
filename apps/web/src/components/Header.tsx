@@ -1,7 +1,8 @@
 import React from 'react';
-import { Stethoscope, Sparkles, Terminal, HeartHandshake, User, Globe, Type } from 'lucide-react';
+import { Stethoscope, Sparkles, Terminal, HeartHandshake, Globe, Type, Shield } from 'lucide-react';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
+import type { UserRole } from '../api/client';
 
 interface HeaderProps {
   activeTab: 'clinician' | 'coach' | 'caregiver' | 'simulator';
@@ -11,6 +12,8 @@ interface HeaderProps {
   isSimpleMode: boolean;
   setIsSimpleMode: (simple: boolean) => void;
   isBackendHealthy: boolean;
+  currentRole: UserRole;
+  setCurrentRole: (role: UserRole) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,6 +24,8 @@ export const Header: React.FC<HeaderProps> = ({
   isSimpleMode,
   setIsSimpleMode,
   isBackendHealthy,
+  currentRole,
+  setCurrentRole,
 }) => {
   return (
     <header style={{
@@ -126,8 +131,40 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </nav>
 
-        {/* Global Accessibility Controls & Live Health */}
+        {/* Global Accessibility Controls, Active Persona & Live Health */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          {/* Active Persona Switcher Pill */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '3px 8px',
+            borderRadius: '9999px',
+            border: '1.5px solid var(--accent-sage)',
+            background: 'var(--surface-white)',
+          }}>
+            <Shield size={13} color="var(--accent-sage-dark)" />
+            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)' }}>Role:</span>
+            <select
+              value={currentRole}
+              onChange={(e) => setCurrentRole(e.target.value as UserRole)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--text-forest)',
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                outline: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="clinician">Dr. Mehta (Clinician)</option>
+              <option value="coach">Sister Kavita (Coach)</option>
+              <option value="caregiver">Ananya K. (Caregiver)</option>
+              <option value="admin">Admin (Clinic Ops)</option>
+            </select>
+          </div>
+
           {/* Pill Language Selector */}
           <div style={{
             display: 'flex',
@@ -177,27 +214,10 @@ export const Header: React.FC<HeaderProps> = ({
             {isSimpleMode ? 'Simple: ON' : 'Simple'}
           </button>
 
-          {/* Combined Doctor & Live Health Pill */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '4px 10px',
-            borderRadius: '9999px',
-            border: '1px solid var(--border-stone)',
-            background: 'var(--surface-white)',
-          }}>
-            <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'var(--accent-sage-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <User size={11} color="var(--accent-sage)" />
-            </div>
-            <div style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--text-forest)' }}>
-              Dr. Mehta
-            </div>
-            <span style={{ width: '1px', height: '12px', background: 'var(--border-stone)' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', fontWeight: 600, color: isBackendHealthy ? 'var(--status-ok)' : 'var(--status-danger)' }}>
-              <span className={`status-dot ${isBackendHealthy ? 'ok' : 'danger'}`} />
-              {isBackendHealthy ? 'Live' : 'Offline'}
-            </div>
+          {/* Health Status Pill */}
+          <div className={`status-pill ${isBackendHealthy ? 'ok' : 'danger'}`} style={{ padding: '4px 10px', fontSize: '0.72rem' }}>
+            <span className={`status-dot ${isBackendHealthy ? 'ok' : 'danger'}`} />
+            {isBackendHealthy ? 'Live:8000' : 'Offline'}
           </div>
         </div>
       </div>
