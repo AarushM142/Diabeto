@@ -254,23 +254,7 @@ export function PulseFitHero({
             style={{ gap: "24px" }}
           >
             {/* Top Verified Clinic Pill */}
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "6px 16px",
-                borderRadius: "20px",
-                background: "var(--accent-sage-subtle)",
-                border: "1px solid var(--accent-sage-border)",
-                fontSize: "0.78rem",
-                fontWeight: 700,
-                color: "var(--text-forest)",
-              }}
-            >
-              <span className="status-dot ok" />
-              <span>Pune Central Diabetes Network • Endocrine Clinical Decision Support</span>
-            </div>
+
 
             {/* Title with Serif Editorial Typography */}
             <h1
