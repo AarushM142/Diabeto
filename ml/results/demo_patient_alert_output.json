@@ -1,0 +1,60 @@
+{
+  "patient_info": {
+    "id": "pt_ramesh_001",
+    "name": "Ramesh Kulkarni",
+    "age": 68,
+    "caregiver": "Rohit Kulkarni",
+    "caregiver_phone": "+919822222222",
+    "doctor": "Dr. Arvind Mehta"
+  },
+  "telemetry": {
+    "current_glucose": 84.0,
+    "recent_rate_of_change_mgdl_min": -0.8,
+    "trend_descriptor": "Falling (\u2193)",
+    "history_60m": [
+      142.0,
+      136.0,
+      130.0,
+      122.0,
+      115.0,
+      108.0,
+      102.0,
+      98.0,
+      94.0,
+      91.0,
+      88.0,
+      84.0
+    ]
+  },
+  "model1_forecast": {
+    "t_plus_15m": 84.5,
+    "t_plus_30m": 85.0,
+    "t_plus_45m": 85.4,
+    "t_plus_60m": 85.7
+  },
+  "model2_risk": {
+    "risk_category": "HIGH_HYPOGLYCEMIA_RISK",
+    "severity": "CRITICAL_URGENT",
+    "hypoglycemia_probability_pct": 92.7,
+    "in_range_probability_pct": 7.3,
+    "hyperglycemia_probability_pct": 0.0
+  },
+  "thresholds_applied": {
+    "critical_low": 70,
+    "low": 80,
+    "high": 180,
+    "critical_high": 250
+  },
+  "clinical_decision_support": {
+    "alert_title": "[CRITICAL ALERT] IMPENDING HYPOGLYCEMIA",
+    "caregiver_notified": true,
+    "clinician_escalated": false,
+    "action_recommendations": [
+      "1. Immediately check glucose with a fingerstick blood glucose meter.",
+      "2. Have 15 grams of fast-acting carbohydrate (e.g., 1/2 cup fruit juice, 4 glucose tabs, or 3 tsp sugar in water).",
+      "3. Rest safely and recheck glucose in exactly 15 minutes (Rule of 15).",
+      "4. Caregiver has been automatically alerted via WhatsApp.",
+      "[Safety Rule]: Do NOT self-administer insulin or delay treatment."
+    ]
+  }
+}
