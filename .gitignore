@@ -58,6 +58,9 @@ out/
 *.pkl
 *.joblib
 *.h5
+!ml/models/*.pt
+!ml/models/*.joblib
+!ml/models/*.json
 ml/data/*.csv
 !ml/data/README.md
 tests/fixtures/audio/*
