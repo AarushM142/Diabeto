@@ -64,8 +64,8 @@ export const App: React.FC = () => {
 
   // Handle Supabase OAuth Redirect Callback
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user && !currentUser) {
+    const processSession = async (session: any) => {
+      if (session?.user) {
         const email = session.user.email || 'user@gmail.com';
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || email.split('@')[0];
         const avatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
@@ -78,16 +78,35 @@ export const App: React.FC = () => {
           }
           setCurrentUser(res.user);
           applyRoleDefaultTab(res.user.role);
+          
+          // Clean up URL hash after OAuth redirect
+          if (window.location.hash || window.location.search) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
         } catch (e) {
           console.error('Failed to sync Supabase Google user with backend:', e);
         }
+      }
+    };
+
+    // Check existing session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        processSession(session);
+      }
+    });
+
+    // Listen for OAuth sign-in event
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        processSession(session);
       }
     });
 
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [currentUser]);
+  }, []);
 
   // Periodic Backend Health Check
   useEffect(() => {
