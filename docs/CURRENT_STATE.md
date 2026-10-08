@@ -63,29 +63,30 @@
   - 42 total passing pytest unit & integration tests (`tests/test_trends_analytics.py`).
   - Live Supabase execution script (`scripts/test_phase5_live.py`).
 
-#### Phase 6 — Web Portals (Clinician, Coach & Demo Simulator) ✅
-- Built interactive React + TypeScript + Vite web app in `apps/web` running on port 5173.
-- **Clinician Patient Portal (`/clinician`)**:
-  - Live patient roster (Ramesh Kulkarni, Shanti Devi, Ananya Patil).
-  - ADA Glycemic Metrics cards (TIR%, Mean, CV%, MAD, Compliance %).
-  - 14-day interactive CGM curve with target zones (70–180 mg/dL) using Recharts.
-  - Weekly Clinical Synthesis preview with 1-click Doctor Sign-Off & audit log creation.
-- **Coach Approvals Desk (`/coach`)**:
-  - AI lifestyle recommendations queue with confidence badges.
-  - Number-fidelity guardrails verification indicators.
-  - 1-click `Approve & Dispatch to WhatsApp`, `Edit Copy`, and `Reject` buttons.
-  - Live nudge generator trigger.
-- **Interactive Demo Simulator (`/simulator`)**:
-  - One-click clinical emergency scenarios (Critical Hypoglycemia 54 mg/dL, Hyperglycemia 265 mg/dL, Stable Fasting 135 mg/dL).
-  - Live event stream console connected to FastAPI backend on port 8000.
-- Production build passing with 0 errors (`npm run build`).
+#### Phase 6 — Web Portals, Multi-Tiered Authorization & Botanical Design System ✅
+- **Botanical / Organic Serif Design System**:
+  - Implemented across all 4 web views: Clinician Portal, Coach Approvals Desk, Caregiver Sanctuary, and WhatsApp Simulator.
+  - Curated palette (Warm Alabaster `#F9F8F4`, Deep Forest `#2D3A31`, Herb Sage `#8C9A84`, Terracotta `#C27B66`), Playfair Display typography, and tactile paper grain overlay.
+- **Multi-Tiered Authorization (RBAC) & Persona Switching**:
+  - `clinician` (Dr. Arvind Mehta, MD — Clinician of Record)
+  - `coach` (Sister Kavita R. — Diabetes Care Coach)
+  - `caregiver` (Ananya Kulkarni — Primary Family Caregiver)
+  - `admin` (Clinic Operations Administrator)
+  - Header persona selector with instant role-swapping and auto-injected `X-User-Role` and `X-User-ID` headers.
+- **DPDP Consent-Gated Privacy & Data Masking**:
+  - Family caregiver data masking respecting patient consent.
+  - Qualitative status fallback when raw numbers are masked.
+- **Audit Governance & Compliance**:
+  - PostgreSQL `audit_logs` records doctor sign-offs, coach recommendation approvals/rejections, and patient consent updates.
+  - Interactive Audit Trail Drawer in Clinician Portal.
+- **Automated Testing & Build**:
+  - Zero TypeScript compilation errors (`npm run build`).
+  - Automated test coverage in `tests/test_rbac_authorization.py` and `tests/test_trends_analytics.py`.
 
 ### Active Dev Servers:
 - **FastAPI Backend**: `http://localhost:8000` (API Docs: `http://localhost:8000/docs`)
 - **React Web Portal**: `http://localhost:5173`
 - **WhatsApp Webhook Tunnel**: `https://slimy-toys-grab.loca.lt/v1/webhooks/whatsapp`
 
-### Next Steps:
-- **Phase 7:** End-to-end Hackathon Pitch & Demo rehearsals with live WhatsApp interaction and portal dashboards.
 
 

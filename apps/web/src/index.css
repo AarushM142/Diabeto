@@ -1,34 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  /* Botanical / Organic Serif Typography */
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Source Sans 3', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Colors */
-  --bg-dark: #070a13;
-  --bg-card: #0f172a;
-  --bg-card-hover: #1e293b;
-  --bg-surface: #131d35;
-  --border: #1e293b;
-  --border-focus: #38bdf8;
+  /* Botanical / Organic Serif Color Tokens */
+  --bg-alabaster: #F9F8F4;        /* Warm Alabaster / Rice Paper */
+  --surface-white: #FFFFFF;       /* Pure Card White */
+  --surface-clay: #F2F0EB;        /* Soft Clay / Mushroom */
+  --surface-clay-dark: #EAE6DF;   /* Deeper Clay */
   
-  --primary: #10b981;
-  --primary-glow: rgba(16, 185, 129, 0.25);
-  --primary-dark: #059669;
+  --text-forest: #2D3A31;         /* Deep Forest Green (Primary Text) */
+  --text-muted: #5C6A60;          /* Muted Forest / Sage Text */
+  --text-dim: #8A978E;            /* Soft Subtitle Text */
+  
+  --accent-sage: #8C9A84;         /* Sage Green (Primary Accent) */
+  --accent-sage-dark: #687960;    /* Deep Sage Hover */
+  --accent-sage-subtle: #EDF2EC;  /* Soft Sage Tint */
+  --accent-sage-border: #C8D3C4;  /* Sage Hairline */
+  
+  --terracotta: #C27B66;          /* Terracotta (Interactive & Attention) */
+  --terracotta-dark: #A8624E;     /* Deep Terracotta Hover */
+  --terracotta-subtle: #FAF0EC;   /* Terracotta Light Tint */
+  --terracotta-border: #E8C4B8;   /* Terracotta Border */
+  
+  --border-stone: #E6E2DA;        /* Stone Hairline Border */
+  --border-stone-subtle: #F0ECE4; /* Subtle Stone */
 
-  --accent-cyan: #06b6d4;
-  --accent-cyan-glow: rgba(6, 182, 212, 0.25);
-  --accent-blue: #3b82f6;
+  /* Clinical Status Mappings (Organic Tone) */
+  --status-ok: #5B8266;           /* Earthy Green */
+  --status-ok-bg: #EFF5F0;
+  --status-ok-border: #C1DBC7;
 
-  --warning: #f59e0b;
-  --warning-glow: rgba(245, 158, 11, 0.2);
+  --status-warn: #C27B66;         /* Terracotta Warmth */
+  --status-warn-bg: #FAF0EC;
+  --status-warn-border: #E8C4B8;
 
-  --danger: #f43f5e;
-  --danger-glow: rgba(244, 63, 94, 0.25);
+  --status-danger: #B44335;       /* Earthy Crimson */
+  --status-danger-bg: #FDF2F0;
+  --status-danger-border: #F5C5BE;
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  /* Chart Botanical Band */
+  --chart-band: rgba(140, 154, 132, 0.16);
+  --chart-line: #5B8266;
+
+  /* Soft Diffused Botanical Shadows */
+  --shadow-sm: 0 2px 8px rgba(45, 58, 49, 0.03);
+  --shadow-md: 0 8px 24px -4px rgba(45, 58, 49, 0.05);
+  --shadow-lg: 0 16px 36px -8px rgba(45, 58, 49, 0.07);
+}
+
+html {
+  font-size: 16px;
+  background-color: var(--bg-alabaster);
+  color: var(--text-forest);
+}
+
+html.simple-mode {
+  font-size: 19px;
 }
 
 * {
@@ -39,191 +70,336 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-dark);
-  color: var(--text-main);
+  background-color: var(--bg-alabaster);
+  color: var(--text-forest);
   min-height: 100vh;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.07) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.03) 0%, transparent 60%);
-  background-attachment: fixed;
+  position: relative;
 }
 
-/* Glassmorphism Card */
-.glass-card {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+/* Paper Grain Texture Overlay (Mandatory Defining Element) */
+.paper-grain-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
-.glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+/* Headings Typography */
+h1, h2, h3, .font-serif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.015em;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #070a13;
-}
-::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+/* Botanical Rounded Card (24px Radius) */
+.botanical-card {
+  background: var(--surface-white);
+  border: 1px solid var(--border-stone);
+  border-radius: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
 }
 
-/* Buttons */
+.botanical-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-sage-border);
+}
+
+.botanical-card-clay {
+  background: var(--surface-clay);
+  border: 1px solid var(--border-stone);
+  border-radius: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Arch Shape Utilities */
+.arch-top {
+  border-radius: 120px 120px 24px 24px;
+}
+
+.arch-full {
+  border-radius: 120px;
+}
+
+/* Pill Buttons (Botanical Style) */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 0.875rem;
-  padding: 10px 18px;
-  border-radius: 10px;
+  font-size: 0.825rem;
+  padding: 10px 22px;
+  min-height: 44px;
+  border-radius: 9999px; /* Pill shape */
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  font-family: inherit;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  user-select: none;
+  border: 1.5px solid transparent;
+  letter-spacing: 0.03em;
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 15px var(--primary-glow);
+.simple-mode .btn {
+  min-height: 52px;
+  padding: 12px 28px;
+  font-size: 0.95rem;
 }
-.btn-primary:hover {
+
+.btn-primary, .btn-forest {
+  background: var(--text-forest);
+  color: #FFFFFF;
+  border-color: var(--text-forest);
+}
+.btn-primary:hover:not(:disabled), .btn-forest:hover:not(:disabled) {
+  background: var(--terracotta);
+  border-color: var(--terracotta);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--primary-glow);
-  filter: brightness(1.1);
-}
-.btn-primary:active {
-  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.btn-secondary, .btn-sage-outline {
+  background: transparent;
+  color: var(--text-forest);
+  border: 1.5px solid var(--accent-sage);
 }
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
+.btn-secondary:hover:not(:disabled), .btn-sage-outline:hover:not(:disabled) {
+  background: var(--accent-sage-subtle);
+  border-color: var(--accent-sage-dark);
+  transform: translateY(-1px);
+}
+
+.btn-clay {
+  background: var(--surface-clay);
+  color: var(--text-forest);
+  border: 1.5px solid var(--border-stone);
+}
+.btn-clay:hover:not(:disabled) {
+  background: var(--surface-clay-dark);
+  border-color: var(--accent-sage);
+}
+
+.btn-terracotta {
+  background: var(--terracotta);
+  color: #FFFFFF;
+}
+.btn-terracotta:hover:not(:disabled) {
+  background: var(--terracotta-dark);
+  transform: translateY(-1px);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 15px var(--danger-glow);
+  background: var(--status-danger);
+  color: #FFFFFF;
 }
-.btn-danger:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 6px 20px var(--danger-glow);
+.btn-danger:hover:not(:disabled) {
+  background: #9A3428;
 }
 
 .btn-sm {
-  padding: 6px 12px;
-  font-size: 0.8rem;
-  border-radius: 8px;
+  padding: 6px 14px;
+  min-height: 36px;
+  font-size: 0.785rem;
 }
 
-/* Badges */
-.badge {
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Botanical Status Pills (Dot + Word) */
+.status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
 }
 
-.badge-success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+.status-pill.ok {
+  background: var(--status-ok-bg);
+  color: var(--status-ok);
+  border: 1px solid var(--status-ok-border);
 }
 
-.badge-warning {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+.status-pill.warn {
+  background: var(--status-warn-bg);
+  color: var(--status-warn);
+  border: 1px solid var(--status-warn-border);
 }
 
-.badge-danger {
-  background: rgba(244, 63, 94, 0.15);
-  color: #fb7185;
-  border: 1px solid rgba(244, 63, 94, 0.3);
-  animation: pulse-danger 2s infinite;
+.status-pill.danger {
+  background: var(--status-danger-bg);
+  color: var(--status-danger);
+  border: 1px solid var(--status-danger-border);
 }
 
-.badge-info {
-  background: rgba(6, 182, 212, 0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(6, 182, 212, 0.3);
-}
-
-@keyframes pulse-danger {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgba(244, 63, 94, 0);
-  }
-}
-
-/* Pulse Glow dot */
-.pulse-dot {
-  width: 8px;
-  height: 8px;
+.status-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 10px #10b981;
   display: inline-block;
-  animation: pulse-dot-anim 2s infinite ease-in-out;
+  flex-shrink: 0;
+}
+.status-dot.ok {
+  background-color: var(--status-ok);
+}
+.status-dot.warn {
+  background-color: var(--terracotta);
+}
+.status-dot.danger {
+  background-color: var(--status-danger);
 }
 
-@keyframes pulse-dot-anim {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.4);
-    opacity: 0.6;
-  }
+/* Soft Callouts */
+.botanical-callout {
+  padding: 18px 22px;
+  border-radius: 18px;
+  background: var(--surface-clay);
+  border: 1px solid var(--border-stone);
+  border-left: 4px solid var(--accent-sage);
+}
+.botanical-callout.ok {
+  background: var(--status-ok-bg);
+  border-color: var(--status-ok-border);
+  border-left-color: var(--status-ok);
+}
+.botanical-callout.warn {
+  background: var(--status-warn-bg);
+  border-color: var(--status-warn-border);
+  border-left-color: var(--terracotta);
+}
+.botanical-callout.danger {
+  background: var(--status-danger-bg);
+  border-color: var(--status-danger-border);
+  border-left-color: var(--status-danger);
 }
 
-/* Inputs */
-.input-field {
+/* Tabular numbers */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Botanical Pill Inputs */
+.input-pill {
   width: 100%;
-  background: #090e1c;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 0.9rem;
+  background: var(--surface-white);
+  border: 1.5px solid var(--border-stone);
+  color: var(--text-forest);
+  padding: 10px 18px;
+  border-radius: 9999px;
+  font-size: 0.875rem;
   font-family: inherit;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+}
+.input-pill:focus {
+  border-color: var(--accent-sage);
+  box-shadow: 0 0 0 3px rgba(140, 154, 132, 0.15);
 }
 
-.input-field:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+.textarea-botanical {
+  width: 100%;
+  background: var(--surface-white);
+  border: 1.5px solid var(--border-stone);
+  color: var(--text-forest);
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.25s ease;
+}
+.textarea-botanical:focus {
+  border-color: var(--accent-sage);
+  box-shadow: 0 0 0 3px rgba(140, 154, 132, 0.15);
+}
+
+/* Phone Mockup (Botanical Sage WhatsApp) */
+.phone-mockup {
+  width: 100%;
+  max-width: 380px;
+  border-radius: 36px;
+  border: 3px solid var(--text-forest);
+  background: #FFFFFF;
+  overflow: hidden;
+  margin: 0 auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.phone-header {
+  background: var(--text-forest);
+  color: #FFFFFF;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.phone-chat-body {
+  padding: 18px;
+  min-height: 420px;
+  max-height: 520px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #F4F1EA;
+}
+
+.bubble-inbound {
+  background: #FFFFFF;
+  color: var(--text-forest);
+  border-radius: 16px 16px 16px 4px;
+  padding: 11px 15px;
+  max-width: 85%;
+  align-self: flex-start;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  box-shadow: 0 1px 3px rgba(45, 58, 49, 0.05);
+}
+
+.bubble-outbound {
+  background: #E2EBDD;
+  color: var(--text-forest);
+  border-radius: 16px 16px 4px 16px;
+  padding: 11px 15px;
+  max-width: 85%;
+  align-self: flex-end;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  box-shadow: 0 1px 3px rgba(45, 58, 49, 0.05);
+}
+
+.bubble-system {
+  background: #EAE5DB;
+  color: var(--text-muted);
+  border-radius: 9999px;
+  padding: 5px 14px;
+  align-self: center;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-clay);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-sage);
+  border-radius: 4px;
 }

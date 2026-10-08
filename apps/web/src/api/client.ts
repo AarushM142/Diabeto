@@ -1,4 +1,15 @@
-// Diabeto API Client for Web Portals
+// Diabeto API Client for Web Portals with Multi-Tiered Authorization
+
+export type UserRole = 'clinician' | 'coach' | 'caregiver' | 'admin';
+
+export interface PersonaInfo {
+  id: string;
+  role: UserRole;
+  clinic_id: string;
+  name: string;
+  title: string;
+  linked_patient_id?: string;
+}
 
 export interface Patient {
   id: string;
@@ -93,9 +104,47 @@ export interface WeeklySummary {
   doctor_action_recommendation: string;
 }
 
+export interface AuditLogItem {
+  id: string;
+  actor_id: string;
+  actor_role: string;
+  action: string;
+  target_type: string;
+  target_id: string;
+  details: Record<string, any>;
+  created_at: string;
+}
+
 const API_BASE = '/v1';
 
+let activeRole: UserRole = 'clinician';
+let activeUserId: string = 'doc_mehta_101';
+
+export const setGlobalPersona = (role: UserRole, userId?: string) => {
+  activeRole = role;
+  if (userId) activeUserId = userId;
+};
+
+export const getGlobalPersona = (): UserRole => activeRole;
+
+const getHeaders = (extraHeaders: Record<string, string> = {}) => {
+  return {
+    'Content-Type': 'application/json',
+    'X-User-Role': activeRole,
+    'X-User-ID': activeUserId,
+    ...extraHeaders,
+  };
+};
+
 export const api = {
+  setPersona(role: UserRole, userId?: string) {
+    setGlobalPersona(role, userId);
+  },
+
+  getPersona(): UserRole {
+    return getGlobalPersona();
+  },
+
   async getHealth(): Promise<boolean> {
     try {
       const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
@@ -106,25 +155,34 @@ export const api = {
   },
 
   async getTrends(patientId: string, days: number = 14): Promise<TrendAnalytics> {
-    const res = await fetch(`${API_BASE}/patients/${patientId}/trends?days=${days}`);
+    const res = await fetch(`${API_BASE}/patients/${patientId}/trends?days=${days}`, {
+      headers: getHeaders(),
+    });
     if (!res.ok) throw new Error(`Failed to fetch trends for ${patientId}`);
     return res.json();
   },
 
   async getRisks(patientId: string): Promise<RiskEvent[]> {
-    const res = await fetch(`${API_BASE}/patients/${patientId}/risks`);
+    const res = await fetch(`${API_BASE}/patients/${patientId}/risks`, {
+      headers: getHeaders(),
+    });
     if (!res.ok) throw new Error(`Failed to fetch risks for ${patientId}`);
     return res.json();
   },
 
   async ackRisk(riskId: string): Promise<any> {
-    const res = await fetch(`${API_BASE}/escalations/${riskId}/ack`, { method: 'POST' });
+    const res = await fetch(`${API_BASE}/escalations/${riskId}/ack`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
     if (!res.ok) throw new Error('Failed to acknowledge risk');
     return res.json();
   },
 
   async getPendingApprovals(): Promise<Recommendation[]> {
-    const res = await fetch(`${API_BASE}/approvals`);
+    const res = await fetch(`${API_BASE}/approvals`, {
+      headers: getHeaders(),
+    });
     if (!res.ok) throw new Error('Failed to fetch approvals queue');
     return res.json();
   },
@@ -137,23 +195,26 @@ export const api = {
   ): Promise<any> {
     const res = await fetch(`${API_BASE}/approvals/${recommendationId}/decision`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders(),
       body: JSON.stringify({ decision, feedback, edited_text: editedText }),
     });
-    if (!res.ok) throw new Error('Failed to submit decision');
+    if (!res.ok) throw new Error('Failed to submit decision (Authorization Check Failed)');
     return res.json();
   },
 
   async generateNudge(patientId: string): Promise<Recommendation> {
     const res = await fetch(`${API_BASE}/patients/${patientId}/generate-nudge`, {
       method: 'POST',
+      headers: getHeaders(),
     });
     if (!res.ok) throw new Error('Failed to generate nudge');
     return res.json();
   },
 
   async getWeeklySummary(patientId: string, days: number = 7): Promise<WeeklySummary> {
-    const res = await fetch(`${API_BASE}/patients/${patientId}/weekly-summary?days=${days}`);
+    const res = await fetch(`${API_BASE}/patients/${patientId}/weekly-summary?days=${days}`, {
+      headers: getHeaders(),
+    });
     if (!res.ok) throw new Error('Failed to fetch weekly summary');
     return res.json();
   },
@@ -161,17 +222,17 @@ export const api = {
   async verifyWeeklySummary(patientId: string, notes?: string): Promise<WeeklySummary> {
     const res = await fetch(`${API_BASE}/patients/${patientId}/weekly-summary/verify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders(),
       body: JSON.stringify({ notes }),
     });
-    if (!res.ok) throw new Error('Failed to verify weekly summary');
+    if (!res.ok) throw new Error('Failed to verify weekly summary (Clinician Signature Required)');
     return res.json();
   },
 
   async logHealthEvent(patientId: string, mgdl: number, context: string = 'fasting'): Promise<any> {
     const res = await fetch(`${API_BASE}/patients/${patientId}/events`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders(),
       body: JSON.stringify({
         type: 'glucose',
         value: { mgdl, context },
@@ -180,6 +241,24 @@ export const api = {
       }),
     });
     if (!res.ok) throw new Error('Failed to log event');
+    return res.json();
+  },
+
+  async getAuditLogs(): Promise<AuditLogItem[]> {
+    const res = await fetch(`${API_BASE}/audit/logs`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch audit logs');
+    return res.json();
+  },
+
+  async updatePatientConsent(patientId: string, flags: { view_raw_glucose?: boolean; emergency_escalation?: boolean }): Promise<any> {
+    const res = await fetch(`${API_BASE}/patients/${patientId}/consent`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(flags),
+    });
+    if (!res.ok) throw new Error('Failed to update consent flags');
     return res.json();
   },
 };
