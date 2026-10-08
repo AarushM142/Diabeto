@@ -1,0 +1,58 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: ["class"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        border: "hsl(var(--border, 220 13% 91%))",
+        input: "hsl(var(--input, 220 13% 91%))",
+        ring: "hsl(var(--ring, 217.2 91.2% 59.8%))",
+        background: "hsl(var(--background, 0 0% 100%))",
+        foreground: "hsl(var(--foreground, 240 10% 3.9%))",
+        primary: {
+          DEFAULT: "hsl(var(--primary, 240 5.9% 10%))",
+          foreground: "hsl(var(--primary-foreground, 0 0% 98%))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary, 240 4.8% 95.9%))",
+          foreground: "hsl(var(--secondary-foreground, 240 5.9% 10%))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive, 0 84.2% 60.2%))",
+          foreground: "hsl(var(--destructive-foreground, 0 0% 98%))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted, 240 4.8% 95.9%))",
+          foreground: "hsl(var(--muted-foreground, 240 3.8% 46.1%))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent, 240 4.8% 95.9%))",
+          foreground: "hsl(var(--accent-foreground, 240 5.9% 10%))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover, 0 0% 100%))",
+          foreground: "hsl(var(--popover-foreground, 240 10% 3.9%))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card, 0 0% 100%))",
+          foreground: "hsl(var(--card-foreground, 240 10% 3.9%))",
+        },
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar-background))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          primary: 'hsl(var(--sidebar-primary))',
+          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+          accent: 'hsl(var(--sidebar-accent))',
+          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+          border: 'hsl(var(--sidebar-border))',
+          ring: 'hsl(var(--sidebar-ring))',
+        },
+      },
+    },
+  },
+  plugins: [],
+}

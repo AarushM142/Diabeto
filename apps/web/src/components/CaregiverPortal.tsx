@@ -48,14 +48,14 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language, curr
     }
   };
   return (
-    <div style={{ padding: '40px 24px', maxWidth: '960px', margin: '0 auto' }}>
+    <div className="portal-container" style={{ maxWidth: '960px' }}>
       {/* Top Banner: Is my parent OK? */}
-      <div className="botanical-card" style={{ padding: '36px', marginBottom: '28px', borderLeft: '6px solid var(--accent-sage)', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+      <div className="botanical-card responsive-hero-card" style={{ marginBottom: '24px', borderLeft: '6px solid var(--accent-sage)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
             <div style={{
-              width: '64px',
-              height: '64px',
+              width: '56px',
+              height: '56px',
               borderRadius: '50%',
               background: 'var(--accent-sage-subtle)',
               border: '1px solid var(--accent-sage-border)',
@@ -221,9 +221,9 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language, curr
       </div>
 
       {/* Activity Timeline & Safety Contacts */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px' }}>
+      <div className="responsive-grid-12">
         {/* Left: Today's Timeline (7 cols) */}
-        <div className="botanical-card" style={{ gridColumn: 'span 7', padding: '28px' }}>
+        <div className="botanical-card responsive-card responsive-col-7">
           <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Clock size={18} color="var(--accent-sage)" strokeWidth={1.5} />
             {t('careTimeline', language)}
@@ -278,7 +278,7 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language, curr
         </div>
 
         {/* Right: Care Network & Escalation Contacts (5 cols) */}
-        <div className="botanical-card" style={{ gridColumn: 'span 5', padding: '28px' }}>
+        <div className="botanical-card responsive-card responsive-col-5">
           <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ShieldCheck size={18} color="var(--accent-sage)" strokeWidth={1.5} />
             {t('careTeamNetwork', language)}

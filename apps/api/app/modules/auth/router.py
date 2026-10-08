@@ -50,6 +50,8 @@ async def generate_persona_token(payload: TokenRequest):
     token = create_access_token(persona)
     return TokenResponse(access_token=token, user=persona)
 
+from apps.api.app.core.permissions import log_audit_entry
+
 @router.get("/audit/logs")
 async def get_audit_trail(
     limit: int = 50,
@@ -63,11 +65,11 @@ async def get_audit_trail(
         {
             "id": l.id,
             "actor_id": l.actor_id,
-            "actor_role": l.actor_role,
+            "actor_role": (l.details.get("actor_role") if isinstance(l.details, dict) else None) or "system",
             "action": l.action,
             "target_type": l.target_type,
             "target_id": l.target_id,
-            "details": l.details,
+            "details": l.details if isinstance(l.details, dict) else {},
             "created_at": l.created_at.isoformat() if l.created_at else None,
         }
         for l in logs

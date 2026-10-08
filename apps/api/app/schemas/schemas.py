@@ -190,4 +190,22 @@ class WeeklySummaryResponse(BaseModel):
 class VerifyWeeklySummaryRequest(BaseModel):
     notes: Optional[str] = None
 
+class AuditLogResponse(BaseModel):
+    id: str
+    actor_id: str
+    actor_role: str
+    action: str
+    target_type: str
+    target_id: str
+    details: Dict[str, Any]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class PatientConsentUpdate(BaseModel):
+    view_raw_glucose: Optional[bool] = None
+    emergency_escalation: Optional[bool] = None
+
+
 

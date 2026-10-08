@@ -1,5 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --sidebar-background: 45 20% 97%;
+    --sidebar-foreground: 138 13% 20%;
+    --sidebar-primary: 138 13% 20%;
+    --sidebar-primary-foreground: 45 20% 98%;
+    --sidebar-accent: 96 15% 93%;
+    --sidebar-accent-foreground: 138 13% 20%;
+    --sidebar-border: 40 16% 88%;
+    --sidebar-ring: 96 11% 56%;
+  }
+
+  .dark {
+    --sidebar-background: 138 15% 15%;
+    --sidebar-foreground: 45 20% 95%;
+    --sidebar-primary: 96 11% 56%;
+    --sidebar-primary-foreground: 138 15% 10%;
+    --sidebar-accent: 138 15% 20%;
+    --sidebar-accent-foreground: 45 20% 95%;
+    --sidebar-border: 138 10% 25%;
+    --sidebar-ring: 96 11% 56%;
+  }
+}
+
 :root {
   /* Botanical / Organic Serif Typography */
   --font-serif: 'Playfair Display', Georgia, serif;
@@ -410,6 +438,8 @@ h1, h2, h3, .font-serif {
   min-height: 100vh;
   background-color: var(--bg-alabaster);
   position: relative;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .desktop-sidebar {
@@ -434,18 +464,113 @@ h1, h2, h3, .font-serif {
   flex-direction: column;
   position: relative;
   z-index: 1;
+  width: 100%;
+}
+
+.portal-container {
+  padding: 32px 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.responsive-card {
+  padding: 28px;
+}
+
+.responsive-hero-card {
+  padding: 32px 36px;
+  border-radius: 24px;
+}
+
+.responsive-hero-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.responsive-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.responsive-grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.responsive-col-8 {
+  grid-column: span 8;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.responsive-col-7 {
+  grid-column: span 7;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.responsive-col-5 {
+  grid-column: span 5;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.responsive-col-4 {
+  grid-column: span 4;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.responsive-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.calendar-week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.calendar-day-cell {
+  padding: 12px 6px;
+  text-align: center;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .mobile-header {
   display: none;
-  padding: 12px 18px;
-  background: var(--surface-white);
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-stone);
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
   z-index: 110;
+  width: 100%;
 }
 
 .mobile-bottom-nav {
@@ -454,14 +579,15 @@ h1, h2, h3, .font-serif {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--surface-white);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
   border-top: 1px solid var(--border-stone);
-  padding: 6px 12px calc(6px + env(safe-area-inset-bottom));
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 999;
-  box-shadow: 0 -4px 16px rgba(45, 58, 49, 0.05);
+  box-shadow: 0 -4px 20px rgba(45, 58, 49, 0.08);
 }
 
 @media (max-width: 991px) {
@@ -470,29 +596,95 @@ h1, h2, h3, .font-serif {
   }
   
   .desktop-sidebar {
-    display: none;
+    display: none !important;
   }
 
   .mobile-header {
-    display: flex;
+    display: flex !important;
   }
 
   .mobile-bottom-nav {
-    display: flex;
+    display: flex !important;
   }
 
   .main-content-area {
-    padding-bottom: 80px; /* Space for bottom nav */
+    padding-bottom: 92px; /* Ensure content is never blocked by bottom nav */
+    width: 100%;
+  }
+
+  .portal-container {
+    padding: 16px 14px;
+  }
+
+  .responsive-card {
+    padding: 20px 16px;
+    border-radius: 20px;
+  }
+
+  .responsive-hero-card {
+    padding: 20px 18px;
+    border-radius: 20px;
+  }
+
+  .responsive-hero-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .responsive-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .responsive-hero-actions .btn {
+    width: 100%;
+  }
+
+  .responsive-grid-12 {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .responsive-col-8, 
+  .responsive-col-7,
+  .responsive-col-5,
+  .responsive-col-4 {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    gap: 18px !important;
+  }
+
+  .responsive-grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .calendar-week-row {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 8px !important;
+    padding-bottom: 6px !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+
+  .calendar-day-cell {
+    flex: 0 0 74px !important;
+    scroll-snap-align: start;
+    padding: 10px 4px !important;
   }
 }
 
 @media (min-width: 992px) {
   .mobile-header {
-    display: none;
+    display: none !important;
   }
 
   .mobile-bottom-nav {
-    display: none;
+    display: none !important;
   }
 }
+
 

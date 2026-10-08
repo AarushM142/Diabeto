@@ -188,10 +188,10 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
   };
 
   return (
-    <div style={{ padding: '36px 32px', maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="portal-container">
       {/* Title & Description */}
       <div style={{ marginBottom: '28px' }}>
-        <h2 className="font-serif" style={{ fontSize: '1.65rem', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+        <h2 className="font-serif" style={{ fontSize: 'clamp(1.25rem, 3.5vw, 1.65rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
           <Sparkles size={24} color="var(--accent-sage)" strokeWidth={1.5} />
           {t('simulatorTitle', language)}
         </h2>
@@ -210,12 +210,12 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '28px' }}>
+      <div className="responsive-grid-12">
         {/* Left: Interactive Control Deck (7 cols) */}
-        <div style={{ gridColumn: 'span 7', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="responsive-col-7" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Preset Clinical Scenarios */}
-          <div className="botanical-card" style={{ padding: '28px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+          <div className="botanical-card responsive-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '8px' }}>
               <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', margin: 0 }}>
                 {t('quickScenarios', language)}
               </h3>
@@ -224,7 +224,7 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
               {PRESET_SCENARIOS.map((sc) => (
                 <button
                   key={sc.id}
@@ -256,12 +256,12 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
           </div>
 
           {/* Custom Message Dispatch Deck */}
-          <div className="botanical-card" style={{ padding: '28px' }}>
+          <div className="botanical-card responsive-card">
             <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', marginBottom: '14px', margin: 0 }}>
               {t('customMessage', language)}
             </h3>
 
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap' }}>
               <input
                 type="text"
                 className="input-pill"
@@ -270,7 +270,7 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
                 onChange={(e) => setInputVal(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && sendMessage(inputVal)}
                 disabled={isProcessing}
-                style={{ flex: '1' }}
+                style={{ flex: '1', minWidth: '180px' }}
               />
 
               <button
@@ -292,7 +292,7 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
               </button>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-stone)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-stone)', flexWrap: 'wrap', gap: '8px' }}>
               <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                 Inbound Webhook: <code>POST /v1/webhooks/whatsapp</code>
               </span>
@@ -308,7 +308,7 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
         </div>
 
         {/* Right: Authentic WhatsApp Smartphone Viewport (5 cols) */}
-        <div style={{ gridColumn: 'span 5' }}>
+        <div className="responsive-col-5">
           <div className="phone-mockup">
             {/* WhatsApp Header */}
             <div className="phone-header">

@@ -100,7 +100,7 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language, currentRole 
   };
 
   return (
-    <div style={{ padding: '32px 24px', maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="portal-container">
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
@@ -170,9 +170,9 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language, currentRole 
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px', alignItems: 'stretch' }}>
+        <div className="responsive-grid-12">
           {/* Left: Queue List (4 cols) */}
-          <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="responsive-col-4" style={{ gap: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px 4px' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 {t('pendingNudges', language)} ({approvals.length})
@@ -218,7 +218,7 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language, currentRole 
           </div>
 
           {/* Center: Selected Nudge Detail & Editor (4 cols) */}
-          <div className="botanical-card" style={{ gridColumn: 'span 4', padding: '24px', display: 'flex', flexDirection: 'column' }}>
+          <div className="botanical-card responsive-col-4" style={{ padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', margin: 0 }}>
                 {t('reviewDraft', language)}
@@ -287,7 +287,7 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language, currentRole 
           </div>
 
           {/* Right: Live WhatsApp Smartphone Mockup (4 cols) */}
-          <div style={{ gridColumn: 'span 4' }}>
+          <div className="responsive-col-4">
             <div className="phone-mockup" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               {/* WhatsApp Header */}
               <div className="phone-header" style={{ padding: '12px 16px' }}>

@@ -1,11 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Heart, Stethoscope, Sparkles, Terminal, HeartHandshake, 
-  Globe, Type, Shield, Menu, X, Phone
+  Globe, Type, Shield, ChevronRight
 } from 'lucide-react';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
 import type { UserRole } from '../api/client';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  SidebarSeparator,
+} from '@/components/ui/sidebar';
 
 export type ActiveTab = 'patient' | 'clinician' | 'coach' | 'caregiver' | 'simulator';
 
@@ -21,6 +36,29 @@ interface SidebarNavProps {
   setCurrentRole: (role: UserRole) => void;
 }
 
+const ROLE_PROFILES: Record<UserRole, { name: string; title: string; avatar: string }> = {
+  clinician: {
+    name: 'Dr. Arvind Mehta',
+    title: 'Senior Diabetologist • Pune Central',
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&auto=format&fit=crop&q=80',
+  },
+  coach: {
+    name: 'Sister Kavita Deshmukh',
+    title: 'Care Coordinator & Nutrition Coach',
+    avatar: 'https://images.unsplash.com/photo-1594824813589-8d77c25091a1?w=100&auto=format&fit=crop&q=80',
+  },
+  caregiver: {
+    name: 'Ananya Kulkarni',
+    title: 'Primary Family Caregiver (Daughter)',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
+  },
+  admin: {
+    name: 'Clinic Admin Desk',
+    title: 'Pune Central Diabetes Clinic',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
+  },
+};
+
 export const SidebarNav: React.FC<SidebarNavProps> = ({
   activeTab,
   setActiveTab,
@@ -32,14 +70,14 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   currentRole,
   setCurrentRole,
 }) => {
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const currentProfile = ROLE_PROFILES[currentRole] || ROLE_PROFILES.clinician;
 
   const navItems = [
     {
       id: 'patient' as ActiveTab,
       label: t('tabPatient', language),
       icon: Heart,
-      badge: 'Senior View',
+      badge: 'Senior',
       color: 'var(--accent-sage)',
     },
     {
@@ -72,202 +110,126 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     },
   ];
 
-  const handleTabClick = (tabId: ActiveTab) => {
-    setActiveTab(tabId);
-    setMobileDrawerOpen(false);
-  };
-
   return (
     <>
-      {/* 1. Mobile Top Bar (Visible only on small screens) */}
-      <header className="mobile-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            onClick={() => setMobileDrawerOpen(true)}
-            aria-label="Open Navigation"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '6px',
-              color: 'var(--text-forest)',
-            }}
-          >
-            <Menu size={24} />
-          </button>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span className="font-serif" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-forest)' }}>
-              diabeto.
-            </span>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Quick SOS Emergency Trigger */}
-          <a
-            href="tel:+918149680369"
-            className="btn btn-secondary btn-sm"
-            style={{ padding: '4px 10px', fontSize: '0.75rem', borderColor: 'var(--status-danger-border)', color: 'var(--status-danger)' }}
-          >
-            <Phone size={12} />
-            SOS
-          </a>
-
-          {/* Simple Mode Toggle */}
-          <button
-            onClick={() => setIsSimpleMode(!isSimpleMode)}
-            className="btn btn-secondary btn-sm"
-            style={{ padding: '4px 8px', fontSize: '0.75rem' }}
-          >
-            <Type size={12} />
-            {isSimpleMode ? '19px' : '16px'}
-          </button>
-        </div>
-      </header>
-
-      {/* 2. Desktop Side Navbar (Permanent on desktop screens >= 992px) */}
-      <aside className="desktop-sidebar">
-        {/* Logo and Brand Header */}
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--border-stone)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '12px',
-              background: 'var(--accent-sage)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFFFFF',
-              fontWeight: 700,
-              fontSize: '1.2rem',
-              fontFamily: 'var(--font-serif)',
-            }}>
+      {/* 1. Desktop & Tablet shadcn Collapsible Sidebar */}
+      <Sidebar collapsible="icon" className="border-r border-[var(--border-stone)] bg-[var(--bg-alabaster)]">
+        {/* Brand Header */}
+        <SidebarHeader className="p-3 border-b border-[var(--border-stone)]">
+          <div className="flex items-center gap-3 px-1 py-1">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-sage)] text-white font-serif text-lg font-bold shadow-sm">
               d.
             </div>
-            <div>
-              <span className="font-serif" style={{ fontSize: '1.45rem', fontWeight: 700, color: 'var(--text-forest)', letterSpacing: '-0.02em' }}>
+            <div className="flex flex-col overflow-hidden group-data-[collapsible=icon]:hidden">
+              <span className="font-serif text-lg font-bold tracking-tight text-[var(--text-forest)]">
                 diabeto.
               </span>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
                 Senior Care Platform
-              </div>
+              </span>
             </div>
           </div>
 
           {/* Active Clinic Badge */}
-          <div style={{ background: 'var(--surface-clay)', padding: '6px 10px', borderRadius: '10px', marginTop: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span className="status-dot ok" />
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-forest)', fontWeight: 600 }}>
-              Pune Central Institute
-            </span>
+          <div className="mt-2 flex items-center gap-2 rounded-lg bg-[var(--surface-clay)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-forest)] group-data-[collapsible=icon]:hidden">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-[var(--status-ok)] animate-pulse" />
+            <span className="truncate">Pune Central Clinic</span>
           </div>
-        </div>
+        </SidebarHeader>
 
         {/* Persona Switcher Section */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-stone)' }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <div className="p-3 border-b border-[var(--border-stone)] group-data-[collapsible=icon]:hidden">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--text-dim)]">
             <Shield size={12} />
-            Active Role / Persona
+            <span>Active Role</span>
           </div>
           <select
             value={currentRole}
             onChange={(e) => setCurrentRole(e.target.value as UserRole)}
-            style={{
-              width: '100%',
-              padding: '8px 10px',
-              borderRadius: '12px',
-              border: '1px solid var(--border-stone)',
-              background: 'var(--surface-clay)',
-              fontSize: '0.8rem',
-              color: 'var(--text-forest)',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="w-full rounded-lg border border-[var(--border-stone)] bg-[var(--surface-clay)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-forest)] outline-none focus:border-[var(--accent-sage)] cursor-pointer"
           >
             <option value="clinician">👨‍⚕️ Dr. Mehta (Clinician)</option>
             <option value="coach">🌿 Sister Kavita (Coach)</option>
             <option value="caregiver">👧 Ananya K. (Caregiver)</option>
-            <option value="admin">🏢 Clinic Administrator</option>
+            <option value="admin">🏢 Clinic Admin</option>
           </select>
         </div>
 
-        {/* Navigation Items */}
-        <nav style={{ flex: '1', padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 8px 6px' }}>
-            Navigation Portals
-          </div>
+        {/* Navigation Portals Menu */}
+        <SidebarContent className="p-2">
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-dim)] px-2">
+              Navigation Portals
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
 
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        onClick={() => setActiveTab(item.id)}
+                        tooltip={item.label}
+                        className={`h-11 rounded-xl px-3 transition-all ${
+                          isActive 
+                            ? 'bg-[var(--accent-sage-subtle)] text-[var(--text-forest)] font-semibold shadow-xs border border-[var(--accent-sage-border)]' 
+                            : 'text-[var(--text-muted)] hover:bg-[var(--surface-clay)] hover:text-[var(--text-forest)]'
+                        }`}
+                      >
+                        <Icon 
+                          size={18} 
+                          className="shrink-0"
+                          color={isActive ? 'var(--text-forest)' : 'var(--text-dim)'} 
+                        />
+                        <span className="truncate flex-1 text-sm">{item.label}</span>
+                        <SidebarMenuBadge className="text-[10px] bg-[var(--surface-clay)] text-[var(--text-dim)] font-medium px-1.5 py-0.5 rounded-md">
+                          {item.badge}
+                        </SidebarMenuBadge>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
 
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleTabClick(item.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px 14px',
-                  borderRadius: '16px',
-                  border: isActive ? '1px solid var(--accent-sage-border)' : '1px solid transparent',
-                  background: isActive ? 'var(--accent-sage-subtle)' : 'transparent',
-                  color: isActive ? 'var(--text-forest)' : 'var(--text-muted)',
-                  fontWeight: isActive ? 600 : 500,
-                  fontSize: '0.88rem',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s ease',
-                  width: '100%',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Icon size={18} color={isActive ? 'var(--text-forest)' : 'var(--text-dim)'} strokeWidth={isActive ? 2 : 1.5} />
-                  <span>{item.label}</span>
-                </div>
-                <span style={{
-                  fontSize: '0.65rem',
-                  background: isActive ? 'var(--surface-white)' : 'var(--surface-clay)',
-                  padding: '2px 6px',
-                  borderRadius: '6px',
-                  color: isActive ? 'var(--text-forest)' : 'var(--text-dim)',
-                  fontWeight: 600,
-                }}>
-                  {item.badge}
-                </span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Bottom Utility Controls */}
-        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-stone)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {/* Language Picker */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={14} /> Language
+        {/* Footer Utilities & Profile */}
+        <SidebarFooter className="p-3 border-t border-[var(--border-stone)] flex flex-col gap-2.5">
+          {/* Senior Text Mode Toggle */}
+          <button
+            onClick={() => setIsSimpleMode(!isSimpleMode)}
+            className="flex items-center justify-between w-full rounded-lg border border-[var(--border-stone)] bg-[var(--surface-clay)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-forest)] hover:bg-[var(--surface-clay-dark)] transition-colors group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center"
+            title="Toggle Senior High-Contrast Large Text"
+          >
+            <span className="flex items-center gap-1.5 truncate">
+              <Type size={14} className="shrink-0" />
+              <span className="group-data-[collapsible=icon]:hidden">Senior Text (19px)</span>
             </span>
-            <div style={{ display: 'flex', gap: '4px' }}>
+            <span className="text-[10px] font-bold uppercase text-[var(--accent-sage-dark)] group-data-[collapsible=icon]:hidden">
+              {isSimpleMode ? 'ON' : 'OFF'}
+            </span>
+          </button>
+
+          {/* Language Switcher */}
+          <div className="flex items-center justify-between text-xs text-[var(--text-muted)] group-data-[collapsible=icon]:hidden">
+            <span className="flex items-center gap-1.5">
+              <Globe size={13} />
+              <span>Language</span>
+            </span>
+            <div className="flex gap-1">
               {(['en', 'hi', 'mr'] as Language[]).map((lang) => (
                 <button
                   key={lang}
                   onClick={() => setLanguage(lang)}
-                  style={{
-                    padding: '3px 7px',
-                    borderRadius: '8px',
-                    border: language === lang ? '1px solid var(--text-forest)' : '1px solid var(--border-stone)',
-                    background: language === lang ? 'var(--text-forest)' : 'var(--surface-clay)',
-                    color: language === lang ? '#FFFFFF' : 'var(--text-forest)',
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
+                  className={`rounded-md px-1.5 py-0.5 text-[11px] font-bold transition-all ${
+                    language === lang 
+                      ? 'bg-[var(--text-forest)] text-white' 
+                      : 'bg-[var(--surface-clay)] text-[var(--text-forest)] hover:bg-[var(--surface-clay-dark)]'
+                  }`}
                 >
                   {lang.toUpperCase()}
                 </button>
@@ -275,148 +237,40 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             </div>
           </div>
 
-          {/* Simple Mode Button */}
-          <button
-            onClick={() => setIsSimpleMode(!isSimpleMode)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '8px 12px',
-              borderRadius: '12px',
-              border: '1px solid var(--border-stone)',
-              background: isSimpleMode ? 'var(--accent-sage-subtle)' : 'var(--surface-clay)',
-              color: 'var(--text-forest)',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              width: '100%',
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Type size={14} />
-              Senior Big Text Mode
-            </span>
-            <span>{isSimpleMode ? 'ON' : 'OFF'}</span>
-          </button>
-
-          {/* System Health */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-dim)', paddingTop: '4px' }}>
-            <span>Engine Status</span>
-            <span style={{ color: isBackendHealthy ? 'var(--status-ok)' : 'var(--status-danger)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span className={`status-dot ${isBackendHealthy ? 'ok' : 'danger'}`} />
+          {/* Engine Health Status */}
+          <div className="flex items-center justify-between text-[11px] text-[var(--text-dim)] group-data-[collapsible=icon]:hidden">
+            <span>FastAPI Engine</span>
+            <span className="flex items-center gap-1.5 font-semibold text-[var(--text-forest)]">
+              <span className={`h-2 w-2 rounded-full ${isBackendHealthy ? 'bg-[var(--status-ok)]' : 'bg-[var(--status-danger)]'}`} />
               {isBackendHealthy ? 'Live (8000)' : 'Offline'}
             </span>
           </div>
-        </div>
-      </aside>
 
-      {/* 3. Mobile Slide-Over Drawer */}
-      {mobileDrawerOpen && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(45, 58, 49, 0.45)',
-          backdropFilter: 'blur(3px)',
-          zIndex: 99999,
-          display: 'flex',
-        }}>
-          <div style={{
-            width: '280px',
-            background: 'var(--surface-white)',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            boxShadow: 'var(--shadow-lg)',
-            padding: '20px 16px',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <span className="font-serif" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-forest)' }}>
-                diabeto.
+          <SidebarSeparator className="my-1 bg-[var(--border-stone)]" />
+
+          {/* User Profile Footer Card */}
+          <div className="flex items-center gap-2.5 rounded-xl bg-[var(--surface-clay)] p-2 group-data-[collapsible=icon]:p-1 group-data-[collapsible=icon]:justify-center">
+            <img 
+              src={currentProfile.avatar} 
+              alt={currentProfile.name}
+              className="h-8 w-8 rounded-full object-cover border border-[var(--border-stone)] shrink-0"
+            />
+            <div className="flex flex-col min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+              <span className="text-xs font-bold text-[var(--text-forest)] truncate">
+                {currentProfile.name}
               </span>
-              <button
-                onClick={() => setMobileDrawerOpen(false)}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
-              >
-                <X size={22} color="var(--text-forest)" />
-              </button>
+              <span className="text-[10px] text-[var(--text-muted)] truncate">
+                {currentProfile.title}
+              </span>
             </div>
-
-            {/* Mobile Nav Links */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: '1' }}>
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleTabClick(item.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px 14px',
-                      borderRadius: '14px',
-                      background: isActive ? 'var(--accent-sage-subtle)' : 'transparent',
-                      color: isActive ? 'var(--text-forest)' : 'var(--text-muted)',
-                      fontWeight: isActive ? 600 : 500,
-                      border: 'none',
-                      textAlign: 'left',
-                      fontSize: '0.95rem',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Icon size={20} color={isActive ? 'var(--text-forest)' : 'var(--text-dim)'} />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Mobile Persona & Language */}
-            <div style={{ borderTop: '1px solid var(--border-stone)', paddingTop: '16px' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px' }}>
-                Active Persona:
-              </div>
-              <select
-                value={currentRole}
-                onChange={(e) => setCurrentRole(e.target.value as UserRole)}
-                style={{ width: '100%', padding: '8px', borderRadius: '10px', background: 'var(--surface-clay)', marginBottom: '12px' }}
-              >
-                <option value="clinician">Dr. Mehta (Clinician)</option>
-                <option value="coach">Sister Kavita (Coach)</option>
-                <option value="caregiver">Ananya K. (Caregiver)</option>
-                <option value="admin">Administrator</option>
-              </select>
-
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {(['en', 'hi', 'mr'] as Language[]).map((lang) => (
-                  <button
-                    key={lang}
-                    onClick={() => setLanguage(lang)}
-                    style={{
-                      flex: '1',
-                      padding: '6px',
-                      borderRadius: '8px',
-                      background: language === lang ? 'var(--text-forest)' : 'var(--surface-clay)',
-                      color: language === lang ? '#FFFFFF' : 'var(--text-forest)',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      border: 'none',
-                    }}
-                  >
-                    {lang.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ChevronRight size={14} className="text-[var(--text-dim)] shrink-0 group-data-[collapsible=icon]:hidden" />
           </div>
+        </SidebarFooter>
 
-          <div style={{ flex: '1' }} onClick={() => setMobileDrawerOpen(false)} />
-        </div>
-      )}
+        <SidebarRail />
+      </Sidebar>
 
-      {/* 4. Mobile Bottom Navigation Bar (For elderly easy one-thumb tapping on phones) */}
+      {/* 2. Mobile Bottom Navigation Bar (Preserved for 1-thumb senior accessibility on phone viewports) */}
       <div className="mobile-bottom-nav">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -425,7 +279,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           return (
             <button
               key={item.id}
-              onClick={() => handleTabClick(item.id)}
+              onClick={() => setActiveTab(item.id)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',

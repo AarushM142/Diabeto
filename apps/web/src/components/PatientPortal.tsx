@@ -190,7 +190,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
   };
 
   return (
-    <div style={{ padding: '32px 24px', maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="portal-container">
       {/* Toast Alerts */}
       {pillToast && (
         <div className="botanical-callout ok" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -207,43 +207,45 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
       )}
 
       {/* Hero Welcome Banner */}
-      <div className="botanical-card" style={{ padding: '32px 36px', marginBottom: '28px', background: 'linear-gradient(135deg, var(--surface-white) 0%, var(--surface-clay) 100%)', borderLeft: '6px solid var(--accent-sage)', position: 'relative' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
+      <div className="botanical-card responsive-hero-card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, var(--surface-white) 0%, var(--surface-clay) 100%)', borderLeft: '6px solid var(--accent-sage)', position: 'relative' }}>
+        <div className="responsive-hero-content">
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
               <span className="status-pill ok">
                 <span className="status-dot ok" />
                 Care Protocol Active
               </span>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                 Pune Central Diabetes Clinic • Dr. Arvind Mehta
               </span>
             </div>
-            <h1 className="font-serif" style={{ fontSize: '2.1rem', color: 'var(--text-forest)', margin: 0, fontWeight: 600 }}>
+            <h1 className="font-serif" style={{ fontSize: 'clamp(1.45rem, 4vw, 2.1rem)', color: 'var(--text-forest)', margin: 0, fontWeight: 600, lineHeight: 1.2 }}>
               {getGreeting()}
             </h1>
-            <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginTop: '6px', maxWidth: '640px', fontStyle: 'italic' }}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '6px', maxWidth: '640px', fontStyle: 'italic', lineHeight: 1.4 }}>
               {getDailyQuote()}
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <div className="responsive-hero-actions">
             <div style={{
               background: 'var(--surface-white)',
-              padding: '12px 20px',
+              padding: '10px 18px',
               borderRadius: '20px',
               border: '1px solid var(--border-stone)',
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
               boxShadow: 'var(--shadow-sm)',
+              width: '100%',
+              maxWidth: '260px',
             }}>
-              <Award size={28} color="var(--terracotta)" />
+              <Award size={26} color="var(--terracotta)" />
               <div>
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Steady Care Streak
                 </div>
-                <div className="font-serif" style={{ fontSize: '1.4rem', color: 'var(--text-forest)', fontWeight: 700 }}>
+                <div className="font-serif" style={{ fontSize: '1.3rem', color: 'var(--text-forest)', fontWeight: 700 }}>
                   {streakCount} Days 🌿
                 </div>
               </div>
@@ -262,50 +264,46 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
       </div>
 
       {/* Main 2-Column Responsive Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px' }}>
+      <div className="responsive-grid-12">
         
         {/* Left Column (8 cols): Medication Calendar, Warnings, & Graphical CGM Analysis */}
-        <div style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="responsive-col-8">
           
           {/* 1. Visual Medication Calendar & Daily Schedule */}
-          <div className="botanical-card" style={{ padding: '28px' }}>
+          <div className="botanical-card responsive-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h2 className="font-serif" style={{ fontSize: '1.35rem', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                <h2 className="font-serif" style={{ fontSize: 'clamp(1.15rem, 3vw, 1.35rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                   <Calendar size={20} color="var(--accent-sage)" strokeWidth={1.5} />
                   Visual Medication & Routine Calendar
                 </h2>
-                <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Track your daily prescribed doses and log adherence with one gentle tap.
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Track daily prescribed doses and log adherence with one gentle tap.
                 </p>
               </div>
 
-              <span className="status-pill ok" style={{ fontSize: '0.78rem' }}>
+              <span className="status-pill ok" style={{ fontSize: '0.75rem' }}>
                 <CheckCircle2 size={13} color="var(--status-ok)" />
                 2 of 3 Doses Taken Today
               </span>
             </div>
 
             {/* 7-Day Week Scroller */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '24px' }}>
+            <div className="calendar-week-row">
               {calendarDays.map((d, i) => (
                 <div
                   key={i}
+                  className="calendar-day-cell"
                   style={{
-                    padding: '12px 6px',
-                    textAlign: 'center',
-                    borderRadius: '16px',
                     background: d.current ? 'var(--accent-sage-subtle)' : 'var(--surface-clay)',
                     border: d.current ? '2px solid var(--accent-sage)' : '1px solid var(--border-stone)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
                   }}
                 >
-                  <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)' }}>{d.label}</div>
-                  <div className="font-serif" style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-forest)', margin: '2px 0' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)' }}>{d.label}</div>
+                  <div className="font-serif" style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-forest)', margin: '2px 0' }}>
                     {d.date.split(' ')[1] || d.date}
                   </div>
-                  <div style={{ fontSize: '0.68rem', color: d.current ? 'var(--status-warn)' : 'var(--status-ok)', fontWeight: 600 }}>
+                  <div style={{ fontSize: '0.65rem', color: d.current ? 'var(--status-warn)' : 'var(--status-ok)', fontWeight: 600 }}>
                     {d.count}
                   </div>
                 </div>
@@ -321,7 +319,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
                   <div
                     key={med.id}
                     style={{
-                      padding: '18px 20px',
+                      padding: '16px 18px',
                       borderRadius: '18px',
                       background: isTaken ? 'var(--surface-white)' : 'var(--terracotta-subtle)',
                       border: isTaken ? '1px solid var(--border-stone)' : '1.5px solid var(--terracotta-border)',
@@ -329,13 +327,13 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       flexWrap: 'wrap',
-                      gap: '16px',
+                      gap: '14px',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: '220px', flex: '1' }}>
                       <div style={{
-                        width: '44px',
-                        height: '44px',
+                        width: '42px',
+                        height: '42px',
                         borderRadius: '50%',
                         background: isTaken ? 'var(--status-ok-bg)' : 'var(--terracotta-subtle)',
                         border: isTaken ? '1px solid var(--status-ok-border)' : '1px solid var(--terracotta-border)',
@@ -348,21 +346,21 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
                       </div>
 
                       <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <strong style={{ fontSize: '1rem', color: 'var(--text-forest)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <strong style={{ fontSize: '0.95rem', color: 'var(--text-forest)' }}>
                             {med.name}
                           </strong>
-                          <span style={{ fontSize: '0.78rem', background: 'var(--surface-clay)', padding: '2px 8px', borderRadius: '10px', color: 'var(--text-muted)' }}>
+                          <span style={{ fontSize: '0.75rem', background: 'var(--surface-clay)', padding: '2px 8px', borderRadius: '10px', color: 'var(--text-muted)' }}>
                             {med.dose}
                           </span>
                         </div>
-                        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                           Scheduled: <strong>{med.scheduledTime}</strong> • {med.instructions}
                         </div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: 'auto' }}>
                       {isTaken ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--status-ok)', fontSize: '0.85rem', fontWeight: 600 }}>
                           <CheckCircle2 size={16} />
@@ -386,10 +384,10 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
           </div>
 
           {/* 2. Clinical Drug-Exercise & Side Effect Warning Callout */}
-          <div className="botanical-card" style={{ padding: '24px 28px', borderLeft: '6px solid var(--terracotta)', background: 'var(--surface-white)' }}>
+          <div className="botanical-card responsive-card" style={{ borderLeft: '6px solid var(--terracotta)', background: 'var(--surface-white)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
               <AlertTriangle size={22} color="var(--terracotta)" />
-              <h3 className="font-serif" style={{ fontSize: '1.18rem', color: 'var(--text-forest)', margin: 0 }}>
+              <h3 className="font-serif" style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.18rem)', color: 'var(--text-forest)', margin: 0 }}>
                 Clinical Drug Interactions & Exercise Safety Protocol
               </h3>
             </div>
@@ -418,14 +416,14 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
           </div>
 
           {/* 3. Graphical Analysis & CGM Trends */}
-          <div className="botanical-card" style={{ padding: '28px' }}>
+          <div className="botanical-card responsive-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h2 className="font-serif" style={{ fontSize: '1.35rem', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                <h2 className="font-serif" style={{ fontSize: 'clamp(1.15rem, 3vw, 1.35rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                   <TrendingUp size={20} color="var(--accent-sage)" strokeWidth={1.5} />
                   Continuous Blood Sugar Curve & Target Corridor
                 </h2>
-                <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                   Shaded green corridor represents your safe target range (70 to 180 mg/dL).
                 </p>
               </div>
@@ -439,7 +437,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
             </div>
 
             {/* Quick Metrics Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '20px' }}>
+            <div className="responsive-grid-3" style={{ marginBottom: '20px' }}>
               <div style={{ background: 'var(--surface-clay)', padding: '14px 18px', borderRadius: '16px', border: '1px solid var(--border-stone)' }}>
                 <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Average Sugar</div>
                 <div className="font-serif tabular" style={{ fontSize: '1.5rem', color: 'var(--text-forest)', fontWeight: 700, marginTop: '2px' }}>
@@ -501,10 +499,10 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
         </div>
 
         {/* Right Column (4 cols): Smart Reminders, Doctor Touchpoint & Streaks */}
-        <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="responsive-col-4">
           
           {/* Smart Daily Reminders Card */}
-          <div className="botanical-card" style={{ padding: '24px' }}>
+          <div className="botanical-card responsive-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 className="font-serif" style={{ fontSize: '1.18rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Bell size={18} color="var(--terracotta)" />

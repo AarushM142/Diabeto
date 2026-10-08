@@ -16,14 +16,16 @@ async def log_audit_entry(
     """
     Appends an immutable audit log entry for clinical governance & compliance.
     """
+    audit_details = dict(details or {})
+    audit_details["actor_role"] = actor_role
+
     audit = AuditLog(
         id=str(uuid.uuid4()),
         actor_id=actor_id,
-        actor_role=actor_role,
         action=action,
         target_type=target_type,
         target_id=target_id,
-        details=details or {},
+        details=audit_details,
         created_at=datetime.now(timezone.utc),
     )
     db.add(audit)

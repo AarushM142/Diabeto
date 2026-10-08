@@ -83,7 +83,7 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
   })) || [];
 
   return (
-    <div style={{ padding: '36px 32px', maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="portal-container">
       {/* Role Authorization Banner */}
       {!isAuthorizedDoctor && (
         <div className="botanical-callout warn" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -268,8 +268,8 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
           </div>
 
           {/* Interactive Trajectory Chart (8 cols) */}
-          <div className="botanical-card" style={{ gridColumn: 'span 8', padding: '28px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div className="botanical-card responsive-card responsive-col-8">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <h2 className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--text-forest)', margin: 0 }}>
                   {t('clinicianOverview', language)}
@@ -324,7 +324,7 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
           </div>
 
           {/* Clinician Weekly Synthesis Review Gate (4 cols) */}
-          <div className="botanical-card" style={{ gridColumn: 'span 4', padding: '28px', display: 'flex', flexDirection: 'column' }}>
+          <div className="botanical-card responsive-card responsive-col-4" style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FileText size={20} color="var(--accent-sage)" strokeWidth={1.5} />

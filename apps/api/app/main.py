@@ -14,6 +14,8 @@ from apps.api.app.modules.auth.router import router as auth_router
 from apps.api.app.channels.whatsapp import router as whatsapp_router
 from apps.api.app.core.worker import run_background_worker
 
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -57,6 +59,8 @@ app.include_router(risk_router)
 app.include_router(meal_router)
 app.include_router(whatsapp_router)
 app.include_router(auth_router)
+
+
 
 @app.get("/health", tags=["Health"])
 @app.get("/v1/health", tags=["Health"])

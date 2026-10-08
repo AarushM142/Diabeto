@@ -5,8 +5,11 @@ Validates system behavior under abnormal inputs, physiological extremes, missing
 
 import pytest
 import numpy as np
+
+torch = pytest.importorskip("torch")
 from apps.ml.personalized_alert_engine import PersonalizedAlertEngine, AlertSeverity, RiskCategory
 from apps.ml.demo_patient_alert_pipeline import DiabetoPipelineRunner
+
 
 BANNED_MEDICAL_PATTERNS = [
     "take insulin",
