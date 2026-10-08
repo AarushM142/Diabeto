@@ -216,6 +216,7 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, role }),
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -232,6 +233,7 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, name, role }),
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -248,6 +250,7 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, role }),
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

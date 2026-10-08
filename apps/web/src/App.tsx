@@ -72,7 +72,13 @@ export const App: React.FC = () => {
   // Handle Supabase Google OAuth Redirects
   useEffect(() => {
     const processSession = async (session: any) => {
-      if (session?.user && !currentUser) {
+      // If user is ALREADY authenticated in storage or state, do NOT open role onboarding modal
+      const existingUser = api.getCurrentUser();
+      if (existingUser || currentUser) {
+        return;
+      }
+
+      if (session?.user) {
         const email = session.user.email || 'user@gmail.com';
         const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || email.split('@')[0];
         const avatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
@@ -89,14 +95,12 @@ export const App: React.FC = () => {
 
     // Check existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user && !currentUser) {
-        processSession(session);
-      }
+      processSession(session);
     });
 
     // Listen for OAuth sign-in event
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
         processSession(session);
       }
     });
@@ -135,12 +139,12 @@ export const App: React.FC = () => {
     });
   };
 
-  const handleLoaderComplete = () => {
+  const handleLoaderComplete = React.useCallback(() => {
     if (loadingState) {
       loadingState.targetAction();
       setLoadingState(null);
     }
-  };
+  }, [loadingState]);
 
   const handleOpenLogin = (role?: UserRole) => {
     triggerTransition(
@@ -257,13 +261,13 @@ export const App: React.FC = () => {
       )}
 
       {/* Main App Content Flow */}
-      {pendingGoogleUser ? (
-        <RoleSelectModal
-          user={pendingGoogleUser}
-          onSelectRole={handleRoleSelected}
-        />
-      ) : !currentUser ? (
-        unauthView === 'auth' ? (
+      {!currentUser ? (
+        pendingGoogleUser ? (
+          <RoleSelectModal
+            user={pendingGoogleUser}
+            onSelectRole={handleRoleSelected}
+          />
+        ) : unauthView === 'auth' ? (
           <AuthView
             onLoginSuccess={handleLoginSuccess}
             onBack={handleBackToHero}
