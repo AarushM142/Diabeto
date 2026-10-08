@@ -8,7 +8,7 @@ import { api } from './api/client';
 import type { Language } from './lib/types';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'clinician' | 'coach' | 'caregiver' | 'simulator'>('simulator');
+  const [activeTab, setActiveTab] = useState<'clinician' | 'coach' | 'caregiver' | 'simulator'>('caregiver');
   const [language, setLanguage] = useState<Language>('en');
   const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState(false);
@@ -34,7 +34,10 @@ export const App: React.FC = () => {
   }, [isSimpleMode]);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--canvas)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-alabaster)', position: 'relative' }}>
+      {/* Mandatory Tactile Paper Grain Overlay */}
+      <div className="paper-grain-overlay" aria-hidden="true" />
+
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -45,7 +48,7 @@ export const App: React.FC = () => {
         isBackendHealthy={isBackendHealthy}
       />
 
-      <main style={{ flex: '1' }}>
+      <main style={{ flex: '1', position: 'relative', zIndex: 1 }}>
         {activeTab === 'clinician' && <ClinicianPortal language={language} />}
         {activeTab === 'coach' && <CoachPortal language={language} />}
         {activeTab === 'caregiver' && <CaregiverPortal language={language} />}
@@ -53,19 +56,24 @@ export const App: React.FC = () => {
       </main>
 
       <footer style={{
-        borderTop: '1px solid var(--line)',
-        padding: '16px 24px',
+        borderTop: '1px solid var(--border-stone)',
+        padding: '24px 32px',
         textAlign: 'center',
-        fontSize: '0.75rem',
-        color: 'var(--ink-2)',
-        background: 'var(--surface)',
+        fontSize: '0.8125rem',
+        color: 'var(--text-muted)',
+        background: 'var(--surface-clay)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
         gap: '12px',
+        position: 'relative',
+        zIndex: 1,
       }}>
-        <span>diabeto. Elderly Diabetes Care Platform • Closed-Loop Clinical Safety</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="font-serif" style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-forest)' }}>diabeto.</span>
+          <span>• Botanical Diabetes Care Platform & Clinical Guardrails</span>
+        </div>
         <span>Clinician of Record: <strong>Dr. Arvind Mehta, MD</strong> • Clinic: <strong>Pune Central (clinic_pune_01)</strong></span>
       </footer>
     </div>

@@ -188,64 +188,66 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
   };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1440px', margin: '0 auto' }}>
+    <div style={{ padding: '36px 32px', maxWidth: '1440px', margin: '0 auto' }}>
       {/* Title & Description */}
-      <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Sparkles size={20} color="var(--brand)" />
+      <div style={{ marginBottom: '28px' }}>
+        <h2 className="font-serif" style={{ fontSize: '1.65rem', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+          <Sparkles size={24} color="var(--accent-sage)" strokeWidth={1.5} />
           {t('simulatorTitle', language)}
         </h2>
-        <p style={{ fontSize: '0.8125rem', color: 'var(--ink-2)' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '4px' }}>
           {t('simulatorSub', language)}
         </p>
       </div>
 
       {/* Escalation Live Banner */}
       {escalationAlert && (
-        <div className="callout danger" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <AlertCircle size={20} color="var(--danger)" />
-          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--danger)' }}>
+        <div className="botanical-callout danger" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <AlertCircle size={22} color="var(--status-danger)" />
+          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--status-danger)' }}>
             {escalationAlert}
           </span>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '28px' }}>
         {/* Left: Interactive Control Deck (7 cols) */}
-        <div style={{ gridColumn: 'span 7', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <div style={{ gridColumn: 'span 7', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Preset Clinical Scenarios */}
-          <div className="panel" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)' }}>
+          <div className="botanical-card" style={{ padding: '28px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', margin: 0 }}>
                 {t('quickScenarios', language)}
               </h3>
-              <span style={{ fontSize: '0.75rem', color: 'var(--ink-2)' }}>
-                Target Patient: <strong>Ramesh Kulkarni</strong>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                Target: <strong>Ramesh Kulkarni</strong>
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {PRESET_SCENARIOS.map((sc) => (
                 <button
                   key={sc.id}
                   onClick={() => sendMessage(sc.promptText, sc.isVoice, sc.voiceDuration)}
                   disabled={isProcessing}
-                  className="btn btn-secondary"
+                  className="botanical-card"
                   style={{
-                    padding: '12px 14px',
+                    padding: '16px 18px',
                     textAlign: 'left',
                     justifyContent: 'flex-start',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'flex-start',
                     gap: '4px',
-                    borderLeft: sc.category === 'emergency' ? '4px solid var(--danger)' : sc.category === 'adherence' ? '4px solid var(--warn)' : '4px solid var(--brand)',
+                    cursor: 'pointer',
+                    borderLeft: sc.category === 'emergency' ? '5px solid var(--status-danger)' : sc.category === 'adherence' ? '5px solid var(--terracotta)' : '5px solid var(--accent-sage)',
+                    background: 'var(--surface-clay)',
                   }}
                 >
-                  <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--ink)' }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-forest)' }}>
                     {sc.label}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--ink-2)', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.35 }}>
                     {sc.description}
                   </div>
                 </button>
@@ -254,15 +256,15 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
           </div>
 
           {/* Custom Message Dispatch Deck */}
-          <div className="panel" style={{ padding: '20px' }}>
-            <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '12px' }}>
+          <div className="botanical-card" style={{ padding: '28px' }}>
+            <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', marginBottom: '14px', margin: 0 }}>
               {t('customMessage', language)}
             </h3>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '12px' }}>
               <input
                 type="text"
-                className="input-field"
+                className="input-pill"
                 placeholder={t('typePlaceholder', language)}
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
@@ -274,7 +276,7 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
               <button
                 onClick={() => sendMessage(inputVal)}
                 disabled={isProcessing || !inputVal.trim()}
-                className="btn btn-brand"
+                className="btn btn-primary"
               >
                 <Send size={15} />
                 {t('send', language)}
@@ -286,13 +288,13 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
                 className="btn btn-secondary"
                 title="Send Simulated Audio Note"
               >
-                <Mic size={15} color="var(--brand)" />
+                <Mic size={16} color="var(--accent-sage-dark)" />
               </button>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--line)' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--ink-2)' }}>
-                Inbound Twilio Webhook: <code>POST /v1/webhooks/whatsapp</code>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-stone)' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                Inbound Webhook: <code>POST /v1/webhooks/whatsapp</code>
               </span>
               <button
                 onClick={() => setMessages([])}
@@ -310,15 +312,15 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
           <div className="phone-mockup">
             {/* WhatsApp Header */}
             <div className="phone-header">
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#075e54', fontWeight: 700, fontSize: '0.9rem' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-forest)', fontWeight: 700, fontSize: '0.95rem' }}>
                 D
               </div>
               <div style={{ flex: '1' }}>
-                <div style={{ fontSize: '0.9375rem', fontWeight: 600 }}>Diabeto Care</div>
-                <div style={{ fontSize: '0.6875rem', opacity: 0.9 }}>Official Health Account • Pune</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>Diabeto Care</div>
+                <div style={{ fontSize: '0.72rem', opacity: 0.85 }}>Official Health Account • Pune</div>
               </div>
-              <Phone size={16} color="#ffffff" />
-              <MoreVertical size={16} color="#ffffff" />
+              <Phone size={16} color="#FFFFFF" />
+              <MoreVertical size={16} color="#FFFFFF" />
             </div>
 
             {/* Chat Messages Stream */}
@@ -333,14 +335,14 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
                   <div key={m.id} className={isUser ? 'bubble-inbound' : 'bubble-outbound'}>
                     {m.isVoice ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
-                            <Play size={12} fill="#ffffff" />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'var(--text-forest)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF' }}>
+                            <Play size={12} fill="#FFFFFF" />
                           </div>
-                          <div style={{ height: '4px', background: 'var(--line-strong)', flex: '1', borderRadius: '2px' }} />
-                          <span style={{ fontSize: '0.6875rem', color: 'var(--ink-2)' }}>{m.voiceDuration || '0:06'}</span>
+                          <div style={{ height: '4px', background: 'var(--accent-sage)', flex: '1', borderRadius: '2px' }} />
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{m.voiceDuration || '0:06'}</span>
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--ink-2)', fontStyle: 'italic', marginTop: '2px' }}>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '4px' }}>
                           🎙️ Transcribed: "{m.transcript}"
                         </div>
                       </div>
@@ -353,20 +355,20 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
                       alignItems: 'center',
                       justifyContent: 'flex-end',
                       gap: '4px',
-                      fontSize: '0.6875rem',
-                      color: 'var(--ink-2)',
-                      marginTop: '3px',
+                      fontSize: '0.7rem',
+                      color: 'var(--text-muted)',
+                      marginTop: '4px',
                     }}>
                       <span>{m.timestamp}</span>
-                      {isUser && <CheckCheck size={13} color="#53bdeb" />}
-                      {!isUser && <Check size={13} color="var(--ink-2)" />}
+                      {isUser && <CheckCheck size={14} color="#53bdeb" />}
+                      {!isUser && <Check size={14} color="var(--text-muted)" />}
                     </div>
                   </div>
                 );
               })}
 
               {isProcessing && (
-                <div className="bubble-outbound" style={{ fontStyle: 'italic', color: 'var(--ink-2)', fontSize: '0.8125rem' }}>
+                <div className="bubble-outbound" style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '0.825rem' }}>
                   Diabeto is thinking...
                 </div>
               )}

@@ -1,48 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --font-sans: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Botanical / Organic Serif Typography */
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Source Sans 3', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Official Diabeto Design Rules Visual Tokens */
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --surface-2: #f5f5f3;
-  --surface-3: #eeeeec;
-  --canvas: #f6f6f3;
+  /* Botanical / Organic Serif Color Tokens */
+  --bg-alabaster: #F9F8F4;        /* Warm Alabaster / Rice Paper */
+  --surface-white: #FFFFFF;       /* Pure Card White */
+  --surface-clay: #F2F0EB;        /* Soft Clay / Mushroom */
+  --surface-clay-dark: #EAE6DF;   /* Deeper Clay */
+  
+  --text-forest: #2D3A31;         /* Deep Forest Green (Primary Text) */
+  --text-muted: #5C6A60;          /* Muted Forest / Sage Text */
+  --text-dim: #8A978E;            /* Soft Subtitle Text */
+  
+  --accent-sage: #8C9A84;         /* Sage Green (Primary Accent) */
+  --accent-sage-dark: #687960;    /* Deep Sage Hover */
+  --accent-sage-subtle: #EDF2EC;  /* Soft Sage Tint */
+  --accent-sage-border: #C8D3C4;  /* Sage Hairline */
+  
+  --terracotta: #C27B66;          /* Terracotta (Interactive & Attention) */
+  --terracotta-dark: #A8624E;     /* Deep Terracotta Hover */
+  --terracotta-subtle: #FAF0EC;   /* Terracotta Light Tint */
+  --terracotta-border: #E8C4B8;   /* Terracotta Border */
+  
+  --border-stone: #E6E2DA;        /* Stone Hairline Border */
+  --border-stone-subtle: #F0ECE4; /* Subtle Stone */
 
-  --ink: #111111;
-  --ink-2: #555555;
-  --ink-3: #8a8a85;
-  --line: #e6e6e3;
-  --line-strong: #8a8a85;
+  /* Clinical Status Mappings (Organic Tone) */
+  --status-ok: #5B8266;           /* Earthy Green */
+  --status-ok-bg: #EFF5F0;
+  --status-ok-border: #C1DBC7;
 
-  /* Deep Forest Green (Primary Accent) */
-  --brand: #1a5c48;
-  --brand-hover: #144838;
-  --brand-subtle: #edf5f2;
-  --brand-border: #b8dcd0;
+  --status-warn: #C27B66;         /* Terracotta Warmth */
+  --status-warn-bg: #FAF0EC;
+  --status-warn-border: #E8C4B8;
 
-  /* Status Colors */
-  --ok: #067647;
-  --ok-bg: #ecfdf3;
-  --ok-border: #abefc6;
+  --status-danger: #B44335;       /* Earthy Crimson */
+  --status-danger-bg: #FDF2F0;
+  --status-danger-border: #F5C5BE;
 
-  --warn: #93370d;
-  --warn-bg: #fffaeb;
-  --warn-border: #fedf89;
-  --attention: #dc8a00;
+  /* Chart Botanical Band */
+  --chart-band: rgba(140, 154, 132, 0.16);
+  --chart-line: #5B8266;
 
-  --danger: #b42318;
-  --danger-hover: #912018;
-  --danger-bg: #fef3f2;
-  --danger-border: #fecdca;
-
-  --chart-band: rgba(26, 92, 72, 0.08);
+  /* Soft Diffused Botanical Shadows */
+  --shadow-sm: 0 2px 8px rgba(45, 58, 49, 0.03);
+  --shadow-md: 0 8px 24px -4px rgba(45, 58, 49, 0.05);
+  --shadow-lg: 0 16px 36px -8px rgba(45, 58, 49, 0.07);
 }
 
 html {
   font-size: 16px;
+  background-color: var(--bg-alabaster);
+  color: var(--text-forest);
 }
 
 html.simple-mode {
@@ -57,89 +70,142 @@ html.simple-mode {
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--canvas);
-  color: var(--ink);
+  background-color: var(--bg-alabaster);
+  color: var(--text-forest);
   min-height: 100vh;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  position: relative;
 }
 
-/* White Clean Panel on Soft Canvas */
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  transition: border-color 0.15s ease, padding 0.15s ease;
+/* Paper Grain Texture Overlay (Mandatory Defining Element) */
+.paper-grain-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
-.simple-mode .panel {
-  border-radius: 14px;
+/* Headings Typography */
+h1, h2, h3, .font-serif {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.015em;
 }
 
-.panel-header {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* Botanical Rounded Card (24px Radius) */
+.botanical-card {
+  background: var(--surface-white);
+  border: 1px solid var(--border-stone);
+  border-radius: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
 }
 
-/* Buttons (Strict Design Rules: Brand Green, White Secondary, Danger) */
+.botanical-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-sage-border);
+}
+
+.botanical-card-clay {
+  background: var(--surface-clay);
+  border: 1px solid var(--border-stone);
+  border-radius: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Arch Shape Utilities */
+.arch-top {
+  border-radius: 120px 120px 24px 24px;
+}
+
+.arch-full {
+  border-radius: 120px;
+}
+
+/* Pill Buttons (Botanical Style) */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 0.875rem;
-  padding: 8px 16px;
+  font-size: 0.825rem;
+  padding: 10px 22px;
   min-height: 44px;
-  border-radius: 8px;
+  border-radius: 9999px; /* Pill shape */
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-  font-family: inherit;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
   user-select: none;
-  border: 1px solid transparent;
+  border: 1.5px solid transparent;
+  letter-spacing: 0.03em;
 }
 
 .simple-mode .btn {
   min-height: 52px;
-  padding: 10px 20px;
+  padding: 12px 28px;
   font-size: 0.95rem;
 }
 
-.btn-brand, .btn-primary {
-  background: var(--brand);
-  color: #ffffff;
+.btn-primary, .btn-forest {
+  background: var(--text-forest);
+  color: #FFFFFF;
+  border-color: var(--text-forest);
 }
-.btn-brand:hover:not(:disabled), .btn-primary:hover:not(:disabled) {
-  background: var(--brand-hover);
+.btn-primary:hover:not(:disabled), .btn-forest:hover:not(:disabled) {
+  background: var(--terracotta);
+  border-color: var(--terracotta);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
-.btn-secondary, .btn-white {
-  background: var(--surface);
-  color: var(--ink);
-  border: 1.5px solid var(--line);
+.btn-secondary, .btn-sage-outline {
+  background: transparent;
+  color: var(--text-forest);
+  border: 1.5px solid var(--accent-sage);
 }
-.btn-secondary:hover:not(:disabled), .btn-white:hover:not(:disabled) {
-  background: var(--surface-2);
-  border-color: var(--line-strong);
+.btn-secondary:hover:not(:disabled), .btn-sage-outline:hover:not(:disabled) {
+  background: var(--accent-sage-subtle);
+  border-color: var(--accent-sage-dark);
+  transform: translateY(-1px);
+}
+
+.btn-clay {
+  background: var(--surface-clay);
+  color: var(--text-forest);
+  border: 1.5px solid var(--border-stone);
+}
+.btn-clay:hover:not(:disabled) {
+  background: var(--surface-clay-dark);
+  border-color: var(--accent-sage);
+}
+
+.btn-terracotta {
+  background: var(--terracotta);
+  color: #FFFFFF;
+}
+.btn-terracotta:hover:not(:disabled) {
+  background: var(--terracotta-dark);
+  transform: translateY(-1px);
 }
 
 .btn-danger {
-  background: var(--danger);
-  color: #ffffff;
+  background: var(--status-danger);
+  color: #FFFFFF;
 }
 .btn-danger:hover:not(:disabled) {
-  background: var(--danger-hover);
+  background: #9A3428;
 }
 
 .btn-sm {
-  padding: 5px 12px;
+  padding: 6px 14px;
   min-height: 36px;
-  font-size: 0.8125rem;
-  border-radius: 6px;
+  font-size: 0.785rem;
 }
 
 .btn:disabled {
@@ -147,66 +213,75 @@ body {
   cursor: not-allowed;
 }
 
-/* Status Indicators (Dot + Word) */
-.status-indicator {
+/* Botanical Status Pills (Dot + Word) */
+.status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8125rem;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
-.status-indicator.ok {
-  color: var(--ok);
+.status-pill.ok {
+  background: var(--status-ok-bg);
+  color: var(--status-ok);
+  border: 1px solid var(--status-ok-border);
 }
-.status-indicator.warn {
-  color: var(--warn);
+
+.status-pill.warn {
+  background: var(--status-warn-bg);
+  color: var(--status-warn);
+  border: 1px solid var(--status-warn-border);
 }
-.status-indicator.danger {
-  color: var(--danger);
+
+.status-pill.danger {
+  background: var(--status-danger-bg);
+  color: var(--status-danger);
+  border: 1px solid var(--status-danger-border);
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
 }
 .status-dot.ok {
-  background-color: var(--ok);
+  background-color: var(--status-ok);
 }
 .status-dot.warn {
-  background-color: var(--attention);
+  background-color: var(--terracotta);
 }
 .status-dot.danger {
-  background-color: var(--danger);
+  background-color: var(--status-danger);
 }
 
-/* Clean Callout Boxes */
-.callout {
-  padding: 14px 18px;
-  border-radius: 8px;
-  border-left: 4px solid var(--brand);
-  background: var(--surface);
-  border-top: 1px solid var(--line);
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+/* Soft Callouts */
+.botanical-callout {
+  padding: 18px 22px;
+  border-radius: 18px;
+  background: var(--surface-clay);
+  border: 1px solid var(--border-stone);
+  border-left: 4px solid var(--accent-sage);
 }
-.callout.danger {
-  border-left-color: var(--danger);
-  background: var(--danger-bg);
-  border-color: var(--danger-border);
+.botanical-callout.ok {
+  background: var(--status-ok-bg);
+  border-color: var(--status-ok-border);
+  border-left-color: var(--status-ok);
 }
-.callout.warn {
-  border-left-color: var(--attention);
-  background: var(--warn-bg);
-  border-color: var(--warn-border);
+.botanical-callout.warn {
+  background: var(--status-warn-bg);
+  border-color: var(--status-warn-border);
+  border-left-color: var(--terracotta);
 }
-.callout.ok {
-  border-left-color: var(--ok);
-  background: var(--ok-bg);
-  border-color: var(--ok-border);
+.botanical-callout.danger {
+  background: var(--status-danger-bg);
+  border-color: var(--status-danger-border);
+  border-left-color: var(--status-danger);
 }
 
 /* Tabular numbers */
@@ -215,88 +290,105 @@ body {
   font-feature-settings: "tnum";
 }
 
-/* Inputs */
-.input-field {
+/* Botanical Pill Inputs */
+.input-pill {
   width: 100%;
-  background: var(--surface);
-  border: 1.5px solid var(--line-strong);
-  color: var(--ink);
-  padding: 9px 12px;
-  border-radius: 8px;
+  background: var(--surface-white);
+  border: 1.5px solid var(--border-stone);
+  color: var(--text-forest);
+  padding: 10px 18px;
+  border-radius: 9999px;
   font-size: 0.875rem;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: all 0.25s ease;
 }
-.input-field:focus {
-  border-color: var(--brand);
+.input-pill:focus {
+  border-color: var(--accent-sage);
+  box-shadow: 0 0 0 3px rgba(140, 154, 132, 0.15);
 }
 
-/* Phone Mockup (WhatsApp Clean Styling) */
+.textarea-botanical {
+  width: 100%;
+  background: var(--surface-white);
+  border: 1.5px solid var(--border-stone);
+  color: var(--text-forest);
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.25s ease;
+}
+.textarea-botanical:focus {
+  border-color: var(--accent-sage);
+  box-shadow: 0 0 0 3px rgba(140, 154, 132, 0.15);
+}
+
+/* Phone Mockup (Botanical Sage WhatsApp) */
 .phone-mockup {
   width: 100%;
   max-width: 380px;
-  border-radius: 24px;
-  border: 2px solid var(--line-strong);
-  background: #ffffff;
+  border-radius: 36px;
+  border: 3px solid var(--text-forest);
+  background: #FFFFFF;
   overflow: hidden;
   margin: 0 auto;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-lg);
 }
 
 .phone-header {
-  background: #075e54;
-  color: #ffffff;
-  padding: 12px 16px;
+  background: var(--text-forest);
+  color: #FFFFFF;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 .phone-chat-body {
-  padding: 16px;
+  padding: 18px;
   min-height: 420px;
   max-height: 520px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: #efeae2;
+  gap: 12px;
+  background: #F4F1EA;
 }
 
 .bubble-inbound {
-  background: #ffffff;
-  color: #111111;
-  border-radius: 8px 8px 8px 2px;
-  padding: 10px 14px;
+  background: #FFFFFF;
+  color: var(--text-forest);
+  border-radius: 16px 16px 16px 4px;
+  padding: 11px 15px;
   max-width: 85%;
   align-self: flex-start;
   font-size: 0.85rem;
-  line-height: 1.4;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  line-height: 1.45;
+  box-shadow: 0 1px 3px rgba(45, 58, 49, 0.05);
 }
 
 .bubble-outbound {
-  background: #d9fdd3;
-  color: #111111;
-  border-radius: 8px 8px 2px 8px;
-  padding: 10px 14px;
+  background: #E2EBDD;
+  color: var(--text-forest);
+  border-radius: 16px 16px 4px 16px;
+  padding: 11px 15px;
   max-width: 85%;
   align-self: flex-end;
   font-size: 0.85rem;
-  line-height: 1.4;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  line-height: 1.45;
+  box-shadow: 0 1px 3px rgba(45, 58, 49, 0.05);
 }
 
 .bubble-system {
-  background: #fff3cd;
-  color: #856404;
-  border-radius: 6px;
-  padding: 6px 12px;
+  background: #EAE5DB;
+  color: var(--text-muted);
+  border-radius: 9999px;
+  padding: 5px 14px;
   align-self: center;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-align: center;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.05);
 }
 
 /* Scrollbars */
@@ -305,9 +397,9 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--surface-2);
+  background: var(--surface-clay);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: 3px;
+  background: var(--accent-sage);
+  border-radius: 4px;
 }
