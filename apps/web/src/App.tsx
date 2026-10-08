@@ -81,39 +81,72 @@ export const App: React.FC = () => {
         {/* Main Content Layout with SidebarInset */}
         <SidebarInset className="flex flex-col flex-1 min-w-0 bg-[var(--bg-alabaster)]">
           {/* Top Control Bar with Sidebar Trigger & Quick Actions */}
-          <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-[var(--border-stone)] bg-[var(--bg-alabaster)]/90 px-4 md:px-6 backdrop-blur-md">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="text-[var(--text-forest)] hover:bg-[var(--surface-clay)] hover:text-[var(--text-forest)] rounded-lg h-8 w-8" />
-              <div className="h-4 w-[1px] bg-[var(--border-stone)] hidden sm:block" />
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-dim)] hidden sm:inline">
+          <header style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 20,
+            display: 'flex',
+            height: '56px',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid var(--border-stone)',
+            backgroundColor: 'rgba(249, 248, 244, 0.94)',
+            backdropFilter: 'blur(10px)',
+            padding: '0 24px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <SidebarTrigger className="text-[var(--text-forest)] hover:bg-[var(--surface-clay)] hover:text-[var(--text-forest)] rounded-lg h-9 w-9 border border-[var(--border-stone)]" />
+              <div style={{ height: '16px', width: '1px', backgroundColor: 'var(--border-stone)' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dim)' }}>
                   Portal:
                 </span>
-                <span className="font-serif text-sm md:text-base font-bold text-[var(--text-forest)]">
+                <span className="font-serif" style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-forest)' }}>
                   {getPortalTitle()}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 md:gap-3">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {/* Quick Emergency SOS */}
               <a
                 href="tel:+918149680369"
-                className="flex items-center gap-1.5 rounded-full border border-[var(--status-danger-border)] bg-[var(--status-danger-bg)] px-3 py-1 text-xs font-bold text-[var(--status-danger)] hover:bg-[var(--status-danger)] hover:text-white transition-all shadow-xs"
+                className="btn btn-secondary btn-sm"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '5px 14px',
+                  fontSize: '0.78rem',
+                  borderColor: 'var(--status-danger-border)',
+                  color: 'var(--status-danger)',
+                  backgroundColor: 'var(--status-danger-bg)',
+                  fontWeight: 600,
+                  borderRadius: '20px',
+                }}
               >
                 <Phone size={13} className="shrink-0 animate-bounce" />
-                <span>SOS Trigger</span>
+                <span>SOS Emergency</span>
               </a>
 
               {/* Big Text Mode Pill */}
               <button
                 onClick={() => setIsSimpleMode(!isSimpleMode)}
-                className="flex items-center gap-1.5 rounded-full border border-[var(--border-stone)] bg-[var(--surface-clay)] px-3 py-1 text-xs font-semibold text-[var(--text-forest)] hover:bg-[var(--surface-clay-dark)] transition-all"
+                className="btn btn-secondary btn-sm"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '5px 14px',
+                  fontSize: '0.78rem',
+                  borderRadius: '20px',
+                  fontWeight: 600,
+                }}
                 title="Toggle High-Contrast 19px Senior Mode"
               >
                 <Type size={13} />
-                <span className="hidden sm:inline">Senior Mode</span>
-                <span className="font-bold text-[var(--accent-sage-dark)]">{isSimpleMode ? 'ON' : 'OFF'}</span>
+                <span>Senior Text</span>
+                <span style={{ fontWeight: 700, color: 'var(--accent-sage-dark)' }}>{isSimpleMode ? 'ON' : 'OFF'}</span>
               </button>
             </div>
           </header>
