@@ -10,6 +10,7 @@ export const translations = {
     offline: 'Offline',
     
     // Tabs
+    tabPatient: 'Senior Sanctuary',
     tabClinician: 'Clinician',
     tabCoach: 'Coach Desk',
     tabCaregiver: 'Caregiver',
@@ -84,6 +85,7 @@ export const translations = {
     offline: 'ऑफ़लाइन',
 
     // Tabs
+    tabPatient: 'सीनियर डैशबोर्ड',
     tabClinician: 'डॉक्टर पोर्टल',
     tabCoach: 'कोच डेस्क',
     tabCaregiver: 'परिवार दृश्य',
@@ -158,6 +160,7 @@ export const translations = {
     offline: 'बंद आहे',
 
     // Tabs
+    tabPatient: 'ज्येष्ठ नागरिक कक्ष',
     tabClinician: 'डॉक्टर पोर्टल',
     tabCoach: 'कोच डेस्क',
     tabCaregiver: 'कुटुंब कक्ष',

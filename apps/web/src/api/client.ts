@@ -261,4 +261,33 @@ export const api = {
     if (!res.ok) throw new Error('Failed to update consent flags');
     return res.json();
   },
+
+  async bookAppointment(booking: {
+    patient_id: string;
+    doctor_id: string;
+    type: 'clinic' | 'video' | 'whatsapp';
+    date: string;
+    time_slot: string;
+    notes?: string;
+  }): Promise<{ id: string; status: string; message: string }> {
+    // In demo environment, store in localStorage and log audit
+    const bookingRecord = {
+      id: `apt_${Date.now()}`,
+      ...booking,
+      status: 'confirmed',
+      created_at: new Date().toISOString(),
+    };
+    const current = JSON.parse(localStorage.getItem('diabeto_appointments') || '[]');
+    localStorage.setItem('diabeto_appointments', JSON.stringify([bookingRecord, ...current]));
+    return {
+      id: bookingRecord.id,
+      status: 'confirmed',
+      message: `Appointment confirmed with Dr. Arvind Mehta for ${booking.date} at ${booking.time_slot}`,
+    };
+  },
+
+  getAppointments(): any[] {
+    return JSON.parse(localStorage.getItem('diabeto_appointments') || '[]');
+  },
 };
+
