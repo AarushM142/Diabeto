@@ -1,128 +1,72 @@
-"use client"
+import { PulseFitHero } from "@/components/ui/pulse-fit-hero";
 
-import { EventManager, type Event } from "@/components/ui/event-manager"
-
-export default function EventManagerDemo() {
-  // Demo events with realistic data
-  const demoEvents: Event[] = [
-    {
-      id: "1",
-      title: "Team Standup",
-      description: "Daily sync with the engineering team to discuss progress and blockers",
-      startTime: new Date(2025, 9, 20, 9, 0),
-      endTime: new Date(2025, 9, 20, 9, 30),
-      color: "blue",
-      category: "Meeting",
-      attendees: ["Alice", "Bob", "Charlie"],
-      tags: ["Work", "Team"],
-    },
-    {
-      id: "2",
-      title: "Product Design Review",
-      description: "Review new mockups for the dashboard redesign with stakeholders",
-      startTime: new Date(2025, 9, 20, 14, 0),
-      endTime: new Date(2025, 9, 20, 15, 30),
-      color: "purple",
-      category: "Meeting",
-      attendees: ["Sarah", "Mike"],
-      tags: ["Important", "Client"],
-    },
-    {
-      id: "3",
-      title: "Code Review",
-      description: "Review pull requests for the authentication feature",
-      startTime: new Date(2025, 9, 21, 10, 0),
-      endTime: new Date(2025, 9, 21, 11, 0),
-      color: "green",
-      category: "Task",
-      tags: ["Work", "Urgent"],
-    },
-    {
-      id: "4",
-      title: "Client Presentation",
-      description: "Present Q4 roadmap and feature updates to key stakeholders",
-      startTime: new Date(2025, 9, 22, 15, 0),
-      endTime: new Date(2025, 9, 22, 16, 30),
-      color: "orange",
-      category: "Meeting",
-      attendees: ["John", "Emma", "David"],
-      tags: ["Important", "Client"],
-    },
-    {
-      id: "5",
-      title: "Gym Session",
-      description: "Evening workout at the fitness center",
-      startTime: new Date(2025, 9, 20, 18, 0),
-      endTime: new Date(2025, 9, 20, 19, 0),
-      color: "pink",
-      category: "Personal",
-      tags: ["Personal"],
-    },
-    {
-      id: "6",
-      title: "Sprint Planning",
-      description: "Plan tasks and estimate story points for the upcoming sprint",
-      startTime: new Date(2025, 9, 23, 10, 0),
-      endTime: new Date(2025, 9, 23, 12, 0),
-      color: "blue",
-      category: "Meeting",
-      attendees: ["Team"],
-      tags: ["Work", "Team", "Important"],
-    },
-    {
-      id: "7",
-      title: "Doctor Appointment",
-      description: "Annual health checkup at City Medical Center",
-      startTime: new Date(2025, 9, 24, 11, 0),
-      endTime: new Date(2025, 9, 24, 12, 0),
-      color: "red",
-      category: "Personal",
-      tags: ["Personal", "Important"],
-    },
-    {
-      id: "8",
-      title: "Deploy to Production",
-      description: "Deploy version 2.5.0 with new features and bug fixes",
-      startTime: new Date(2025, 9, 25, 16, 0),
-      endTime: new Date(2025, 9, 25, 17, 0),
-      color: "green",
-      category: "Task",
-      tags: ["Work", "Urgent"],
-    },
-    {
-      id: "9",
-      title: "Coffee with Sarah",
-      description: "Catch up over coffee at the new cafe downtown",
-      startTime: new Date(2025, 9, 26, 15, 0),
-      endTime: new Date(2025, 9, 26, 16, 0),
-      color: "pink",
-      category: "Personal",
-      tags: ["Personal"],
-    },
-    {
-      id: "10",
-      title: "Budget Review",
-      description: "Quarterly budget review with finance team",
-      startTime: new Date(2025, 9, 27, 13, 0),
-      endTime: new Date(2025, 9, 27, 14, 30),
-      color: "orange",
-      category: "Meeting",
-      attendees: ["Finance Team"],
-      tags: ["Work", "Important"],
-    },
-  ]
-
+export default function PulseFitHeroDemo() {
   return (
-    <div className="container mx-auto p-4 sm:p-6">
-      <EventManager
-        events={demoEvents}
-        onEventCreate={(event) => console.log("Created:", event)}
-        onEventUpdate={(id, event) => console.log("Updated:", id, event)}
-        onEventDelete={(id) => console.log("Deleted:", id)}
-        categories={["Meeting", "Task", "Reminder", "Personal"]}
-        availableTags={["Important", "Urgent", "Work", "Personal", "Team", "Client"]}
-        defaultView="month"
-      />
-    </div>
-  )
+    <PulseFitHero
+      logo="PulseFit"
+      navigation={[
+        { label: "Features", onClick: () => console.log("Features") },
+        { label: "Programs", hasDropdown: true, onClick: () => console.log("Programs") },
+        { label: "Testimonials", onClick: () => console.log("Testimonials") },
+        { label: "Pricing", onClick: () => console.log("Pricing") },
+        { label: "Contact", onClick: () => console.log("Contact") },
+      ]}
+      ctaButton={{
+        label: "Get Free Trial",
+        onClick: () => console.log("Get Free Trial"),
+      }}
+      title="Train smarter. Anywhere. Anytime."
+      subtitle="Guided fitness sessions tailored to your goals - whether it's strength, endurance, or flexibility. Streamlined, motivating, and accessible 24/7."
+      primaryAction={{
+        label: "Start training",
+        onClick: () => console.log("Start training"),
+      }}
+      secondaryAction={{
+        label: "Browse programs",
+        onClick: () => console.log("Browse programs"),
+      }}
+      disclaimer="*No credit card required"
+      socialProof={{
+        avatars: [
+          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
+          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80",
+        ],
+        text: "Join over 10,000+ people",
+      }}
+      programs={[
+        {
+          image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&auto=format&fit=crop&q=80",
+          category: "BEGINNER",
+          title: "Jumping challenge",
+          onClick: () => console.log("Jumping challenge"),
+        },
+        {
+          image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&auto=format&fit=crop&q=80",
+          category: "INTERMEDIATE",
+          title: "Core stability flow",
+          onClick: () => console.log("Core stability flow"),
+        },
+        {
+          image: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=600&auto=format&fit=crop&q=80",
+          category: "ADVANCED",
+          title: "Trail sprint challenge",
+          onClick: () => console.log("Trail sprint challenge"),
+        },
+        {
+          image: "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&auto=format&fit=crop&q=80",
+          category: "ALL LEVELS",
+          title: "Full-body bootcamp",
+          onClick: () => console.log("Full-body bootcamp"),
+        },
+        {
+          image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&auto=format&fit=crop&q=80",
+          category: "RECOVERY",
+          title: "Mobility & Recovery",
+          onClick: () => console.log("Mobility & Recovery"),
+        },
+      ]}
+    />
+  );
 }
