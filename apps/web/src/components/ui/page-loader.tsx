@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, ShieldCheck } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 interface PageLoaderProps {
   message?: string;
-  subMessage?: string;
   durationMs?: number;
   onComplete?: () => void;
 }
 
 export const PageLoader: React.FC<PageLoaderProps> = ({
   message = 'Initializing Clinical Decision Support Engine...',
-  subMessage = 'Pune Central Diabetes Network • Securing Session',
-  durationMs = 1500,
+  durationMs = 1000,
   onComplete,
 }) => {
   const [progress, setProgress] = useState(0);
@@ -295,8 +293,8 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
           </div>
 
           <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <ShieldCheck size={12} color="var(--status-ok)" />
-            <span>{subMessage}</span>
+
+
           </div>
         </motion.div>
       </motion.div>

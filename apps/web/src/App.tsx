@@ -160,12 +160,11 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {/* 1.5-Second Cool Loading Animation Overlay */}
+      {/* 1.0-Second Cool Loading Animation Overlay */}
       {loadingState && (
         <PageLoader
           message={loadingState.message}
-          subMessage={loadingState.subMessage}
-          durationMs={1500}
+          durationMs={1000}
           onComplete={handleLoaderComplete}
         />
       )}
