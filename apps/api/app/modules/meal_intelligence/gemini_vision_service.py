@@ -321,50 +321,53 @@ class GeminiMealVisionService:
         # 2. Attempt Google Gemini Multimodal Vision API Call
         parsed_result: Optional[Dict[str, Any]] = None
         if self.api_key and raw_bytes and not self.api_key.startswith("your-"):
-            try:
-                mime_type = self._detect_mime_type(raw_bytes)
-                b64_img = base64.b64encode(raw_bytes).decode("utf-8")
-                
-                # Gemini 1.5 Flash REST endpoint
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
-                headers = {"Content-Type": "application/json"}
-                
-                prompt_text = GEMINI_VISION_SYSTEM_PROMPT
-                if context_hint:
-                    prompt_text += f"\nAdditional Context from Patient: {context_hint}"
+            models_to_try = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-pro"]
+            for model_name in models_to_try:
+                try:
+                    mime_type = self._detect_mime_type(raw_bytes)
+                    b64_img = base64.b64encode(raw_bytes).decode("utf-8")
+                    
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={self.api_key}"
+                    headers = {"Content-Type": "application/json"}
+                    
+                    prompt_text = GEMINI_VISION_SYSTEM_PROMPT
+                    if context_hint:
+                        prompt_text += f"\nAdditional Context from Patient: {context_hint}"
 
-                body = {
-                    "contents": [
-                        {
-                            "parts": [
-                                {"text": prompt_text},
-                                {
-                                    "inline_data": {
-                                        "mime_type": mime_type,
-                                        "data": b64_img
+                    body = {
+                        "contents": [
+                            {
+                                "parts": [
+                                    {"text": prompt_text},
+                                    {
+                                        "inline_data": {
+                                            "mime_type": mime_type,
+                                            "data": b64_img
+                                        }
                                     }
-                                }
-                            ]
+                                ]
+                            }
+                        ],
+                        "generationConfig": {
+                            "temperature": 0.2,
+                            "response_mime_type": "application/json"
                         }
-                    ],
-                    "generationConfig": {
-                        "temperature": 0.2,
-                        "response_mime_type": "application/json"
                     }
-                }
-                
-                async with httpx.AsyncClient(timeout=20.0) as client:
-                    resp = await client.post(url, headers=headers, json=body)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        candidates = data.get("candidates", [])
-                        if candidates:
-                            raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                            # Parse JSON cleanly
-                            cleaned_json = re.sub(r"^```json\s*|\s*```$", "", raw_text.strip(), flags=re.MULTILINE)
-                            parsed_result = json.loads(cleaned_json)
-            except Exception as e:
-                print(f"[Gemini Vision Error / Fallback Activated] {e}")
+                    
+                    async with httpx.AsyncClient(timeout=25.0) as client:
+                        resp = await client.post(url, headers=headers, json=body)
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            candidates = data.get("candidates", [])
+                            if candidates:
+                                raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                                # Parse JSON cleanly
+                                cleaned_json = re.sub(r"^```json\s*|\s*```$", "", raw_text.strip(), flags=re.MULTILINE)
+                                parsed_result = json.loads(cleaned_json)
+                                if parsed_result and "foods" in parsed_result:
+                                    break
+                except Exception as e:
+                    print(f"[Gemini Vision ({model_name}) Note] {e}")
 
         # 3. Fallback to Validated Indian Food Knowledge Base
         if not parsed_result:
