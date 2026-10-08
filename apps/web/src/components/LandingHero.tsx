@@ -3,347 +3,142 @@ import { motion } from 'framer-motion';
 import { PulseFitHero } from './ui/pulse-fit-hero';
 import type { UserRole } from '../api/client';
 import { 
-  Heart, Sparkles, ArrowRight, Activity, Phone, CheckCircle2, Mic
+  Heart, Stethoscope, Sparkles, HeartHandshake, ArrowRight, Activity, CheckCircle2
 } from 'lucide-react';
 
 interface LandingHeroProps {
   onOpenLogin: (preferredRole?: UserRole) => void;
 }
 
+interface LadderStep {
+  id: string;
+  stepNumber: string;
+  badge: string;
+  badgeColor: string;
+  badgeBg: string;
+  icon: React.ElementType;
+  title: string;
+  paragraphs: string[];
+  highlights: string[];
+  statsChip: {
+    label: string;
+    value: string;
+    sub: string;
+    statusColor: string;
+  };
+  ctaLabel: string;
+  role: UserRole;
+}
+
 export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
-  const ladderSteps = [
+  const ladderSteps: LadderStep[] = [
     {
       id: 'step-patient',
       stepNumber: '01',
       badge: 'SENIOR SANCTUARY',
-      badgeColor: 'var(--accent-sage)',
-      title: '19px High-Contrast Comfort with Marathi & Hindi Voice AI',
-      description: 'Built specifically for Indian elders with diabetes, tremors, or low digital literacy. Speak naturally in Hindi, Marathi, or English—Sarvam AI and Gemini transcribe spoken audio, extract glucose readings, and log fasting and post-meal records automatically. 1-tap SOS alerts dispatch immediate escalations to family and clinic staff.',
-      highlights: [
-        'Large 19px High-Contrast Senior Typography',
-        'Marathi & Hindi Voice-to-Glucose Logging',
-        '1-Tap SOS Emergency Dispatch to Family',
-        'Spoken Audio Summaries & Reminders',
+      badgeColor: 'var(--accent-sage-dark)',
+      badgeBg: 'var(--accent-sage-subtle)',
+      icon: Heart,
+      title: '19px High-Contrast Sanctuary with Marathi & Hindi Voice AI',
+      paragraphs: [
+        'Traditional healthcare apps are built for tech-savvy millennials, leaving Indian elders overwhelmed by tiny fonts, complex navigation menus, and constant English tech jargon. Diabeto Senior Sanctuary reimagines digital diabetes care from the ground up with a 19px high-contrast tactile design created specifically for seniors with arthritis, low vision, and tremors.',
+        'Seniors simply speak naturally in Marathi, Hindi, or English—whether via WhatsApp voice note or our one-touch microphone. Sarvam AI and Gemini transcribe the speech, parse the glucose reading (e.g. "माझा आजचा शुगर ११८ आहे"), and automatically classify fasting versus post-meal readings without requiring typing. An instant 1-tap SOS button dispatches urgent location-pinned alerts directly to family members and emergency responders.',
       ],
+      highlights: [
+        '19px High-Contrast Senior Typography with tactile buttons',
+        'Sarvam AI Marathi & Hindi speech-to-text voice logging',
+        'Automatic fasting vs. postprandial contextual categorization',
+        '1-Tap SOS emergency family broadcast with GPS coordination',
+      ],
+      statsChip: {
+        label: 'Live Senior Sensor',
+        value: '118 mg/dL',
+        sub: 'Optimal Control • Fasting Sugar Verified',
+        statusColor: 'var(--status-ok)',
+      },
       ctaLabel: 'Explore Senior Sanctuary',
-      role: 'patient' as UserRole,
-      isReversed: false,
-      renderVisual: () => (
-        <div style={{
-          background: 'var(--surface-white)',
-          borderRadius: '24px',
-          border: '1px solid var(--border-stone)',
-          padding: '24px',
-          boxShadow: 'var(--shadow-lg)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}>
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'var(--accent-sage)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
-                <Heart size={20} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-forest)' }}>Ramesh Kulkarni (72)</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Senior Sanctuary Mode</div>
-              </div>
-            </div>
-            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--status-ok)', background: 'var(--status-ok-bg)', padding: '3px 8px', borderRadius: '6px' }}>
-              LIVE SENSOR
-            </span>
-          </div>
-
-          {/* Big Glucose Metric */}
-          <div style={{ background: 'var(--surface-clay)', padding: '18px', borderRadius: '16px', marginBottom: '16px', textAlign: 'center', border: '1px solid var(--border-stone)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>Fasting Blood Sugar</div>
-            <div style={{ fontSize: '2.8rem', fontWeight: 800, color: 'var(--text-forest)', fontFamily: 'var(--font-serif)', lineHeight: 1.1, margin: '4px 0' }}>
-              118 <span style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-muted)' }}>mg/dL</span>
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--status-ok)', fontWeight: 700 }}>
-              ● Optimal Control (Target: 80-130)
-            </div>
-          </div>
-
-          {/* Voice Prompt Simulation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--accent-sage-subtle)', border: '1px solid var(--accent-sage-border)', padding: '12px 16px', borderRadius: '14px', marginBottom: '16px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent-sage)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', flexShrink: 0 }}>
-              <Mic size={16} className="animate-pulse" />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-forest)' }}>"माझा आजचा शुगर ११८ आहे"</div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Sarvam AI: Marathi Speech-to-Text Verified</div>
-            </div>
-          </div>
-
-          {/* SOS Trigger Pill */}
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              type="button"
-              onClick={() => onOpenLogin('patient')}
-              style={{ flex: 1, background: 'var(--status-danger-bg)', border: '1px solid var(--status-danger-border)', color: 'var(--status-danger)', padding: '10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
-            >
-              <Phone size={14} />
-              1-Tap Family SOS
-            </button>
-            <button
-              type="button"
-              onClick={() => onOpenLogin('patient')}
-              style={{ flex: 1, background: 'var(--text-forest)', color: '#FFFFFF', border: 'none', padding: '10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
-            >
-              Log New Reading
-            </button>
-          </div>
-        </div>
-      ),
+      role: 'patient',
     },
     {
       id: 'step-clinician',
       stepNumber: '02',
-      badge: 'ENDOCRINOLOGIST & CLINICIAN EHR',
+      badge: 'CLINICIAN & ENDOCRINOLOGIST EHR',
       badgeColor: 'var(--status-ok)',
-      title: 'Continuous Glycemic TIR Analytics & Instant Summary Verification',
-      description: 'Eliminate guesswork from handwritten diaries. Diabeto continuously computes Time-in-Range (TIR > 70%), Time-Above-Range (TAR), and Time-Below-Range (TBR) while flagging nocturnal hypoglycemia risk. Doctors verify 7-day comprehensive clinical summaries and sign off digitally with one click.',
-      highlights: [
-        'Time-in-Range (TIR / TAR / TBR) Real-Time Metrics',
-        'Automated Hypoglycemia & Glycemic Variability Scoring',
-        '1-Click MD Clinical Summary Verification & Prescriptions',
-        'HIPAA & ABDM Immutable System Audit Trail',
+      badgeBg: 'var(--status-ok-bg)',
+      icon: Stethoscope,
+      title: 'Continuous Glycemic TIR Analytics & 1-Click Verification Sign-Off',
+      paragraphs: [
+        'Endocrinologists frequently struggle with incomplete or inaccurate handwritten paper diaries. Diabeto transforms fragmented glucose measurements into clinical-grade glycemic analytics, automatically calculating Time-in-Range (TIR > 70%), Time-Above-Range (TAR), and Time-Below-Range (TBR) alongside glycemic variability (CV%) and Mean Absolute Deviation (MAD).',
+        'Our clinical decision support engine proactively flags nocturnal hypoglycemia risks and multi-day glycemic instability before they turn critical. At the end of each week, clinicians receive an AI-prepared 7-day clinical summary with longitudinal highlights, allowing Dr. Mehta to review, modify dosage recommendations, and apply an authenticated digital verification signature in under 30 seconds.',
       ],
-      ctaLabel: 'Open Clinician EHR',
-      role: 'clinician' as UserRole,
-      isReversed: true,
-      renderVisual: () => (
-        <div style={{
-          background: 'var(--surface-white)',
-          borderRadius: '24px',
-          border: '1px solid var(--border-stone)',
-          padding: '24px',
-          boxShadow: 'var(--shadow-lg)',
-          position: 'relative',
-        }}>
-          {/* Doctor Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <img
-                src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&auto=format&fit=crop&q=80"
-                alt="Dr. Mehta"
-                style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
-              />
-              <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-forest)' }}>Dr. Arvind Mehta</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Clinician of Record • Pune Central</div>
-              </div>
-            </div>
-            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-forest)', background: 'var(--surface-clay)', padding: '3px 8px', borderRadius: '6px' }}>
-              EHR DESK
-            </span>
-          </div>
-
-          {/* Glycemic Analytics Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '16px' }}>
-            <div style={{ background: 'var(--surface-clay)', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)' }}>TIR (In-Range)</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--status-ok)', fontFamily: 'var(--font-serif)' }}>82.4%</div>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Target: &gt;70%</div>
-            </div>
-            <div style={{ background: 'var(--surface-clay)', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)' }}>TAR (High)</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--terracotta)', fontFamily: 'var(--font-serif)' }}>14.2%</div>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Target: &lt;25%</div>
-            </div>
-            <div style={{ background: 'var(--surface-clay)', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)' }}>TBR (Low)</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--status-ok)', fontFamily: 'var(--font-serif)' }}>3.4%</div>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Target: &lt;4%</div>
-            </div>
-          </div>
-
-          {/* Verified Summary Stamp */}
-          <div style={{ background: 'var(--accent-sage-subtle)', border: '1px solid var(--accent-sage-border)', padding: '12px 16px', borderRadius: '14px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CheckCircle2 size={14} color="var(--status-ok)" />
-                7-Day Weekly Summary Verified
-              </span>
-              <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--accent-sage-dark)' }}>APPROVED</span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-              "Stable fasting trends. Continue Metformin 500mg OD. Next follow-up in 14 days."
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onOpenLogin('clinician')}
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '10px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '12px' }}
-          >
-            Review Full Clinical Dashboard
-          </button>
-        </div>
-      ),
+      highlights: [
+        'Real-time Time-in-Range (TIR / TAR / TBR) ambulatory analytics',
+        'Nocturnal hypoglycemia early warning risk detection',
+        'Automated 7-day comprehensive summary preparation',
+        'One-click clinician digital signature with immutable audit logs',
+      ],
+      statsChip: {
+        label: 'Glycemic Time-in-Range',
+        value: '82.4% TIR',
+        sub: 'Above Clinical Target (>70%) • Hypo Risk: Low (3.4%)',
+        statusColor: 'var(--status-ok)',
+      },
+      ctaLabel: 'Open Clinician EHR Desk',
+      role: 'clinician',
     },
     {
       id: 'step-coach',
       stepNumber: '03',
-      badge: 'COACH COPILOT & HUMAN-IN-THE-LOOP',
+      badge: 'COACH COPILOT & BEHAVIORAL PROTOCOLS',
       badgeColor: 'var(--terracotta)',
-      title: 'AI-Assisted Lifestyle & Dietary Nudge Approval Queue',
-      description: 'Sister Kavita and clinical nutritionists review AI-drafted micro-interventions before they are sent to the senior patient. Empathetic guidance tailored for regional Indian cuisine (dal, jowar bhakri, festive sweets, fasting days) meets strict doctor-supervised safety guardrails.',
-      highlights: [
-        'Human-in-the-Loop WhatsApp Nudge Approval Desk',
-        'Regional Indian Cuisine & Fasting Safeguards',
-        'Medication & Hydration Behavioral Micro-Interventions',
-        'Doctor-Supervised Guardrails on Every Suggestion',
+      badgeBg: 'var(--surface-clay)',
+      icon: Sparkles,
+      title: 'Human-in-the-Loop Nudge Queue with Regional Indian Nutrition',
+      paragraphs: [
+        'Generic lifestyle advice fails when it ignores Indian cultural realities—family celebrations, festival sweets (modak, gulab jamun), fasting days (Ekadashi, Navratri), and carbohydrate-rich staples like jowar bhakri, dal, and rice. Diabeto Coach Copilot equips care coordinators like Sister Kavita with an AI-assisted behavioral intervention engine.',
+        'Before any nudges or diet corrections reach the patient’s WhatsApp, they pass through a human-in-the-loop review queue. Coaches review recommendations with 90%+ confidence ratings, customize them to match family meal patterns, and verify that all nutritional guidance adheres to the prescribing doctor’s clinical constraints.',
       ],
-      ctaLabel: 'View Coach Copilot',
-      role: 'coach' as UserRole,
-      isReversed: false,
-      renderVisual: () => (
-        <div style={{
-          background: 'var(--surface-white)',
-          borderRadius: '24px',
-          border: '1px solid var(--border-stone)',
-          padding: '24px',
-          boxShadow: 'var(--shadow-lg)',
-          position: 'relative',
-        }}>
-          {/* Coach Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <img
-                src="https://images.unsplash.com/photo-1594824813589-8d77c25091a1?w=100&auto=format&fit=crop&q=80"
-                alt="Sister Kavita"
-                style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
-              />
-              <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-forest)' }}>Sister Kavita Deshmukh</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Nutrition Coach & Care Coordinator</div>
-              </div>
-            </div>
-            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--terracotta)', background: 'var(--surface-clay)', padding: '3px 8px', borderRadius: '6px' }}>
-              NUDGE QUEUE (1)
-            </span>
-          </div>
-
-          {/* Proposed Nudge Card */}
-          <div style={{ background: 'var(--surface-clay)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-stone)', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-forest)' }}>WhatsApp Nudge Recommendation</span>
-              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--status-ok)', background: 'var(--surface-white)', padding: '2px 6px', borderRadius: '6px' }}>94% CONFIDENCE</span>
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-forest)', lineHeight: 1.45, fontStyle: 'italic', background: 'var(--surface-white)', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-stone)', marginBottom: '8px' }}>
-              "रमेशजी, दुपारच्या जेवणानंतर १० मिनिटे चालायला विसरू नका. ज्वारीची भाकरी आणि पालक भाजी उत्तम पर्याय आहे!"
-            </div>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>
-              Context: Postprandial glucose spike prevention • Regional Marathi
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={() => onOpenLogin('coach')}
-              style={{ flex: 1, background: 'var(--status-ok-bg)', border: '1px solid var(--status-ok-border)', color: 'var(--status-ok)', padding: '10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
-            >
-              ✓ Approve & Send
-            </button>
-            <button
-              type="button"
-              onClick={() => onOpenLogin('coach')}
-              style={{ flex: 1, background: 'var(--surface-clay)', border: '1px solid var(--border-stone)', color: 'var(--text-forest)', padding: '10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}
-            >
-              Edit Message
-            </button>
-          </div>
-        </div>
-      ),
+      highlights: [
+        'Human-in-the-loop WhatsApp nudge approval workspace',
+        'Cultural Indian cuisine & festival fasting guardrails',
+        'Personalized post-meal micro-intervention timing (10-min walks)',
+        'Doctor-supervised adherence and medication tracking',
+      ],
+      statsChip: {
+        label: 'Coach Copilot Queue',
+        value: '94% Match',
+        sub: 'Marathi Regional Diet Prompt • Doctor Supervised',
+        statusColor: 'var(--terracotta)',
+      },
+      ctaLabel: 'View Coach Copilot Desk',
+      role: 'coach',
     },
     {
       id: 'step-caregiver',
       stepNumber: '04',
-      badge: 'FAMILY CAREGIVER SAFETY',
+      badge: 'FAMILY CAREGIVER SAFETY & PEACE OF MIND',
       badgeColor: 'var(--text-forest)',
+      badgeBg: 'var(--surface-clay)',
+      icon: HeartHandshake,
       title: 'Real-Time Peace of Mind for Sons & Daughters Everywhere',
-      description: 'Caregivers like Ananya receive automated daily check-in statuses, meal confirmations, and immediate alerts if their parent’s glucose drops below safety limits. Direct 1-tap WhatsApp and phone access connects caregivers to Dr. Mehta and Sister Kavita instantly.',
-      highlights: [
-        'Daily Peace-of-Mind Status Badge (Fasting & Meals)',
-        'Tier-2 & Tier-3 Emergency Escalation Protocols',
-        'Direct 1-Tap Bridge to Doctor & Nutrition Coach',
-        'Granular Consent & Raw Glucose Transparency',
+      paragraphs: [
+        'For adult children living away from aging parents, the chronic anxiety of a sudden hypoglycemic event or missed medication is constant. The Diabeto Family Portal provides daughter Ananya with a continuous peace-of-mind status dashboard showing whether morning fasting sugar was taken, breakfast was logged, and medications were confirmed.',
+        'If a critical glucose threshold is crossed, Diabeto triggers a multi-tier escalation: Tier 1 alerts the senior via voice reminder; Tier 2 notifies the caregiver with WhatsApp and SMS telemetry; Tier 3 escalates to the clinic and emergency contacts. Granular consent controls guarantee full transparency while respecting parental independence.',
       ],
-      ctaLabel: 'Open Family Portal',
-      role: 'caregiver' as UserRole,
-      isReversed: true,
-      renderVisual: () => (
-        <div style={{
-          background: 'var(--surface-white)',
-          borderRadius: '24px',
-          border: '1px solid var(--border-stone)',
-          padding: '24px',
-          boxShadow: 'var(--shadow-lg)',
-          position: 'relative',
-        }}>
-          {/* Caregiver Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <img
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80"
-                alt="Ananya Kulkarni"
-                style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover' }}
-              />
-              <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-forest)' }}>Ananya Kulkarni</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Daughter & Primary Caregiver</div>
-              </div>
-            </div>
-            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--status-ok)', background: 'var(--status-ok-bg)', padding: '3px 8px', borderRadius: '6px' }}>
-              ALL SAFE TODAY
-            </span>
-          </div>
-
-          {/* Peace of Mind Status Box */}
-          <div style={{ background: 'var(--accent-sage-subtle)', border: '1px solid var(--accent-sage-border)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <CheckCircle2 size={16} color="var(--status-ok)" />
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-forest)' }}>Papa is Stable & Active</span>
-            </div>
-            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-              Fasting blood sugar: <strong>118 mg/dL</strong> (8:15 AM). Morning Metformin confirmed. Breakfast logged.
-            </div>
-          </div>
-
-          {/* Quick Doctor / Coach Reachout */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
-            <a
-              href="tel:+918149680369"
-              style={{ flex: 1, textDecoration: 'none', background: 'var(--surface-clay)', border: '1px solid var(--border-stone)', padding: '10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-forest)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-            >
-              <Phone size={13} color="var(--text-forest)" />
-              Call Dr. Mehta
-            </a>
-            <button
-              type="button"
-              onClick={() => onOpenLogin('caregiver')}
-              style={{ flex: 1, background: 'var(--surface-clay)', border: '1px solid var(--border-stone)', padding: '10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-forest)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
-            >
-              <Sparkles size={13} color="var(--terracotta)" />
-              Sister Kavita
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onOpenLogin('caregiver')}
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '10px', fontSize: '0.82rem', fontWeight: 700, borderRadius: '12px' }}
-          >
-            Open Family Caregiver Portal
-          </button>
-        </div>
-      ),
+      highlights: [
+        'Live Peace-of-Mind Status Badge (Fasting sugar & meals confirmed)',
+        'Multi-Tier automated escalation protocols for hypo/hyper risks',
+        'Direct 1-tap bridge to Dr. Mehta and Sister Kavita',
+        'Granular privacy and health data consent management',
+      ],
+      statsChip: {
+        label: 'Family Safety Status',
+        value: 'All Safe Today',
+        sub: 'Fasting: 118 mg/dL • Breakfast Confirmed • 0 Active Risks',
+        statusColor: 'var(--status-ok)',
+      },
+      ctaLabel: 'Open Family Safety Portal',
+      role: 'caregiver',
     },
   ];
 
@@ -421,11 +216,11 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
         ]}
       />
 
-      {/* 2. Zigzag Ladder Feature Showcase Section */}
+      {/* 2. Staggered Zigzag Ladder Story Showcase */}
       <section style={{
         maxWidth: '1240px',
         margin: '0 auto',
-        padding: '90px 32px 100px',
+        padding: '100px 32px 120px',
         position: 'relative',
         zIndex: 10,
       }}>
@@ -435,128 +230,216 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.7 }}
-          style={{ textAlign: 'center', marginBottom: '80px', maxWidth: '780px', margin: '0 auto 80px' }}
+          style={{ textAlign: 'center', marginBottom: '90px', maxWidth: '820px', margin: '0 auto 90px' }}
         >
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '6px 14px',
+            padding: '6px 16px',
             borderRadius: '20px',
             background: 'var(--accent-sage-subtle)',
             border: '1px solid var(--accent-sage-border)',
             fontSize: '0.78rem',
             fontWeight: 700,
             color: 'var(--text-forest)',
-            marginBottom: '16px',
+            marginBottom: '18px',
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
           }}>
             <Activity size={14} color="var(--status-ok)" />
-            <span>Four-Tier Connected Senior Ecosystem</span>
+            <span>The Connected Senior Care Ladder</span>
           </div>
 
-          <h2 className="font-serif" style={{ fontSize: 'clamp(2.1rem, 4.5vw, 3.2rem)', fontWeight: 700, color: 'var(--text-forest)', letterSpacing: '-0.025em', margin: 0, lineHeight: 1.18 }}>
+          <h2 className="font-serif" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.4rem)', fontWeight: 700, color: 'var(--text-forest)', letterSpacing: '-0.025em', margin: 0, lineHeight: 1.16 }}>
             Engineered for Indian Elders.<br />Trusted by Endocrinologists.
           </h2>
 
-          <p style={{ fontSize: '1.05rem', color: 'var(--text-muted)', lineHeight: 1.65, marginTop: '16px', marginBottom: 0 }}>
-            Diabeto unites the senior patient, their primary family caregiver, their health coach, and their clinician into an uninterrupted glycemic safety loop.
+          <p style={{ fontSize: '1.08rem', color: 'var(--text-muted)', lineHeight: 1.65, marginTop: '18px', marginBottom: 0 }}>
+            Follow the journey: from senior-friendly voice interaction at home to real-time doctor sign-offs, coach diet nudges, and family peace of mind.
           </p>
         </motion.div>
 
-        {/* Alternating Zigzag Ladder Rows */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '90px' }}>
-          {ladderSteps.map((step) => (
-            <motion.div
-              key={step.id}
-              initial={{ opacity: 0, y: 45 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.25 }}
-              transition={{ duration: 0.75, ease: 'easeOut' }}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                gap: '50px',
-                alignItems: 'center',
-              }}
-            >
-              {/* Text Side (if not reversed: Left; if reversed: Right on desktop) */}
-              <div style={{ order: step.isReversed ? 2 : 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                  <span style={{
-                    fontSize: '0.78rem',
-                    fontWeight: 800,
-                    fontFamily: 'monospace',
-                    color: '#FFFFFF',
-                    background: 'var(--text-forest)',
-                    padding: '3px 8px',
-                    borderRadius: '8px',
-                  }}>
-                    {step.stepNumber}
-                  </span>
-                  <span style={{
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                    color: step.badgeColor,
-                    background: 'var(--surface-clay)',
-                    padding: '3px 10px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-stone)',
-                  }}>
-                    {step.badge}
-                  </span>
-                </div>
+        {/* Vertical Center Track Spine */}
+        <div style={{ position: 'relative', width: '100%' }}>
+          <div
+            className="hidden lg:block"
+            style={{
+              position: 'absolute',
+              top: '40px',
+              bottom: '40px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '2px',
+              background: 'linear-gradient(180deg, rgba(140, 154, 132, 0.15) 0%, rgba(45, 58, 49, 0.3) 50%, rgba(140, 154, 132, 0.15) 100%)',
+              borderRight: '2px dashed rgba(45, 58, 49, 0.25)',
+              zIndex: 1,
+            }}
+          />
 
-                <h3 className="font-serif" style={{ fontSize: 'clamp(1.7rem, 3.2vw, 2.3rem)', fontWeight: 700, color: 'var(--text-forest)', letterSpacing: '-0.02em', lineHeight: 1.25, margin: '0 0 16px' }}>
-                  {step.title}
-                </h3>
+          {/* Zigzag Staggered Blocks: Block 1 Left, Block 2 Right, Block 3 Left, Block 4 Right */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '80px' }}>
+            {ladderSteps.map((step, index) => {
+              const isLeft = index % 2 === 0;
+              const Icon = step.icon;
 
-                <p style={{ fontSize: '0.98rem', color: 'var(--text-muted)', lineHeight: 1.7, margin: '0 0 24px' }}>
-                  {step.description}
-                </p>
-
-                {/* Feature Bullet Pills */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '28px' }}>
-                  {step.highlights.map((item, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.88rem', color: 'var(--text-forest)', fontWeight: 600 }}>
-                      <CheckCircle2 size={16} color="var(--status-ok)" className="shrink-0" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => onOpenLogin(step.role)}
-                  className="transition-all hover:scale-105 cursor-pointer"
+              return (
+                <div
+                  key={step.id}
                   style={{
-                    background: 'var(--text-forest)',
-                    color: '#FFFFFF',
-                    padding: '12px 26px',
-                    borderRadius: '30px',
-                    border: 'none',
-                    fontWeight: 700,
-                    fontSize: '0.9rem',
-                    boxShadow: 'var(--shadow-md)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
+                    display: 'flex',
+                    justifyContent: isLeft ? 'flex-start' : 'flex-end',
+                    width: '100%',
+                    position: 'relative',
+                    zIndex: 2,
                   }}
                 >
-                  <span>{step.ctaLabel}</span>
-                  <ArrowRight size={16} color="#FFFFFF" />
-                </button>
-              </div>
+                  {/* Central Node Indicator (Desktop) */}
+                  <div
+                    className="hidden lg:flex"
+                    style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '44px',
+                      transform: 'translate(-50%, -50%)',
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      background: 'var(--surface-white)',
+                      border: '3px solid var(--text-forest)',
+                      boxShadow: '0 0 14px rgba(45, 58, 49, 0.25)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 3,
+                    }}
+                  >
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: step.badgeColor }} />
+                  </div>
 
-              {/* Visual Preview Side (if not reversed: Right; if reversed: Left on desktop) */}
-              <div style={{ order: step.isReversed ? 1 : 2 }}>
-                {step.renderVisual()}
-              </div>
-            </motion.div>
-          ))}
+                  {/* Staggered Narrative Card (Occupies Left or Right) */}
+                  <motion.div
+                    initial={{ opacity: 0, x: isLeft ? -50 : 50, y: 35 }}
+                    whileInView={{ opacity: 1, x: 0, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    style={{
+                      width: '100%',
+                      maxWidth: '560px',
+                      backgroundColor: 'var(--surface-white)',
+                      borderRadius: '26px',
+                      border: '1px solid var(--border-stone)',
+                      padding: '38px 34px',
+                      boxShadow: 'var(--shadow-lg)',
+                      position: 'relative',
+                    }}
+                  >
+                    {/* Step Badge & Role Tag */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '18px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                          fontSize: '0.8rem',
+                          fontWeight: 800,
+                          fontFamily: 'monospace',
+                          color: '#FFFFFF',
+                          background: 'var(--text-forest)',
+                          padding: '4px 9px',
+                          borderRadius: '8px',
+                        }}>
+                          {step.stepNumber}
+                        </span>
+                        <span style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.06em',
+                          color: step.badgeColor,
+                          background: step.badgeBg,
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          border: '1px solid var(--border-stone)',
+                        }}>
+                          {step.badge}
+                        </span>
+                      </div>
+
+                      <div style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '10px',
+                        background: 'var(--surface-clay)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--text-forest)',
+                      }}>
+                        <Icon size={18} />
+                      </div>
+                    </div>
+
+                    {/* Headline */}
+                    <h3 className="font-serif" style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-forest)', letterSpacing: '-0.02em', lineHeight: 1.25, margin: '0 0 18px' }}>
+                      {step.title}
+                    </h3>
+
+                    {/* Rich Narrative Paragraphs */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '22px' }}>
+                      {step.paragraphs.map((p, pIdx) => (
+                        <p key={pIdx} style={{ fontSize: '0.94rem', color: 'var(--text-muted)', lineHeight: 1.7, margin: 0 }}>
+                          {p}
+                        </p>
+                      ))}
+                    </div>
+
+                    {/* Feature Checkmark Highlights */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', background: 'var(--surface-clay)', borderRadius: '16px', border: '1px solid var(--border-stone)', marginBottom: '22px' }}>
+                      {step.highlights.map((item, hIdx) => (
+                        <div key={hIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.84rem', color: 'var(--text-forest)', fontWeight: 600, lineHeight: 1.4 }}>
+                          <CheckCircle2 size={16} color="var(--status-ok)" className="shrink-0" style={{ marginTop: '2px' }} />
+                          <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Live Status Telemetry Chip */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--accent-sage-subtle)', borderRadius: '14px', border: '1px solid var(--accent-sage-border)', marginBottom: '24px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>{step.statsChip.label}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-forest)', fontWeight: 600 }}>{step.statsChip.sub}</div>
+                      </div>
+                      <span style={{ fontSize: '1.05rem', fontWeight: 800, color: step.statsChip.statusColor, fontFamily: 'var(--font-serif)' }}>
+                        {step.statsChip.value}
+                      </span>
+                    </div>
+
+                    {/* Direct Portal CTA Button */}
+                    <button
+                      type="button"
+                      onClick={() => onOpenLogin(step.role)}
+                      className="transition-all hover:scale-105 cursor-pointer"
+                      style={{
+                        width: '100%',
+                        background: 'var(--text-forest)',
+                        color: '#FFFFFF',
+                        padding: '13px 24px',
+                        borderRadius: '16px',
+                        border: 'none',
+                        fontWeight: 700,
+                        fontSize: '0.88rem',
+                        boxShadow: 'var(--shadow-md)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <span>{step.ctaLabel}</span>
+                      <ArrowRight size={16} color="#FFFFFF" />
+                    </button>
+                  </motion.div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* 3. Bottom Call To Action Banner */}
@@ -566,10 +449,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.7 }}
           style={{
-            marginTop: '110px',
+            marginTop: '120px',
             background: 'linear-gradient(135deg, #2D3A31 0%, #1E2820 100%)',
             borderRadius: '28px',
-            padding: '50px 40px',
+            padding: '54px 40px',
             color: '#FFFFFF',
             textAlign: 'center',
             boxShadow: 'var(--shadow-lg)',
@@ -594,7 +477,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onOpenLogin }) => {
               Transform diabetes care for your family today.
             </h3>
             <p style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.6, margin: '0 0 28px' }}>
-              Experience clinical safety, multilingual WhatsApp coaching, and peace of mind built specifically for elders.
+              Experience clinical safety, multilingual WhatsApp coaching, and peace of mind built specifically for Indian elders.
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
