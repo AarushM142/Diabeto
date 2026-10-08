@@ -12,6 +12,7 @@ from apps.api.app.modules.escalation.service import (
     generate_twiml_ivr,
     ESCALATION_TEMPLATES,
 )
+from apps.api.app.modules.escalation.ui import render_ivr_simulator_html
 
 router = APIRouter(prefix="/v1", tags=["Emergency Escalation"])
 
@@ -157,17 +158,39 @@ async def twilio_voice_ivr_callback(
 
 @router.get("/escalations/twiml/preview")
 async def preview_twiml_xml(
+    request: Request,
     patient_name: str = Query("Ramesh Patel"),
     glucose_mgdl: float = Query(54.0),
     language: str = Query("en"),
+    format: Optional[str] = Query(None, description="Set 'xml' for raw TwiML XML or 'html' for Interactive Voice Simulator UI"),
 ):
     """
-    Developer tool to preview generated Twilio Voice XML (TwiML) for any patient and language.
+    Interactive Emergency IVR Voice Simulator & TwiML visualizer.
+    Returns a rich interactive UI with speech playback, mobile screen mockup,
+    and phone keypad by default to browsers, or raw XML if requested via format='xml'.
     """
+    lang_key = language.lower() if language.lower() in ESCALATION_TEMPLATES else "en"
+    tpl = ESCALATION_TEMPLATES[lang_key]
+
     twiml = generate_twiml_ivr(
         patient_name=patient_name,
         glucose_mgdl=glucose_mgdl,
         risk_event_id="preview_event_id",
-        language=language,
+        language=lang_key,
     )
+
+    accept_header = request.headers.get("accept", "")
+    is_browser = "text/html" in accept_header
+
+    # If requested by browser or explicitly requesting html, render interactive simulator UI
+    if format == "html" or (format != "xml" and is_browser):
+        html_page = render_ivr_simulator_html(
+            patient_name=patient_name,
+            glucose_mgdl=glucose_mgdl,
+            language=lang_key,
+            twiml_xml=twiml,
+            template=tpl,
+        )
+        return Response(content=html_page, media_type="text/html")
+
     return Response(content=twiml, media_type="application/xml")
