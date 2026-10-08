@@ -4,8 +4,14 @@ import {
 } from 'lucide-react';
 import { api } from '../api/client';
 import type { Recommendation } from '../api/client';
+import { t } from '../lib/i18n';
+import type { Language } from '../lib/types';
 
-export const CoachPortal: React.FC = () => {
+interface CoachPortalProps {
+  language: Language;
+}
+
+export const CoachPortal: React.FC<CoachPortalProps> = ({ language }) => {
   const [approvals, setApprovals] = useState<Recommendation[]>([]);
   const [selectedRecId, setSelectedRecId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,10 +91,10 @@ export const CoachPortal: React.FC = () => {
         <div>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Sparkles size={20} color="var(--brand)" />
-            Coach Approvals Desk
+            {t('coachTitle', language)}
           </h2>
           <p style={{ fontSize: '0.8125rem', color: 'var(--ink-2)' }}>
-            Verify AI-drafted lifestyle recommendations before sending to seniors on WhatsApp.
+            {t('coachSub', language)}
           </p>
         </div>
 
@@ -98,7 +104,7 @@ export const CoachPortal: React.FC = () => {
             className="btn btn-brand btn-sm"
           >
             <Sparkles size={14} />
-            Generate New Nudge
+            {t('generateNudge', language)}
           </button>
           <button
             onClick={fetchApprovals}
@@ -134,7 +140,7 @@ export const CoachPortal: React.FC = () => {
           </p>
           <button onClick={handleGenerateTestNudge} className="btn btn-brand">
             <Sparkles size={15} />
-            Generate Nudge for Ramesh
+            {t('generateNudge', language)} for Ramesh
           </button>
         </div>
       ) : (
@@ -142,7 +148,7 @@ export const CoachPortal: React.FC = () => {
           {/* Left: Queue List (4 cols) */}
           <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <h3 style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--ink-2)', textTransform: 'uppercase' }}>
-              Pending Nudges ({approvals.length})
+              {t('pendingNudges', language)} ({approvals.length})
             </h3>
 
             {approvals.map((rec) => {
@@ -186,11 +192,11 @@ export const CoachPortal: React.FC = () => {
           <div className="panel" style={{ gridColumn: 'span 4', padding: '20px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)' }}>
-                Review Draft
+                {t('reviewDraft', language)}
               </h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--ok)', fontSize: '0.75rem', fontWeight: 600 }}>
                 <ShieldCheck size={14} />
-                <span>Guardrails Passed</span>
+                <span>{t('guardrailsPassed', language)}</span>
               </div>
             </div>
 
@@ -199,7 +205,7 @@ export const CoachPortal: React.FC = () => {
                 {/* Clinical Evidence Box */}
                 <div style={{ background: 'var(--surface-2)', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)' }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand)' }}>
-                    CLINICAL RATIONALE:
+                    {t('clinicalRationale', language)}
                   </span>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--ink)', marginTop: '2px' }}>
                     {selectedRec.reason_text}
@@ -232,7 +238,7 @@ export const CoachPortal: React.FC = () => {
                     style={{ flex: '1', color: 'var(--danger)', borderColor: 'var(--danger-border)' }}
                   >
                     <XCircle size={14} />
-                    Reject
+                    {t('reject', language)}
                   </button>
 
                   <button
@@ -242,7 +248,7 @@ export const CoachPortal: React.FC = () => {
                     style={{ flex: '2' }}
                   >
                     <Send size={15} />
-                    {isEditing ? 'Save & Send' : 'Approve & Send'}
+                    {isEditing ? 'Save & Send' : t('approveAndSend', language)}
                   </button>
                 </div>
               </div>

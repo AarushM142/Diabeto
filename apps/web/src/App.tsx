@@ -3,11 +3,14 @@ import { Header } from './components/Header';
 import { ClinicianPortal } from './components/ClinicianPortal';
 import { CoachPortal } from './components/CoachPortal';
 import { CaregiverPortal } from './components/CaregiverPortal';
-import { DemoSimulator } from './components/DemoSimulator';
+import { WhatsAppSimulator } from './components/WhatsAppSimulator';
 import { api } from './api/client';
+import type { Language } from './lib/types';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'clinician' | 'coach' | 'caregiver' | 'simulator'>('clinician');
+  const [activeTab, setActiveTab] = useState<'clinician' | 'coach' | 'caregiver' | 'simulator'>('simulator');
+  const [language, setLanguage] = useState<Language>('en');
+  const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState(false);
 
   useEffect(() => {
@@ -21,19 +24,32 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Update HTML class for Simple Mode
+  useEffect(() => {
+    if (isSimpleMode) {
+      document.documentElement.classList.add('simple-mode');
+    } else {
+      document.documentElement.classList.remove('simple-mode');
+    }
+  }, [isSimpleMode]);
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--canvas)' }}>
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        language={language}
+        setLanguage={setLanguage}
+        isSimpleMode={isSimpleMode}
+        setIsSimpleMode={setIsSimpleMode}
         isBackendHealthy={isBackendHealthy}
       />
 
       <main style={{ flex: '1' }}>
-        {activeTab === 'clinician' && <ClinicianPortal />}
-        {activeTab === 'coach' && <CoachPortal />}
-        {activeTab === 'caregiver' && <CaregiverPortal />}
-        {activeTab === 'simulator' && <DemoSimulator />}
+        {activeTab === 'clinician' && <ClinicianPortal language={language} />}
+        {activeTab === 'coach' && <CoachPortal language={language} />}
+        {activeTab === 'caregiver' && <CaregiverPortal language={language} />}
+        {activeTab === 'simulator' && <WhatsAppSimulator language={language} />}
       </main>
 
       <footer style={{

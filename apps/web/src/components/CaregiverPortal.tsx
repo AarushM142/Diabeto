@@ -3,73 +3,80 @@ import {
   HeartHandshake, CheckCircle2, Phone, MessageSquare, ShieldCheck, 
   Clock, Pill, Calendar, HeartPulse, AlertCircle
 } from 'lucide-react';
+import { t } from '../lib/i18n';
+import type { Language } from '../lib/types';
 
-export const CaregiverPortal: React.FC = () => {
+interface CaregiverPortalProps {
+  language: Language;
+}
+
+export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language }) => {
   return (
-    <div style={{ padding: '28px 20px', maxWidth: '840px', margin: '0 auto' }}>
+    <div style={{ padding: '28px 20px', maxWidth: '880px', margin: '0 auto' }}>
       {/* Top Banner: Is my parent OK? */}
       <div className="panel" style={{ padding: '24px', marginBottom: '20px', borderLeft: '5px solid var(--ok)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div style={{
-              width: '44px',
-              height: '44px',
+              width: '48px',
+              height: '48px',
               borderRadius: '8px',
               background: 'var(--brand-subtle)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
             }}>
-              <HeartHandshake size={24} color="var(--brand)" />
+              <HeartHandshake size={26} color="var(--brand)" />
             </div>
 
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink)' }}>
-                  Ramesh is doing well today
+                  {t('caregiverTitle', language)}
                 </h2>
                 <span className="status-indicator ok">
                   <span className="status-dot ok" />
-                  Normal
+                  {t('statusNormal', language)}
                 </span>
               </div>
               <p style={{ fontSize: '0.875rem', color: 'var(--ink-2)' }}>
-                Father • Age 68 • Pune • WhatsApp Connected
+                {t('caregiverSub', language)}
               </p>
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '10px' }}>
             <a
               href="https://wa.me/918149680369"
               target="_blank"
               rel="noreferrer"
-              className="btn btn-brand btn-sm"
+              className="btn btn-brand"
             >
-              <MessageSquare size={14} />
-              WhatsApp Papa
+              <MessageSquare size={16} />
+              {t('whatsappButton', language)}
             </a>
             <a
               href="tel:+918149680369"
-              className="btn btn-secondary btn-sm"
+              className="btn btn-secondary"
             >
-              <Phone size={14} />
-              Call Directly
+              <Phone size={16} />
+              {t('callButton', language)}
             </a>
           </div>
         </div>
       </div>
 
       {/* Main Status Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '20px' }}>
         {/* Today's Health Snapshot */}
         <div className="panel" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', textTransform: 'uppercase' }}>
-              Latest Sugar Reading
+              {t('latestSugar', language)}
             </span>
-            <HeartPulse size={16} color="var(--ok)" />
+            <HeartPulse size={18} color="var(--ok)" />
           </div>
 
           <div className="tabular" style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--ok)', lineHeight: 1 }}>
@@ -77,10 +84,10 @@ export const CaregiverPortal: React.FC = () => {
           </div>
           <div style={{ fontSize: '0.8125rem', color: 'var(--ok)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <CheckCircle2 size={14} />
-            <span>Fasting • In Target Range (70–180)</span>
+            <span>{t('targetRange', language)}</span>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--ink-3)', marginTop: '8px' }}>
-            Logged via Voice Note at 8:15 AM
+            {t('voiceNoteLogged', language)}
           </p>
         </div>
 
@@ -88,9 +95,9 @@ export const CaregiverPortal: React.FC = () => {
         <div className="panel" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', textTransform: 'uppercase' }}>
-              Today's Medicine
+              {t('todayMedication', language)}
             </span>
-            <Pill size={16} color="var(--brand)" />
+            <Pill size={18} color="var(--brand)" />
           </div>
 
           <div className="tabular" style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--ink)', lineHeight: 1 }}>
@@ -98,10 +105,10 @@ export const CaregiverPortal: React.FC = () => {
           </div>
           <div style={{ fontSize: '0.8125rem', color: 'var(--ink)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <CheckCircle2 size={14} color="var(--ok)" />
-            <span>Metformin 500mg taken</span>
+            <span>{t('medTaken', language)}</span>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--ink-3)', marginTop: '8px' }}>
-            Next: Glimepiride 1mg at 8:00 PM
+            {t('nextMed', language)}
           </p>
         </div>
 
@@ -109,20 +116,20 @@ export const CaregiverPortal: React.FC = () => {
         <div className="panel" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', textTransform: 'uppercase' }}>
-              Reporting Streak
+              {t('streakTitle', language)}
             </span>
-            <Calendar size={16} color="var(--brand)" />
+            <Calendar size={18} color="var(--brand)" />
           </div>
 
           <div className="tabular" style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--brand)', lineHeight: 1 }}>
-            7 <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--ink-2)' }}>Days</span>
+            7 <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--ink-2)' }}>{t('streakDays', language)}</span>
           </div>
           <div style={{ fontSize: '0.8125rem', color: 'var(--brand)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <ShieldCheck size={14} />
-            <span>Zero critical episodes this week</span>
+            <span>{t('noCriticalEpisodes', language)}</span>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--ink-3)', marginTop: '8px' }}>
-            Escalation level: Normal
+            Status: Active & Connected
           </p>
         </div>
       </div>
@@ -133,7 +140,7 @@ export const CaregiverPortal: React.FC = () => {
         <div className="panel" style={{ gridColumn: 'span 7', padding: '20px' }}>
           <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Clock size={16} color="var(--brand)" />
-            Today's Care Timeline
+            {t('careTimeline', language)}
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -188,7 +195,7 @@ export const CaregiverPortal: React.FC = () => {
         <div className="panel" style={{ gridColumn: 'span 5', padding: '20px' }}>
           <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <ShieldCheck size={16} color="var(--brand)" />
-            Care Team Network
+            {t('careTeamNetwork', language)}
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -218,11 +225,14 @@ export const CaregiverPortal: React.FC = () => {
             <div className="callout danger" style={{ marginTop: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--danger)', fontWeight: 600, fontSize: '0.8125rem' }}>
                 <AlertCircle size={14} />
-                <span>Emergency Safety Protocol</span>
+                <span>{t('emergencyProtocol', language)}</span>
               </div>
               <p style={{ fontSize: '0.75rem', color: 'var(--ink)', marginTop: '4px' }}>
-                If critical hypo is unacknowledged within 15 mins, Diabeto will call your phone automatically.
+                {t('emergencyDesc', language)}
               </p>
+              <div style={{ marginTop: '8px', fontWeight: 700, color: 'var(--danger)', fontSize: '0.75rem' }}>
+                {t('emergencyContacts', language)}
+              </div>
             </div>
           </div>
         </div>

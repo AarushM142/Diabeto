@@ -1,13 +1,27 @@
 import React from 'react';
-import { Stethoscope, Sparkles, Terminal, HeartHandshake, User } from 'lucide-react';
+import { Stethoscope, Sparkles, Terminal, HeartHandshake, User, Globe, Type } from 'lucide-react';
+import { t } from '../lib/i18n';
+import type { Language } from '../lib/types';
 
 interface HeaderProps {
   activeTab: 'clinician' | 'coach' | 'caregiver' | 'simulator';
   setActiveTab: (tab: 'clinician' | 'coach' | 'caregiver' | 'simulator') => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  isSimpleMode: boolean;
+  setIsSimpleMode: (simple: boolean) => void;
   isBackendHealthy: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, isBackendHealthy }) => {
+export const Header: React.FC<HeaderProps> = ({
+  activeTab,
+  setActiveTab,
+  language,
+  setLanguage,
+  isSimpleMode,
+  setIsSimpleMode,
+  isBackendHealthy,
+}) => {
   return (
     <header style={{
       borderBottom: '1px solid var(--line)',
@@ -19,6 +33,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, isBacke
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: '12px',
     }}>
       {/* Brand & Clinic Info */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -32,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, isBacke
             </span>
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--ink-2)' }}>
-            Pune Central Diabetes Institute
+            {t('clinicName', language)}
           </div>
         </div>
       </div>
@@ -58,7 +74,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, isBacke
           }}
         >
           <Stethoscope size={15} />
-          Clinician
+          {t('tabClinician', language)}
         </button>
 
         <button
@@ -72,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, isBacke
           }}
         >
           <Sparkles size={15} />
-          Coach Desk
+          {t('tabCoach', language)}
         </button>
 
         <button
@@ -86,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, isBacke
           }}
         >
           <HeartHandshake size={15} />
-          Caregiver
+          {t('tabCaregiver', language)}
         </button>
 
         <button
@@ -100,34 +116,76 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, isBacke
           }}
         >
           <Terminal size={15} />
-          Simulator
+          {t('tabSimulator', language)}
         </button>
       </nav>
 
-      {/* Right Clinician & Health Status */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--line)', background: 'var(--surface)' }}>
-          <User size={14} color="var(--ink-2)" />
-          <div style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--ink)' }}>Dr. Arvind Mehta</div>
-            <div style={{ fontSize: '0.6875rem', color: 'var(--ink-2)' }}>MD Diabetologist</div>
+      {/* Global Accessibility Controls & Live Health */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Language Selector */}
+        <div style={{ display: 'flex', alignItems: 'center', background: 'var(--surface-2)', borderRadius: '6px', border: '1px solid var(--line)', padding: '2px' }}>
+          <Globe size={13} color="var(--ink-2)" style={{ margin: '0 4px' }} />
+          {(['en', 'hi', 'mr'] as Language[]).map((l) => (
+            <button
+              key={l}
+              onClick={() => setLanguage(l)}
+              style={{
+                background: language === l ? 'var(--brand)' : 'transparent',
+                color: language === l ? '#ffffff' : 'var(--ink-2)',
+                border: 'none',
+                padding: '3px 7px',
+                borderRadius: '4px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {/* Simple Mode Toggle */}
+        <button
+          onClick={() => setIsSimpleMode(!isSimpleMode)}
+          className="btn btn-sm"
+          style={{
+            background: isSimpleMode ? 'var(--brand-subtle)' : 'var(--surface-2)',
+            color: isSimpleMode ? 'var(--brand)' : 'var(--ink-2)',
+            borderColor: isSimpleMode ? 'var(--brand)' : 'var(--line)',
+            borderWidth: '1px',
+            fontSize: '0.75rem',
+          }}
+          title="Toggle Large Print Accessibility (Simple Mode)"
+        >
+          <Type size={14} />
+          {isSimpleMode ? t('simpleModeOn', language) : t('simpleModeOff', language)}
+        </button>
+
+        {/* Doctor Credential Pill */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--line)', background: 'var(--surface)' }}>
+          <User size={13} color="var(--ink-2)" />
+          <div style={{ textAlign: 'left', lineHeight: 1.1 }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink)' }}>{t('doctorName', language)}</div>
+            <div style={{ fontSize: '0.65rem', color: 'var(--ink-2)' }}>{t('doctorRole', language)}</div>
           </div>
         </div>
 
+        {/* Health Status */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          padding: '6px 10px',
+          gap: '5px',
+          padding: '5px 8px',
           borderRadius: '6px',
           border: '1px solid var(--line)',
           background: 'var(--surface)',
-          fontSize: '0.75rem',
+          fontSize: '0.72rem',
           fontWeight: 600,
           color: isBackendHealthy ? 'var(--ok)' : 'var(--danger)',
         }}>
           <span className={`status-dot ${isBackendHealthy ? 'ok' : 'danger'}`} />
-          {isBackendHealthy ? 'System Live' : 'Offline'}
+          {isBackendHealthy ? t('online', language) : t('offline', language)}
         </div>
       </div>
     </header>

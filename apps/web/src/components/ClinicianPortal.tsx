@@ -8,6 +8,12 @@ import {
 } from 'recharts';
 import { api } from '../api/client';
 import type { TrendAnalytics, WeeklySummary } from '../api/client';
+import { t } from '../lib/i18n';
+import type { Language } from '../lib/types';
+
+interface ClinicianPortalProps {
+  language: Language;
+}
 
 const DEMO_PATIENTS = [
   { id: 'pt_ramesh_001', name: 'Ramesh Kulkarni', age: 68, gender: 'M', language: 'Marathi / Hindi', phone: '+91 8149680369', diagnosis: 'Type 2 Diabetes (6 yrs)', severity: 'stable' },
@@ -15,7 +21,7 @@ const DEMO_PATIENTS = [
   { id: 'pt_ananya_003', name: 'Ananya Patil', age: 65, gender: 'F', language: 'Marathi', phone: '+91 9800000003', diagnosis: 'Type 2 Diabetes + Hypo Unawareness', severity: 'critical' },
 ];
 
-export const ClinicianPortal: React.FC = () => {
+export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language }) => {
   const [selectedPatientId, setSelectedPatientId] = useState('pt_ramesh_001');
   const [trends, setTrends] = useState<TrendAnalytics | null>(null);
   const [summary, setSummary] = useState<WeeklySummary | null>(null);
@@ -137,7 +143,7 @@ export const ClinicianPortal: React.FC = () => {
           <div style={{ gridColumn: 'span 12', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
             <div className="panel" style={{ padding: '16px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
-                <span>TIME IN RANGE (70-180)</span>
+                <span>{t('timeInRange', language)}</span>
                 <TrendingUp size={16} color="var(--ok)" />
               </div>
               <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ok)', margin: '4px 0 2px' }}>
@@ -148,7 +154,7 @@ export const ClinicianPortal: React.FC = () => {
 
             <div className="panel" style={{ padding: '16px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
-                <span>TIME BELOW RANGE (&lt;70)</span>
+                <span>{t('timeBelowRange', language)}</span>
                 <AlertOctagon size={16} color="var(--danger)" />
               </div>
               <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: (trends?.glycemic_metrics.tbr_percentage || 0) > 0 ? 'var(--danger)' : 'var(--ink)', margin: '4px 0 2px' }}>
@@ -159,7 +165,7 @@ export const ClinicianPortal: React.FC = () => {
 
             <div className="panel" style={{ padding: '16px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
-                <span>MEAN GLUCOSE</span>
+                <span>{t('meanGlucose', language)}</span>
                 <Activity size={16} color="var(--ink)" />
               </div>
               <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ink)', margin: '4px 0 2px' }}>
@@ -170,7 +176,7 @@ export const ClinicianPortal: React.FC = () => {
 
             <div className="panel" style={{ padding: '16px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
-                <span>GLUCOSE VARIABILITY</span>
+                <span>{t('glucoseVariability', language)}</span>
                 <Activity size={16} color="var(--ink)" />
               </div>
               <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ink)', margin: '4px 0 2px' }}>
@@ -181,7 +187,7 @@ export const ClinicianPortal: React.FC = () => {
 
             <div className="panel" style={{ padding: '16px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--ink-2)', fontSize: '0.75rem', fontWeight: 600 }}>
-                <span>MEDICATION ADHERENCE</span>
+                <span>{t('medAdherence', language)}</span>
                 <Pill size={16} color="var(--brand)" />
               </div>
               <div className="tabular" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--brand)', margin: '4px 0 2px' }}>
@@ -196,7 +202,7 @@ export const ClinicianPortal: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
                 <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--ink)' }}>
-                  14-Day Blood Glucose Trend
+                  {t('clinicianOverview', language)}
                 </h2>
                 <p style={{ fontSize: '0.8125rem', color: 'var(--ink-2)' }}>
                   Target band (70 - 180 mg/dL)
@@ -253,12 +259,12 @@ export const ClinicianPortal: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FileText size={18} color="var(--brand)" />
                 <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--ink)' }}>
-                  Weekly Synthesis
+                  {t('weeklySynthesis', language)}
                 </h2>
               </div>
               <span className={`status-indicator ${summary?.status === 'verified' ? 'ok' : 'warn'}`}>
                 <span className={`status-dot ${summary?.status === 'verified' ? 'ok' : 'warn'}`} />
-                {summary?.status === 'verified' ? 'Verified' : 'Unverified Draft'}
+                {summary?.status === 'verified' ? t('verified', language) : t('unverified', language)}
               </span>
             </div>
 
@@ -286,7 +292,7 @@ export const ClinicianPortal: React.FC = () => {
             {/* Doctor Sign-Off Form */}
             <div>
               <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink-2)', marginBottom: '6px', display: 'block' }}>
-                Attending Doctor Notes:
+                {t('doctorNotes', language)}
               </label>
               <textarea
                 className="input-field"
@@ -323,7 +329,7 @@ export const ClinicianPortal: React.FC = () => {
                   style={{ width: '100%', padding: '10px' }}
                 >
                   <UserCheck size={16} />
-                  {verifying ? 'Signing off...' : 'Verify & Sign-Off'}
+                  {verifying ? 'Signing off...' : t('verifyButton', language)}
                 </button>
               )}
             </div>

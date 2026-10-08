@@ -57,6 +57,7 @@ app.include_router(risk_router)
 app.include_router(whatsapp_router)
 
 @app.get("/health", tags=["Health"])
+@app.get("/v1/health", tags=["Health"])
 async def health_check():
     return {
         "status": "healthy",
