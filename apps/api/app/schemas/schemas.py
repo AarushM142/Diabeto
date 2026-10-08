@@ -122,6 +122,8 @@ class PatientThresholdUpsert(BaseModel):
     )
 
 class PatientThresholdResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     patient_id: str
     critical_low: float
@@ -130,9 +132,6 @@ class PatientThresholdResponse(BaseModel):
     critical_high: float
     escalation_timings: Dict[str, Any]
     version: int
-
-    class Config:
-        from_attributes = True
 
 # Phase 5: Trend, Analytics & Weekly Summary Schemas
 class GlycemicMetrics(BaseModel):
@@ -190,6 +189,8 @@ class VerifyWeeklySummaryRequest(BaseModel):
     notes: Optional[str] = None
 
 class AuditLogResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     actor_id: str
     actor_role: str
@@ -198,9 +199,6 @@ class AuditLogResponse(BaseModel):
     target_id: str
     details: Dict[str, Any]
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class PatientConsentUpdate(BaseModel):
     view_raw_glucose: Optional[bool] = None
