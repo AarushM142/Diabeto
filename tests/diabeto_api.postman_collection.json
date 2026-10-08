@@ -225,6 +225,48 @@
         },
         "description": "Records the coach's approval decision for a pending recommendation."
       }
+    },
+    {
+      "name": "9. Download Clinical Report PDF",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/v1/patients/{{patient_id}}/report/pdf",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "patients",
+            "{{patient_id}}",
+            "report",
+            "pdf"
+          ]
+        },
+        "description": "Generates and downloads a formatted OPD consultation PDF report with clinic letterhead, ADA compliance score, glycemic statistics, medication schedule, and clinician sign-off."
+      }
+    },
+    {
+      "name": "10. Get Clinical EHR Summary (JSON)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/v1/patients/{{patient_id}}/report/summary",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "patients",
+            "{{patient_id}}",
+            "report",
+            "summary"
+          ]
+        },
+        "description": "Exports structured EHR summary conforming to ClinicalImpression resource with ADA glycemic metrics and control grade."
+      }
     }
   ]
 }
