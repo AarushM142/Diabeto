@@ -77,11 +77,12 @@ export function PulseFitHero({
   return (
     <section
       className={cn(
-        "relative w-full min-h-screen flex flex-col overflow-hidden",
+        "relative w-full flex flex-col overflow-hidden",
         className
       )}
       style={{
         background: "linear-gradient(180deg, #F9F8F4 0%, #F4F1EA 45%, #FFFFFF 100%)",
+        paddingBottom: "30px",
       }}
       role="banner"
       aria-label="Hero section"
@@ -241,11 +242,17 @@ export function PulseFitHero({
 
       {/* Main Hero Body */}
       {children ? (
-        <div className="relative z-10 flex-1 flex items-center justify-center w-full">
+        <div className="relative z-10 flex items-center justify-center w-full">
           {children}
         </div>
       ) : (
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pt-16 md:pt-24 pb-14">
+        <div 
+          className="relative z-10 w-full flex flex-col items-center justify-center px-4"
+          style={{
+            paddingTop: "clamp(70px, 9vh, 120px)",
+            paddingBottom: "clamp(40px, 5vh, 70px)",
+          }}
+        >
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -407,8 +414,9 @@ export function PulseFitHero({
           transition={{ duration: 0.8, delay: 0.65 }}
           className="relative z-10 w-full overflow-hidden"
           style={{
-            paddingTop: "48px",
-            paddingBottom: "56px",
+            marginTop: "16px",
+            paddingTop: "clamp(48px, 6vh, 80px)",
+            paddingBottom: "clamp(64px, 8vh, 100px)",
           }}
         >
           {/* Gradient Overlays */}
