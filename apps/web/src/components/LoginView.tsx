@@ -409,25 +409,14 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
                   setLoading(false);
                 }
               }}
-              onSocialSignIn={async (provider) => {
+              onGoogleSignIn={async () => {
                 try {
                   setLoading(true);
                   setError(null);
-                  if (provider === 'google') {
-                    const res = await api.googleAuth('dr.mehta@gmail.com', 'Dr. Arvind Mehta', selectedRole);
-                    onLoginSuccess(res.user);
-                  } else if (provider === 'microsoft') {
-                    const res = await api.login('dr.mehta@diabeto.care', 'password123', selectedRole);
-                    onLoginSuccess(res.user);
-                  } else if (provider === 'apple') {
-                    const res = await api.login('ananya.k@example.com', 'password123', selectedRole);
-                    onLoginSuccess(res.user);
-                  } else {
-                    const res = await api.login('admin@diabeto.care', 'password123', 'admin');
-                    onLoginSuccess(res.user);
-                  }
+                  const res = await api.googleAuth('dr.mehta@gmail.com', 'Dr. Arvind Mehta', selectedRole);
+                  onLoginSuccess(res.user);
                 } catch (err: any) {
-                  setError(err.message || `${provider.toUpperCase()} authentication failed`);
+                  setError(err.message || 'Google authentication failed');
                 } finally {
                   setLoading(false);
                 }

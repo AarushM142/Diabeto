@@ -13,8 +13,8 @@ export const PuzzleGraphic = () => (
 )
 
 export default function AuthFormDemo() {
-  const handleSocialSignIn = (provider: string) => {
-    console.log(`Signing in with ${provider}...`)
+  const handleGoogleSignIn = () => {
+    console.log("Signing in with Google...")
   }
 
   const handleEmailSubmit = (data: { email: string; password?: string }) => {
@@ -28,7 +28,7 @@ export default function AuthFormDemo() {
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-[#FBF8F3] dark:bg-muted/20">
         <AuthForm 
-          onSocialSignIn={handleSocialSignIn}
+          onGoogleSignIn={handleGoogleSignIn}
           onEmailSubmit={handleEmailSubmit}
           onEmailLink={handleEmailLink}
           className="shadow-xl"
