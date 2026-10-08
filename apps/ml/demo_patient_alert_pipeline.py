@@ -303,10 +303,27 @@ def run_demo():
     card_path = os.path.join(PLOTS_DIR, "demo_patient_alert_card.png")
     generate_visual_alert_card(result, card_path)
 
+    # STAGE 4: Sarvam Bulbul Multilingual Voice Reply
+    import asyncio
+    from apps.api.app.channels.sarvam_tts import synthesize_voice_alert_for_decision
+
+    print("\nSynthesizing Multilingual Voice Reply (Sarvam Bulbul v3)...")
+    voice_res = asyncio.run(synthesize_voice_alert_for_decision(ramesh, result["decision"]))
+    result["voice_reply"] = voice_res
+
+    # Save Voice Reply Audio File if available
+    audio_path = os.path.join(PLOTS_DIR, "demo_ramesh_voice_reply.wav")
+    if voice_res.get("audio_base64"):
+        import base64
+        audio_data = base64.b64decode(voice_res["audio_base64"])
+        with open(audio_path, "wb") as af:
+            af.write(audio_data)
+        print(f"[SAVED] Ramesh Marathi Voice Audio -> {audio_path} ({len(audio_data):,} bytes)")
+
     # Save Output JSON
     output_json_path = "ml/results/demo_patient_alert_output.json"
-    with open(output_json_path, "w") as f:
-        json.dump(result, f, indent=2)
+    with open(output_json_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, indent=2, ensure_ascii=False)
     print(f"[SAVED] Structured JSON alert payload -> {output_json_path}")
 
     # Print Formatted Human-Readable Terminal Report
@@ -337,6 +354,13 @@ def run_demo():
     print(f"STAGE 3 (MODEL 3 EXPLAINABLE REASON):")
     print(f"  {dec['reason']}")
     print("-" * 76)
+    print(f"STAGE 4 (SARVAM BULBUL MULTILINGUAL VOICE REPLY):")
+    print(f"  Language:               {voice_res.get('language_code')} (Marathi)")
+    print(f"  Voice Reply Active:     {voice_res.get('voice_reply_available')}")
+    print(f"  Elderly Spoken Text:    {voice_res.get('spoken_text')}")
+    print(f"  Delivery Status:        {voice_res.get('delivery_status')} (WhatsApp Voice Note)")
+    print(f"  Audio Output Saved:     {audio_path if voice_res.get('voice_reply_available') else 'Fallback to Text'}")
+    print("-" * 76)
     print(f"ESCALATION STATUS:")
     print(f"  Caregiver Escalation:   {'SIMULATED Notification to ' + dec['caregiver_escalation']['recipient_name'] if dec['caregiver_escalation']['notification_required'] else 'NO'}")
     print(f"  Clinician Escalation:   {'SIMULATED Escalation to Dr. ' + dec['clinician_escalation']['doctor_name'] if dec['clinician_escalation']['escalation_required'] else 'NO'}")
@@ -349,3 +373,4 @@ def run_demo():
 
 if __name__ == "__main__":
     run_demo()
+
