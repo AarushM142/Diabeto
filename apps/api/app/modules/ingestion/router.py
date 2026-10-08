@@ -92,3 +92,47 @@ async def log_health_event(
         reported_by=event.reported_by,
         risk_status=risk_status,
     )
+
+@router.get("/patients/{patient_id}", response_model=PatientResponse)
+async def get_patient_by_id(
+    patient_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(Patient).where(Patient.id == patient_id)
+    res = await db.execute(stmt)
+    patient = res.scalar_one_or_none()
+    if not patient:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
+    return patient
+
+@router.post("/patients/{patient_id}/consent", response_model=PatientResponse)
+async def update_patient_consent(
+    patient_id: str,
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(Patient).where(Patient.id == patient_id)
+    res = await db.execute(stmt)
+    patient = res.scalar_one_or_none()
+    if not patient:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
+
+    current_flags = dict(patient.consent_flags or {})
+    current_flags.update(payload)
+    patient.consent_flags = current_flags
+
+    from apps.api.app.core.permissions import log_audit_entry
+    await log_audit_entry(
+        db=db,
+        actor_id="patient_portal",
+        actor_role="patient",
+        action="update_consent_flags",
+        target_type="patient",
+        target_id=patient_id,
+        details=current_flags,
+    )
+
+    await db.flush()
+    await db.refresh(patient)
+    return patient
+

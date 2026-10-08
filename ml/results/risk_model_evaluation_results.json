@@ -1,0 +1,87 @@
+{
+  "overall_accuracy": 90.4,
+  "macro_f1": 0.7973,
+  "weighted_f1": 0.9117,
+  "macro_roc_auc": 0.983,
+  "hypoglycemia_recall": 92.88,
+  "hypoglycemia_precision": 42.25,
+  "hypoglycemia_f1": 0.5808,
+  "hypoglycemia_roc_auc": 0.986,
+  "hypoglycemia_pr_auc": 0.7357,
+  "in_range_recall": 89.33,
+  "in_range_precision": 98.01,
+  "in_range_f1": 0.9347,
+  "in_range_roc_auc": 0.9749,
+  "in_range_pr_auc": 0.9919,
+  "hyperglycemia_recall": 94.12,
+  "hyperglycemia_precision": 81.96,
+  "hyperglycemia_f1": 0.8762,
+  "hyperglycemia_roc_auc": 0.988,
+  "hyperglycemia_pr_auc": 0.9601,
+  "false_positive_rates_pct": {
+    "hypoglycemia": 4.2,
+    "in_range": 6.01,
+    "hyperglycemia": 5.17
+  },
+  "false_negative_rates_pct": {
+    "hypoglycemia": 7.12,
+    "in_range": 10.67,
+    "hyperglycemia": 5.88
+  },
+  "confusion_matrix_raw": [
+    [
+      2035,
+      154,
+      2
+    ],
+    [
+      2776,
+      46916,
+      2826
+    ],
+    [
+      5,
+      798,
+      12851
+    ]
+  ],
+  "confusion_matrix_normalized": [
+    [
+      0.9288,
+      0.0703,
+      0.0009
+    ],
+    [
+      0.0529,
+      0.8933,
+      0.0538
+    ],
+    [
+      0.0004,
+      0.0584,
+      0.9412
+    ]
+  ],
+  "test_sample_count": 68363,
+  "test_patient_count": 16,
+  "feature_names": [
+    "current_glucose",
+    "roc_5min",
+    "roc_15min",
+    "roc_30min",
+    "glycemic_accel",
+    "std_60min",
+    "mean_60min",
+    "min_60min",
+    "max_60min",
+    "pred_glucose_15m",
+    "pred_glucose_30m",
+    "pred_glucose_45m",
+    "pred_glucose_60m",
+    "pred_min_trajectory",
+    "pred_max_trajectory",
+    "pred_delta_30m",
+    "dist_to_hypo_70",
+    "dist_to_hyper_180"
+  ]
+}

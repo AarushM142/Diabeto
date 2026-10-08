@@ -109,3 +109,102 @@ class ApprovalDecisionRequest(BaseModel):
 class WhatsAppWebhookEntry(BaseModel):
     object: Optional[str] = None
     entry: Optional[List[Dict[str, Any]]] = None
+
+# Patient Threshold Schemas
+class PatientThresholdUpsert(BaseModel):
+    critical_low: float = Field(70.0, description="Critical hypoglycemia threshold (mg/dL)")
+    low: float = Field(80.0, description="Low glucose warning threshold (mg/dL)")
+    high: float = Field(180.0, description="High glucose warning threshold (mg/dL)")
+    critical_high: float = Field(250.0, description="Critical hyperglycemia threshold (mg/dL)")
+    escalation_timings: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="e.g. {\"t1_minutes\": 15, \"t2_minutes\": 30}",
+    )
+
+class PatientThresholdResponse(BaseModel):
+    id: str
+    patient_id: str
+    critical_low: float
+    low: float
+    high: float
+    critical_high: float
+    escalation_timings: Dict[str, Any]
+    version: int
+
+    class Config:
+        from_attributes = True
+
+# Phase 5: Trend, Analytics & Weekly Summary Schemas
+class GlycemicMetrics(BaseModel):
+    total_readings: int
+    mean_glucose: float
+    median_glucose: float
+    mad_glucose: float
+    min_glucose: float
+    max_glucose: float
+    standard_deviation: float
+    coefficient_of_variation_pct: float
+    tir_percentage: float
+    tar_percentage: float
+    tbr_percentage: float
+    clinical_status: str
+
+class AdherenceMetrics(BaseModel):
+    active_medication_count: int
+    total_confirmed_doses: int
+    compliance_score_pct: float
+    readings_per_day: float
+    status: str
+
+class ReadingItem(BaseModel):
+    measured_at: datetime
+    mgdl: float
+    context: str
+
+class TrendAnalyticsResponse(BaseModel):
+    patient_id: str
+    days: int
+    glycemic_metrics: GlycemicMetrics
+    context_breakdowns: Dict[str, Any]
+    adherence_metrics: AdherenceMetrics
+    readings: List[ReadingItem]
+
+class WeeklySummaryResponse(BaseModel):
+    patient_id: str
+    patient_name: str
+    age: int
+    period_days: int
+    generated_at: str
+    status: str # unverified, verified
+    verified_by: Optional[str] = None
+    verified_at: Optional[str] = None
+    clinician_notes: Optional[str] = None
+    glycemic_metrics: GlycemicMetrics
+    context_breakdowns: Dict[str, Any]
+    adherence_metrics: AdherenceMetrics
+    risk_events_count: int
+    clinical_highlights: List[str]
+    doctor_action_recommendation: str
+
+class VerifyWeeklySummaryRequest(BaseModel):
+    notes: Optional[str] = None
+
+class AuditLogResponse(BaseModel):
+    id: str
+    actor_id: str
+    actor_role: str
+    action: str
+    target_type: str
+    target_id: str
+    details: Dict[str, Any]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class PatientConsentUpdate(BaseModel):
+    view_raw_glucose: Optional[bool] = None
+    emergency_escalation: Optional[bool] = None
+
+
+

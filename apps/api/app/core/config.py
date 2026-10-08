@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     # GenAI
     GROQ_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
+    GOOGLE_GEMINI_API_KEY: Optional[str] = None
+
+    @property
+    def effective_gemini_api_key(self) -> Optional[str]:
+        return self.GEMINI_API_KEY or self.GOOGLE_GEMINI_API_KEY
 
     # WhatsApp Channel
     TWILIO_ACCOUNT_SID: Optional[str] = None
