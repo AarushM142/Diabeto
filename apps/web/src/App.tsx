@@ -6,6 +6,7 @@ import { CoachPortal } from './components/CoachPortal';
 import { CaregiverPortal } from './components/CaregiverPortal';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
 import { LoginView } from './components/LoginView';
+import { LandingHero } from './components/LandingHero';
 import { api, type User, type UserRole } from './api/client';
 import type { Language } from './lib/types';
 import { Phone, Type, LogOut } from 'lucide-react';
@@ -13,6 +14,9 @@ import { t } from './lib/i18n';
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => api.getCurrentUser());
+  const [unauthView, setUnauthView] = useState<'hero' | 'login'>('hero');
+  const [preferredRole, setPreferredRole] = useState<UserRole | undefined>(undefined);
+  
   const [activeTab, setActiveTab] = useState<ActiveTab>('patient');
   const [language, setLanguage] = useState<Language>('en');
   const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
@@ -67,6 +71,11 @@ export const App: React.FC = () => {
     }
   }, [isSimpleMode]);
 
+  const handleOpenLogin = (role?: UserRole) => {
+    setPreferredRole(role);
+    setUnauthView('login');
+  };
+
   const handleLoginSuccess = (user: User) => {
     setCurrentUser(user);
     applyRoleDefaultTab(user.role);
@@ -75,11 +84,21 @@ export const App: React.FC = () => {
   const handleLogout = () => {
     api.logout();
     setCurrentUser(null);
+    setUnauthView('hero');
   };
 
-  // If unauthenticated, show the dedicated Login & Role Authentication View
+  // If unauthenticated: default route is the Hero page; if user clicks CTA/login, show LoginView
   if (!currentUser) {
-    return <LoginView onLoginSuccess={handleLoginSuccess} />;
+    if (unauthView === 'login') {
+      return (
+        <LoginView
+          onLoginSuccess={handleLoginSuccess}
+          onBack={() => setUnauthView('hero')}
+          initialRole={preferredRole}
+        />
+      );
+    }
+    return <LandingHero onOpenLogin={handleOpenLogin} />;
   }
 
   const getPortalTitle = () => {

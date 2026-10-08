@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { 
   Shield, Stethoscope, Sparkles, HeartHandshake, Heart, 
-  ArrowRight, CheckCircle2, Lock, Mail, User as UserIcon, Building, AlertCircle
+  ArrowRight, ArrowLeft, CheckCircle2, Lock, Mail, User as UserIcon, Building, AlertCircle
 } from 'lucide-react';
 import { api, type User, type UserRole } from '../api/client';
 
 interface LoginViewProps {
   onLoginSuccess: (user: User) => void;
+  onBack?: () => void;
+  initialRole?: UserRole;
 }
 
 interface DemoRole {
@@ -85,14 +87,14 @@ const DEMO_ROLES: DemoRole[] = [
   },
 ];
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, initialRole }) => {
   const [activeTab, setActiveTab] = useState<'quick' | 'email'>('quick');
   const [isRegistering, setIsRegistering] = useState(false);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRole>('clinician');
+  const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole || 'clinician');
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -179,6 +181,30 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         boxShadow: 'var(--shadow-lg)',
         padding: '36px 32px',
       }}>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '10px',
+              border: '1px solid var(--border-stone)',
+              backgroundColor: 'var(--surface-clay)',
+              color: 'var(--text-forest)',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginBottom: '16px',
+            }}
+          >
+            <ArrowLeft size={14} />
+            Back to Overview
+          </button>
+        )}
+
         {/* Platform Header */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div style={{
