@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 # Patient Schemas
 class PatientCreate(BaseModel):
@@ -14,6 +14,8 @@ class PatientCreate(BaseModel):
     consent_flags: Dict[str, Any] = Field(default_factory=dict)
 
 class PatientResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     clinic_id: str
     clinician_of_record_id: str
@@ -25,8 +27,6 @@ class PatientResponse(BaseModel):
     consent_flags: Dict[str, Any]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
 
 # Health Event Schemas
 class GlucoseValue(BaseModel):
@@ -41,6 +41,8 @@ class HealthEventCreate(BaseModel):
     source_msg_id: Optional[str] = None
 
 class HealthEventResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     patient_id: str
     type: str
@@ -50,8 +52,6 @@ class HealthEventResponse(BaseModel):
     reported_by: str
     risk_status: str = "normal"
 
-    class Config:
-        from_attributes = True
 
 # Medication Schemas
 class MedicationScheduleCreate(BaseModel):
@@ -61,6 +61,8 @@ class MedicationScheduleCreate(BaseModel):
     instructions: Optional[str] = None
 
 class MedicationScheduleResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     patient_id: str
     drug_name: str
@@ -69,11 +71,11 @@ class MedicationScheduleResponse(BaseModel):
     instructions: Optional[str]
     is_active: bool
 
-    class Config:
-        from_attributes = True
 
 # Risk Schemas
 class RiskEventResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     patient_id: str
     type: str
@@ -82,11 +84,11 @@ class RiskEventResponse(BaseModel):
     status: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
 
 # Recommendation & Approval Schemas
 class RecommendationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     patient_id: str
     finding: Dict[str, Any]
@@ -97,9 +99,6 @@ class RecommendationResponse(BaseModel):
     message_class: str
     status: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class ApprovalDecisionRequest(BaseModel):
     decision: str # approved, rejected, edited
@@ -123,6 +122,8 @@ class PatientThresholdUpsert(BaseModel):
     )
 
 class PatientThresholdResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     patient_id: str
     critical_low: float
@@ -131,9 +132,6 @@ class PatientThresholdResponse(BaseModel):
     critical_high: float
     escalation_timings: Dict[str, Any]
     version: int
-
-    class Config:
-        from_attributes = True
 
 # Phase 5: Trend, Analytics & Weekly Summary Schemas
 class GlycemicMetrics(BaseModel):
@@ -191,6 +189,8 @@ class VerifyWeeklySummaryRequest(BaseModel):
     notes: Optional[str] = None
 
 class AuditLogResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     actor_id: str
     actor_role: str
@@ -199,9 +199,6 @@ class AuditLogResponse(BaseModel):
     target_id: str
     details: Dict[str, Any]
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class PatientConsentUpdate(BaseModel):
     view_raw_glucose: Optional[bool] = None

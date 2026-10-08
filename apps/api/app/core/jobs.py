@@ -33,7 +33,7 @@ async def enqueue_job(
         .on_conflict_do_nothing(index_elements=["idempotency_key"])
         .returning(BackgroundJob.id)
     )
-    
+
     result = await session.execute(stmt)
     row = result.fetchone()
     return row[0] if row else job_id
