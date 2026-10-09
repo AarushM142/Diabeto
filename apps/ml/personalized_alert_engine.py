@@ -40,12 +40,13 @@ class PersonalizedAlertEngine:
     def __init__(self, default_thresholds: Optional[Dict[str, float]] = None):
         self.default_thresholds = default_thresholds or self.DEFAULT_THRESHOLDS.copy()
 
-    def get_patient_thresholds(self, patient_profile: Dict[str, Any]) -> Dict[str, float]:
+    def get_patient_thresholds(self, patient_profile: Optional[Dict[str, Any]]) -> Dict[str, float]:
         """
         Safely extracts patient-specific thresholds from profile with robust fallbacks
         and relationship validation (guarantees 20 <= critical_low < low < high < critical_high <= 600).
         """
-        raw_t = patient_profile.get("thresholds", {})
+        patient_profile = patient_profile if isinstance(patient_profile, dict) else {}
+        raw_t = patient_profile.get("thresholds") or patient_profile.get("target_range") or patient_profile.get("patient_thresholds") or {}
         if not isinstance(raw_t, dict):
             raw_t = {}
 
@@ -76,16 +77,22 @@ class PersonalizedAlertEngine:
 
     def evaluate(
         self,
-        patient_profile: Dict[str, Any],
-        glucose_telemetry: Dict[str, Any],
-        model1_forecast: Dict[str, Any],
-        model2_risk: Dict[str, Any]
+        patient_profile: Optional[Dict[str, Any]],
+        glucose_telemetry: Optional[Dict[str, Any]],
+        model1_forecast: Optional[Dict[str, Any]] = None,
+        model2_risk: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Core Model 3 decision logic converting inputs into a structured alert decision.
         """
         # 1. Parse Inputs & Personal Thresholds
+        patient_profile = patient_profile if isinstance(patient_profile, dict) else {}
+        glucose_telemetry = glucose_telemetry if isinstance(glucose_telemetry, dict) else {}
+        model1_forecast = model1_forecast if isinstance(model1_forecast, dict) else {}
+        model2_risk = model2_risk if isinstance(model2_risk, dict) else {}
+
         thresholds = self.get_patient_thresholds(patient_profile)
+
         c_low = thresholds["critical_low"]
         low = thresholds["low"]
         high = thresholds["high"]
