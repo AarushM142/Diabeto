@@ -7,12 +7,13 @@ import { CaregiverPortal } from './components/CaregiverPortal';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
 import { AuthView } from './components/AuthView';
 import { LandingHero } from './components/LandingHero';
-import { RoleSelectModal } from './components/RoleSelectModal';
+import { RoleSelectModal, type OnboardingProfileData } from './components/RoleSelectModal';
+import { EditProfileModal } from './components/EditProfileModal';
 import { PageLoader } from './components/ui/page-loader';
 import { api, saveAuthSession, type User, type UserRole } from './api/client';
 import { supabase } from './lib/supabase';
 import type { Language } from './lib/types';
-import { Phone, Type, LogOut } from 'lucide-react';
+import { Phone, Type, LogOut, UserCog } from 'lucide-react';
 import { t } from './lib/i18n';
 
 interface LoadingState {
@@ -33,6 +34,7 @@ export const App: React.FC = () => {
   const [preferredRole, setPreferredRole] = useState<UserRole | undefined>(undefined);
   const [pendingGoogleUser, setPendingGoogleUser] = useState<PendingGoogleUser | null>(null);
   
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>('patient');
   const [language, setLanguage] = useState<Language>('en');
   const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
@@ -178,13 +180,13 @@ export const App: React.FC = () => {
     );
   };
 
-  const handleRoleSelected = async (role: UserRole) => {
+  const handleRoleSelected = async (role: UserRole, profileData?: OnboardingProfileData) => {
     if (!pendingGoogleUser) return;
     const { email, name, avatar } = pendingGoogleUser;
     
     let userToSet: User;
     try {
-      const res = await api.googleAuth(email, name, role);
+      const res = await api.googleAuth(email, profileData?.name || name, role, profileData);
       userToSet = res.user;
       if (avatar) {
         userToSet.avatar = avatar;
@@ -195,10 +197,18 @@ export const App: React.FC = () => {
         id: `goog_${Date.now()}`,
         role: role,
         clinic_id: 'clinic_pune_01',
-        name: name,
+        name: profileData?.name || name,
         email: email,
         title: `Verified ${role.charAt(0).toUpperCase() + role.slice(1)}`,
         avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+        phone: profileData?.phone,
+        age: profileData?.age,
+        gender: profileData?.gender,
+        language: profileData?.language,
+        patient_profile: profileData?.patient_profile,
+        caregiver_profile: profileData?.caregiver_profile,
+        clinician_profile: profileData?.clinician_profile,
+        coach_profile: profileData?.coach_profile,
       };
       saveAuthSession('token_' + Date.now(), userToSet);
     }
@@ -292,6 +302,7 @@ export const App: React.FC = () => {
             isBackendHealthy={isBackendHealthy}
             currentUser={currentUser}
             onLogout={handleLogout}
+            onOpenEditProfile={() => setShowProfileModal(true)}
           />
 
           {/* Main Content Area */}
@@ -320,6 +331,28 @@ export const App: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {/* Manage Care Profile Button */}
+                <button
+                  onClick={() => setShowProfileModal(true)}
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 14px',
+                    fontSize: '0.8rem',
+                    borderRadius: '20px',
+                    fontWeight: 600,
+                    color: 'var(--text-forest)',
+                    backgroundColor: 'var(--surface-white)',
+                  }}
+                  title="Manage Personalized Care Profile & Health Targets"
+                >
+                  <UserCog size={14} />
+                  <span>Care Profile</span>
+                </button>
+
                 {/* Quick Emergency SOS */}
                 <a
                   href="tel:+918149680369"
@@ -387,11 +420,41 @@ export const App: React.FC = () => {
             {/* Dynamic Portal Screen Content */}
             <div style={{ flex: 1, paddingBottom: '32px' }}>
               <main style={{ position: 'relative', zIndex: 1 }}>
-                {activeTab === 'patient' && <PatientPortal language={language} />}
-                {activeTab === 'clinician' && <ClinicianPortal language={language} currentRole={currentUser.role} />}
-                {activeTab === 'coach' && <CoachPortal language={language} currentRole={currentUser.role} />}
-                {activeTab === 'caregiver' && <CaregiverPortal language={language} currentRole={currentUser.role} />}
-                {activeTab === 'simulator' && <WhatsAppSimulator language={language} />}
+                {activeTab === 'patient' && (
+                  <PatientPortal
+                    language={language}
+                    currentUser={currentUser}
+                    onOpenEditProfile={() => setShowProfileModal(true)}
+                  />
+                )}
+                {activeTab === 'clinician' && (
+                  <ClinicianPortal
+                    language={language}
+                    currentRole={currentUser.role}
+                    currentUser={currentUser}
+                  />
+                )}
+                {activeTab === 'coach' && (
+                  <CoachPortal
+                    language={language}
+                    currentRole={currentUser.role}
+                    currentUser={currentUser}
+                  />
+                )}
+                {activeTab === 'caregiver' && (
+                  <CaregiverPortal
+                    language={language}
+                    currentRole={currentUser.role}
+                    currentUser={currentUser}
+                    onOpenEditProfile={() => setShowProfileModal(true)}
+                  />
+                )}
+                {activeTab === 'simulator' && (
+                  <WhatsAppSimulator
+                    language={language}
+                    currentUser={currentUser}
+                  />
+                )}
               </main>
             </div>
 
@@ -421,6 +484,16 @@ export const App: React.FC = () => {
               </div>
             </footer>
           </div>
+
+          {/* Edit Profile Modal */}
+          {showProfileModal && (
+            <EditProfileModal
+              currentUser={currentUser}
+              isOpen={showProfileModal}
+              onClose={() => setShowProfileModal(false)}
+              onProfileUpdated={(updated) => setCurrentUser(updated)}
+            />
+          )}
         </div>
       )}
     </>

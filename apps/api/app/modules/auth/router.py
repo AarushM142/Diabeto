@@ -24,6 +24,18 @@ class GoogleAuthRequest(BaseModel):
     email: Optional[str] = None
     name: Optional[str] = None
     role: Optional[str] = "clinician"
+    profile: Optional[Dict[str, Any]] = None
+
+class ProfileUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    phone: Optional[str] = None
+    language: Optional[str] = None
+    patient_profile: Optional[Dict[str, Any]] = None
+    caregiver_profile: Optional[Dict[str, Any]] = None
+    clinician_profile: Optional[Dict[str, Any]] = None
+    coach_profile: Optional[Dict[str, Any]] = None
 
 class SignupRequest(BaseModel):
     name: str
@@ -108,8 +120,47 @@ async def google_auth(payload: GoogleAuthRequest):
             "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
         }
 
+    if payload.profile:
+        matched_persona["patient_profile"] = payload.profile
+        if payload.profile.get("name"):
+            matched_persona["name"] = payload.profile["name"]
+        if payload.profile.get("age"):
+            matched_persona["age"] = payload.profile["age"]
+        if payload.profile.get("language"):
+            matched_persona["language"] = payload.profile["language"]
+        if payload.profile.get("phone"):
+            matched_persona["phone"] = payload.profile["phone"]
+
     token = create_access_token(matched_persona)
     return TokenResponse(access_token=token, user=matched_persona)
+
+@router.post("/auth/profile", response_model=Dict[str, Any])
+async def update_user_profile(
+    payload: ProfileUpdateRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    updated_user = current_user.copy()
+    if payload.name:
+        updated_user["name"] = payload.name
+    if payload.age is not None:
+        updated_user["age"] = payload.age
+    if payload.gender:
+        updated_user["gender"] = payload.gender
+    if payload.phone:
+        updated_user["phone"] = payload.phone
+    if payload.language:
+        updated_user["language"] = payload.language
+    if payload.patient_profile:
+        updated_user["patient_profile"] = payload.patient_profile
+    if payload.caregiver_profile:
+        updated_user["caregiver_profile"] = payload.caregiver_profile
+    if payload.clinician_profile:
+        updated_user["clinician_profile"] = payload.clinician_profile
+    if payload.coach_profile:
+        updated_user["coach_profile"] = payload.coach_profile
+
+    new_token = create_access_token(updated_user)
+    return {"status": "ok", "user": updated_user, "access_token": new_token}
 
 @router.post("/auth/signup", response_model=TokenResponse)
 async def signup(payload: SignupRequest):

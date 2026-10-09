@@ -1,6 +1,43 @@
-// Diabeto API Client for Web Portals with Multi-Tiered Authorization
-
 export type UserRole = 'clinician' | 'coach' | 'caregiver' | 'patient' | 'admin';
+
+export interface PatientProfile {
+  name: string;
+  age: number;
+  gender: string;
+  diabetes_type: string;
+  years_with_diabetes?: string;
+  language: 'en' | 'hi' | 'mr';
+  phone?: string;
+  caregiver_name?: string;
+  caregiver_phone?: string;
+  caregiver_relation?: string;
+  target_fasting_glucose?: number;
+  target_postmeal_glucose?: number;
+  medications?: string[];
+  emergency_notes?: string;
+}
+
+export interface CaregiverProfile {
+  caregiver_name: string;
+  relation: string;
+  patient_name: string;
+  patient_age: number;
+  patient_diabetes_type?: string;
+  emergency_phone: string;
+}
+
+export interface ClinicianProfile {
+  doctor_name: string;
+  clinic_name: string;
+  specialty: string;
+  license_number?: string;
+}
+
+export interface CoachProfile {
+  coach_name: string;
+  specialty: string;
+  clinic_name?: string;
+}
 
 export interface User {
   id: string;
@@ -11,6 +48,14 @@ export interface User {
   title: string;
   avatar?: string;
   linked_patient_id?: string;
+  age?: number;
+  gender?: string;
+  phone?: string;
+  language?: 'en' | 'hi' | 'mr';
+  patient_profile?: PatientProfile;
+  caregiver_profile?: CaregiverProfile;
+  clinician_profile?: ClinicianProfile;
+  coach_profile?: CoachProfile;
 }
 
 export interface AuthResponse {
@@ -228,11 +273,16 @@ export const api = {
     return data;
   },
 
-  async googleAuth(email?: string, name?: string, role?: UserRole): Promise<AuthResponse> {
+  async googleAuth(
+    email?: string, 
+    name?: string, 
+    role?: UserRole, 
+    profile?: Partial<PatientProfile | CaregiverProfile | ClinicianProfile | CoachProfile>
+  ): Promise<AuthResponse> {
     const res = await fetch(`${API_BASE}/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, name, role }),
+      body: JSON.stringify({ email, name, role, profile }),
       signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) {
@@ -243,6 +293,34 @@ export const api = {
     saveAuthSession(data.access_token, data.user);
     setGlobalPersona(data.user.role, data.user.id);
     return data;
+  },
+
+  async updateUserProfile(updates: Partial<User>): Promise<User> {
+    const currentUser = getCurrentUser();
+    const updatedUser: User = {
+      ...(currentUser || {} as User),
+      ...updates,
+      patient_profile: updates.patient_profile || currentUser?.patient_profile,
+      caregiver_profile: updates.caregiver_profile || currentUser?.caregiver_profile,
+      clinician_profile: updates.clinician_profile || currentUser?.clinician_profile,
+      coach_profile: updates.coach_profile || currentUser?.coach_profile,
+    };
+    const token = getAuthToken() || `token_${Date.now()}`;
+    saveAuthSession(token, updatedUser);
+    
+    // Attempt backend sync
+    try {
+      await fetch(`${API_BASE}/auth/profile`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(updates),
+        signal: AbortSignal.timeout(3000),
+      });
+    } catch (e) {
+      console.warn('Backend profile sync failed, local profile updated:', e);
+    }
+
+    return updatedUser;
   },
 
   async signup(name: string, email: string, password: string, role: UserRole = 'clinician'): Promise<AuthResponse> {

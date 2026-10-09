@@ -5,9 +5,11 @@ import {
 } from 'lucide-react';
 import { t } from '../lib/i18n';
 import type { Language, ChatMessage, ScenarioPreset } from '../lib/types';
+import type { User } from '../api/client';
 
 interface WhatsAppSimulatorProps {
   language: Language;
+  currentUser?: User;
 }
 
 const PRESET_SCENARIOS: ScenarioPreset[] = [
@@ -59,16 +61,19 @@ const PRESET_SCENARIOS: ScenarioPreset[] = [
   },
 ];
 
-export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }) => {
+export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language, currentUser }) => {
+  const patientName = currentUser?.patient_profile?.name || (currentUser?.role === 'patient' ? currentUser?.name : 'Ramesh Kulkarni');
+  const patientFirstName = patientName.split(' ')[0] || patientName;
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'msg_1',
       sender: 'bot',
       text: language === 'hi' 
-        ? 'नमस्ते रमेश जी! आशा है आपकी सुबह अच्छी रही। कृपया अपनी खाली पेट की शुगर (Fasting Sugar) जांच का परिणाम भेजें।'
+        ? `नमस्ते ${patientFirstName} जी! आशा है आपकी सुबह अच्छी रही। कृपया अपनी खाली पेट की शुगर (Fasting Sugar) जांच का परिणाम भेजें।`
         : language === 'mr'
-        ? 'नमस्कार रमेश जी! आशा आहे आपली सकाळ छान झाली. कृपया आपली उपाशी पोटी शुगर तपासून पाठवा.'
-        : 'Namaste Ramesh ji! Hope you slept well. Please share your morning fasting glucose reading.',
+        ? `नमस्कार ${patientFirstName} जी! आशा आहे आपली सकाळ छान झाली. कृपया आपली उपाशी पोटी शुगर तपासून पाठवा.`
+        : `Namaste ${patientFirstName} ji! Hope you slept well. Please share your morning fasting glucose reading.`,
       timestamp: '8:00 AM',
     },
   ]);
@@ -220,7 +225,7 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language }
                 {t('quickScenarios', language)}
               </h3>
               <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Target: <strong>Ramesh Kulkarni</strong>
+                Target: <strong>{patientName}</strong>
               </span>
             </div>
 

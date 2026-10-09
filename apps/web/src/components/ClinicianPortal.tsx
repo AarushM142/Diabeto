@@ -6,23 +6,37 @@ import {
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid 
 } from 'recharts';
-import { api, type TrendAnalytics, type WeeklySummary, type UserRole, type AuditLogItem } from '../api/client';
+import { api, type TrendAnalytics, type WeeklySummary, type UserRole, type AuditLogItem, type User } from '../api/client';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
 
 interface ClinicianPortalProps {
   language: Language;
   currentRole: UserRole;
+  currentUser?: User;
 }
 
-const DEMO_PATIENTS = [
-  { id: 'pt_ramesh_001', name: 'Ramesh Kulkarni', age: 68, gender: 'M', language: 'Marathi / Hindi', phone: '+91 8149680369', diagnosis: 'Type 2 Diabetes (6 yrs)', severity: 'stable' },
-  { id: 'pt_shanti_002', name: 'Shanti Devi', age: 72, gender: 'F', language: 'Hindi', phone: '+91 9800000002', diagnosis: 'Type 2 Diabetes (12 yrs, Mild Neuropathy)', severity: 'watch' },
-  { id: 'pt_ananya_003', name: 'Ananya Patil', age: 65, gender: 'F', language: 'Marathi', phone: '+91 9800000003', diagnosis: 'Type 2 Diabetes + Hypo Unawareness', severity: 'critical' },
-];
+export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, currentRole, currentUser }) => {
+  const patientProfile = currentUser?.patient_profile;
+  const customPatientName = patientProfile?.name || (currentUser?.role === 'patient' ? currentUser.name : null);
 
-export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, currentRole }) => {
-  const [selectedPatientId, setSelectedPatientId] = useState('pt_ramesh_001');
+  const patientList = [
+    ...(customPatientName ? [{
+      id: currentUser?.id || 'pt_custom_001',
+      name: customPatientName,
+      age: patientProfile?.age || currentUser?.age || 68,
+      gender: (patientProfile?.gender?.[0] || currentUser?.gender?.[0] || 'M').toUpperCase(),
+      language: patientProfile?.language === 'hi' ? 'Hindi' : patientProfile?.language === 'mr' ? 'Marathi' : 'English',
+      phone: patientProfile?.phone || currentUser?.phone || '+91 98000 00001',
+      diagnosis: `${patientProfile?.diabetes_type || 'Type 2 Diabetes'} (${patientProfile?.years_with_diabetes || 'Active'})`,
+      severity: 'stable',
+    }] : []),
+    { id: 'pt_ramesh_001', name: 'Ramesh Kulkarni', age: 68, gender: 'M', language: 'Marathi / Hindi', phone: '+91 8149680369', diagnosis: 'Type 2 Diabetes (6 yrs)', severity: 'stable' },
+    { id: 'pt_shanti_002', name: 'Shanti Devi', age: 72, gender: 'F', language: 'Hindi', phone: '+91 9800000002', diagnosis: 'Type 2 Diabetes (12 yrs, Mild Neuropathy)', severity: 'watch' },
+    { id: 'pt_ananya_003', name: 'Ananya Patil', age: 65, gender: 'F', language: 'Marathi', phone: '+91 9800000003', diagnosis: 'Type 2 Diabetes + Hypo Unawareness', severity: 'critical' },
+  ];
+
+  const [selectedPatientId, setSelectedPatientId] = useState(patientList[0].id);
   const [trends, setTrends] = useState<TrendAnalytics | null>(null);
   const [summary, setSummary] = useState<WeeklySummary | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
@@ -31,7 +45,7 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
   const [verifying, setVerifying] = useState(false);
   const [doctorNotes, setDoctorNotes] = useState('Patient stable on current regimen. Continue daily fasting logs and morning Metformin.');
 
-  const patient = DEMO_PATIENTS.find(p => p.id === selectedPatientId) || DEMO_PATIENTS[0];
+  const patient = patientList.find(p => p.id === selectedPatientId) || patientList[0];
   const isAuthorizedDoctor = currentRole === 'clinician' || currentRole === 'admin';
 
   const fetchData = async () => {
@@ -114,7 +128,7 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
       </div>
 
       <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' }}>
-        {DEMO_PATIENTS.map((p) => {
+        {patientList.map((p) => {
           const isSelected = p.id === selectedPatientId;
           const isCrit = p.severity === 'critical';
           const isWatch = p.severity === 'watch';

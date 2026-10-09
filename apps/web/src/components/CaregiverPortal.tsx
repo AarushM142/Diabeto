@@ -3,20 +3,35 @@ import {
   HeartHandshake, CheckCircle2, Phone, MessageSquare, ShieldCheck, 
   Clock, Pill, Calendar, HeartPulse, AlertCircle, Eye, EyeOff, Lock
 } from 'lucide-react';
-import { api, type UserRole, type TrendAnalytics } from '../api/client';
+import { api, type UserRole, type TrendAnalytics, type User } from '../api/client';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
 
 interface CaregiverPortalProps {
   language: Language;
   currentRole?: UserRole;
+  currentUser?: User;
+  onOpenEditProfile?: () => void;
 }
 
-export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language, currentRole = 'caregiver' }) => {
+export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ 
+  language, 
+  currentRole = 'caregiver',
+  currentUser,
+  onOpenEditProfile,
+}) => {
   const [trends, setTrends] = useState<TrendAnalytics | null>(null);
   const [allowRawGlucose, setAllowRawGlucose] = useState<boolean>(true);
   const [updatingConsent, setUpdatingConsent] = useState<boolean>(false);
   const [consentSuccessToast, setConsentSuccessToast] = useState<string | null>(null);
+
+  // Dynamic Caregiver Profile Data
+  const caregiverProfile = currentUser?.caregiver_profile;
+  const patientName = caregiverProfile?.patient_name || 'Ramesh Kulkarni';
+  const patientFirstName = patientName.split(' ')[0] || patientName;
+  const caregiverName = caregiverProfile?.caregiver_name || currentUser?.name || 'Family Caregiver';
+  const relation = caregiverProfile?.relation || 'Primary Caregiver';
+  const emergencyPhone = caregiverProfile?.emergency_phone || '+91 8149680369';
 
   useEffect(() => {
     const loadTrends = async () => {
@@ -70,12 +85,40 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language, curr
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <h2 className="font-serif" style={{ fontSize: '1.75rem', fontWeight: 600, color: 'var(--text-forest)', margin: 0 }}>
-                  Ramesh is doing <em style={{ fontStyle: 'italic', color: 'var(--text-forest)' }}>well</em> today
+                  {patientFirstName} is doing <em style={{ fontStyle: 'italic', color: 'var(--text-forest)' }}>well</em> today
                 </h2>
                 <span className="status-pill ok">
                   <span className="status-dot ok" />
                   {t('statusNormal', language)}
                 </span>
+                <span style={{
+                  fontSize: '0.75rem',
+                  backgroundColor: 'var(--surface-clay)',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  color: 'var(--text-forest)',
+                  fontWeight: 600,
+                  border: '1px solid var(--border-stone)',
+                }}>
+                  Caregiver: {caregiverName} ({relation})
+                </span>
+                {onOpenEditProfile && (
+                  <button
+                    type="button"
+                    onClick={onOpenEditProfile}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--accent-sage-dark)',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Edit Link
+                  </button>
+                )}
               </div>
               <p style={{ fontSize: '0.925rem', color: 'var(--text-muted)', marginTop: '4px' }}>
                 {t('caregiverSub', language)}
@@ -86,7 +129,7 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language, curr
           {/* Pill Action Buttons */}
           <div style={{ display: 'flex', gap: '12px' }}>
             <a
-              href="https://wa.me/918149680369"
+              href={`https://wa.me/${emergencyPhone.replace(/[^0-9]/g, '')}`}
               target="_blank"
               rel="noreferrer"
               className="btn btn-primary"
@@ -95,7 +138,7 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language, curr
               {t('whatsappButton', language)}
             </a>
             <a
-              href="tel:+918149680369"
+              href={`tel:${emergencyPhone}`}
               className="btn btn-secondary"
             >
               <Phone size={16} />
@@ -123,7 +166,7 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({ language, curr
             </div>
             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
               {allowRawGlucose 
-                ? 'Consent active: Patient Ramesh has authorized family members to view exact blood glucose numbers.'
+                ? `Consent active: Patient ${patientName} has authorized family members to view exact blood glucose numbers.`
                 : 'Privacy-first mode: Qualitative status displayed to prevent caregiver anxiety as per senior preference.'}
             </div>
           </div>

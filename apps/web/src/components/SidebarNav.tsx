@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Heart, Stethoscope, Sparkles, Terminal, HeartHandshake, 
-  Globe, Type, Menu, X, Phone, LogOut, ShieldCheck
+  Globe, Type, Menu, X, Phone, LogOut, ShieldCheck, UserCog
 } from 'lucide-react';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
@@ -19,6 +19,7 @@ interface SidebarNavProps {
   isBackendHealthy: boolean;
   currentUser: User;
   onLogout: () => void;
+  onOpenEditProfile?: () => void;
 }
 
 const ROLE_DISPLAY_NAMES: Record<UserRole, { label: string; badgeColor: string }> = {
@@ -39,6 +40,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   isBackendHealthy,
   currentUser,
   onLogout,
+  onOpenEditProfile,
 }) => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
@@ -344,7 +346,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             </span>
           </div>
 
-          {/* User Profile Card with Sign Out Button */}
+          {/* User Profile Card with Edit Profile & Sign Out Button */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -356,7 +358,11 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             marginTop: '4px',
             border: '1px solid var(--border-stone)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+            <div 
+              onClick={onOpenEditProfile}
+              title="Click to edit profile & health targets"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1, cursor: onOpenEditProfile ? 'pointer' : 'default' }}
+            >
               <img 
                 src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'} 
                 alt={currentUser.name}
@@ -372,30 +378,59 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={onLogout}
-              title="Sign Out / Log Out"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: '6px',
-                borderRadius: '8px',
-                color: 'var(--status-danger)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--status-danger-bg)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              <LogOut size={16} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+              {onOpenEditProfile && (
+                <button
+                  type="button"
+                  onClick={onOpenEditProfile}
+                  title="Edit Care Profile"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '6px',
+                    borderRadius: '8px',
+                    color: 'var(--text-forest)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--surface-white)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <UserCog size={16} />
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={onLogout}
+                title="Sign Out / Log Out"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '6px',
+                  borderRadius: '8px',
+                  color: 'var(--status-danger)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--status-danger-bg)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -433,10 +468,43 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             </div>
 
             {/* Authenticated Role Tag */}
-            <div style={{ padding: '8px 12px', background: 'var(--surface-clay)', borderRadius: '10px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', fontWeight: 700 }}>VERIFIED ACCOUNT</div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-forest)' }}>{currentUser.name}</div>
-              <div style={{ fontSize: '0.72rem', color: roleMeta.badgeColor, fontWeight: 600 }}>{roleMeta.label}</div>
+            <div 
+              onClick={() => {
+                if (onOpenEditProfile) {
+                  setMobileDrawerOpen(false);
+                  onOpenEditProfile();
+                }
+              }}
+              style={{
+                padding: '10px 12px',
+                background: 'var(--surface-clay)',
+                borderRadius: '12px',
+                marginBottom: '16px',
+                cursor: onOpenEditProfile ? 'pointer' : 'default',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                border: '1px solid var(--border-stone)',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', fontWeight: 700 }}>VERIFIED ACCOUNT</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-forest)' }}>{currentUser.name}</div>
+                <div style={{ fontSize: '0.72rem', color: roleMeta.badgeColor, fontWeight: 600 }}>{roleMeta.label}</div>
+              </div>
+              {onOpenEditProfile && (
+                <div style={{
+                  padding: '6px',
+                  borderRadius: '8px',
+                  background: 'var(--surface-white)',
+                  color: 'var(--text-forest)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <UserCog size={16} />
+                </div>
+              )}
             </div>
 
             {/* Mobile Nav Links */}

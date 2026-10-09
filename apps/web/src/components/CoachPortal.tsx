@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, CheckCircle2, XCircle, Send, ShieldCheck, RefreshCw, Phone, MoreVertical
 } from 'lucide-react';
-import { api } from '../api/client';
+import { api, type User } from '../api/client';
 import type { Recommendation } from '../api/client';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
@@ -11,6 +11,7 @@ import type { UserRole } from '../api/client';
 interface CoachPortalProps {
   language: Language;
   currentRole?: UserRole;
+  currentUser?: User;
 }
 
 const formatActionType = (raw: string): string => {
@@ -24,7 +25,11 @@ const formatActionType = (raw: string): string => {
   return map[raw] || raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
 
-export const CoachPortal: React.FC<CoachPortalProps> = ({ language, currentRole = 'coach' }) => {
+export const CoachPortal: React.FC<CoachPortalProps> = ({ 
+  language, 
+  currentRole = 'coach',
+  currentUser,
+}) => {
   const [approvals, setApprovals] = useState<Recommendation[]>([]);
   const [selectedRecId, setSelectedRecId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,6 +38,8 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language, currentRole 
   const [coachFeedback] = useState('Encouraging tone for senior.');
   const [actionInProgress, setActionInProgress] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const targetPatientName = currentUser?.patient_profile?.name || (currentUser?.role === 'patient' ? currentUser?.name : 'Ramesh Kulkarni');
 
   const canReviewAndDispatch = currentRole === 'coach' || currentRole === 'clinician' || currentRole === 'admin';
 
@@ -90,7 +97,7 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language, currentRole 
     try {
       await api.generateNudge('pt_ramesh_001');
       await fetchApprovals();
-      setToastMessage('Generated fresh lifestyle nudge for Ramesh Kulkarni.');
+      setToastMessage(`Generated fresh lifestyle nudge for ${targetPatientName}.`);
       setTimeout(() => setToastMessage(null), 4000);
     } catch (err) {
       alert('Nudge generation error: ' + err);
@@ -166,7 +173,7 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({ language, currentRole 
           </p>
           <button onClick={handleGenerateTestNudge} className="btn btn-primary">
             <Sparkles size={15} />
-            {t('generateNudge', language)} for Ramesh
+            {t('generateNudge', language)} for {targetPatientName}
           </button>
         </div>
       ) : (
