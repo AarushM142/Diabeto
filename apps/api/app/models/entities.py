@@ -32,6 +32,8 @@ class User(Base):
     phone: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     phone_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     language: Mapped[str] = mapped_column(String(10), default="en")
+    whatsapp_opt_in_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    alert_channels: Mapped[dict] = mapped_column(JSONB, default=lambda: {"whatsapp": True, "sms": True, "voice": True})
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
 class Patient(Base):
@@ -46,6 +48,9 @@ class Patient(Base):
     phone: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     language: Mapped[str] = mapped_column(String(10), default="hi") # hi, mr, en
     consent_flags: Mapped[dict] = mapped_column(JSONB, default=dict)
+    whatsapp_opt_in_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    whatsapp_opt_in_method: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    whatsapp_opted_out_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     thresholds_reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
@@ -110,6 +115,10 @@ class RiskEvent(Base):
     evidence_ids: Mapped[list] = mapped_column(JSONB, default=list)
     rule_version: Mapped[str] = mapped_column(String(50), default="1.0")
     status: Mapped[str] = mapped_column(String(50), default="active") # active, acknowledged, resolved
+    acknowledged_by: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    acknowledged_via: Mapped[Optional[str]] = mapped_column(String(50), nullable=True) # whatsapp_button, sms, call, dashboard
+    acknowledged_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    ladder_step: Mapped[int] = mapped_column(Integer, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
 class Recommendation(Base):
@@ -161,4 +170,31 @@ class AuditLog(Base):
     target_type: Mapped[str] = mapped_column(String(100), nullable=False)
     target_id: Mapped[str] = mapped_column(String, nullable=False)
     details: Mapped[dict] = mapped_column(JSONB, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+class MessageLog(Base):
+    __tablename__ = "message_log"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=generate_uuid)
+    direction: Mapped[str] = mapped_column(String(10), nullable=False) # inbound, outbound
+    person_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    person_role: Mapped[Optional[str]] = mapped_column(String(50), nullable=True) # patient, caregiver, staff
+    phone: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    channel: Mapped[str] = mapped_column(String(20), default="whatsapp") # whatsapp, sms, voice
+    template_key: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    twilio_sid: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(50), default="queued") # queued, sent, delivered, read, failed, undelivered
+    error_code: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    related_risk_event_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    status_updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+class ConversationState(Base):
+    __tablename__ = "conversation_state"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=generate_uuid)
+    patient_id: Mapped[str] = mapped_column(String, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    state: Mapped[str] = mapped_column(String(100), nullable=False) # awaiting_reading_confirmation, awaiting_dose_confirmation
+    payload: Mapped[dict] = mapped_column(JSONB, default=dict)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)

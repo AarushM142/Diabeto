@@ -103,7 +103,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       label: t('tabSimulator', language),
       icon: Terminal,
       badge: 'Simulate',
-      allowedRoles: ['clinician', 'coach', 'admin'] as UserRole[],
+      allowedRoles: ['clinician', 'coach', 'admin', 'patient', 'caregiver'] as UserRole[],
     },
   ];
 
@@ -246,6 +246,45 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                   </button>
                 );
               })}
+
+              {/* WhatsApp Simulator Demo Quick-Access for Patients */}
+              <button
+                key="simulator-patient"
+                type="button"
+                onClick={() => handleTabClick('simulator')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 14px',
+                  borderRadius: '14px',
+                  border: activeTab === 'simulator' ? '1.5px solid #25D366' : '1px dashed #25D366',
+                  background: activeTab === 'simulator' ? '#25D36615' : 'transparent',
+                  color: 'var(--text-forest)',
+                  fontWeight: activeTab === 'simulator' ? 700 : 600,
+                  fontSize: '0.92rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease',
+                  marginTop: '6px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Terminal size={18} color="#16a34a" strokeWidth={2.2} />
+                  <span>📱 WhatsApp Simulator</span>
+                </div>
+                <span style={{
+                  fontSize: '0.62rem',
+                  background: '#25D36620',
+                  color: '#15803d',
+                  padding: '2px 6px',
+                  borderRadius: '6px',
+                  fontWeight: 700,
+                }}>
+                  DEMO
+                </span>
+              </button>
             </div>
           </div>
         )}

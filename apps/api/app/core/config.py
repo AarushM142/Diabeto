@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     TWILIO_ACCOUNT_SID: Optional[str] = None
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_WHATSAPP_NUMBER: Optional[str] = "whatsapp:+14155238886"
+    # Reject Twilio webhooks without a valid X-Twilio-Signature whenever an auth
+    # token is configured. Set to false only for local testing with unsigned
+    # requests (WhatsApp simulator, Postman).
+    TWILIO_VALIDATE_SIGNATURE: bool = True
+    # Public URL Twilio calls us on (e.g. the ngrok URL). Used for webhook
+    # signature checks and status-callback URLs.
+    PUBLIC_BASE_URL: Optional[str] = None
+    # Demo only: treat messages from unknown numbers as the demo patient.
+    ALLOW_DEMO_UNKNOWN_SENDER_FALLBACK: bool = False
 
     META_WA_PHONE_NUMBER_ID: Optional[str] = None
     META_WA_ACCESS_TOKEN: Optional[str] = None

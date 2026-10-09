@@ -1,18 +1,53 @@
 {
+  "welcome_opt_in": {
+    "en": "Namaste {{patient_name}}, {{clinic_name}} has added you to Diabeto to help manage your sugar over WhatsApp. Would you like to get daily reminders and guidance here? Reply [Yes, start] or [No, thanks].",
+    "hi": "नमस्ते {{patient_name}} जी, {{clinic_name}} ने आपको व्हाट्सएप पर शुगर की देखभाल के लिए Diabeto में जोड़ा है। क्या आप यहां दैनिक दवा अनुस्मारक और मार्गदर्शन प्राप्त करना चाहते हैं? [हाँ, शुरू करें] या [नहीं, धन्यवाद] लिखकर बताएं।",
+    "mr": "नमस्ते {{patient_name}}, {{clinic_name}} यांनी तुम्हाला व्हॉट्सअॅपवर मधुमेहाच्या देखभालीसाठी Diabeto मध्ये जोडले आहे. तुम्हाला येथे दररोज स्मरणपत्रे हवी आहेत का? [होय, सुरू करा] किंवा [नाही] उत्तर द्या."
+  },
+  "caregiver_opt_in": {
+    "en": "Namaste {{caregiver_name}}, {{clinic_name}} added you as family caregiver for {{patient_name}}. Would you like to receive urgent safety alerts here if their sugar is critically low or high? Reply [Yes, alert me] or [No].",
+    "hi": "नमस्ते {{caregiver_name}} जी, {{clinic_name}} ने आपको {{patient_name}} जी के फैमिली केयरगिवर के रूप में जोड़ा है। क्या आप आपातकालीन स्थिति में यहां अलर्ट प्राप्त करना चाहते हैं? [हाँ, सूचित करें] या [नहीं] लिखकर बताएं।",
+    "mr": "नमस्ते {{caregiver_name}}, {{clinic_name}} यांनी तुम्हाला {{patient_name}} यांचे काळजीवाहू म्हणून जोडले आहे. आपत्कालीन परिस्थितीत तुम्हाला व्हॉट्सअॅपवर सूचना हव्या आहेत का? [होय] किंवा [नाही] उत्तर द्या."
+  },
   "medication_reminder": {
-    "en": "Namaste {{patient_name}}, it is {{time}}. Did you take your {{medication_name}} ({{dose}})? Reply [YES] or [NO].",
-    "hi": "नमस्ते {{patient_name}} जी, {{time}} का समय हो गया है। क्या आपने अपनी {{medication_name}} ({{dose}}) ले ली है? कृपया [हाँ] या [नहीं] लिखकर बताएं।",
-    "mr": "नमस्ते {{patient_name}}, {{time}} वाजले आहेत. तुम्ही तुमची {{medication_name}} ({{dose}}) घेतली का? कृपया [होय] किंवा [नाही] उत्तर द्या."
+    "en": "Namaste {{patient_name}}, it is {{time}}. Did you take your {{medication_name}} ({{dose}})? Reply [Taken] or [Not yet].",
+    "hi": "नमस्ते {{patient_name}} जी, {{time}} का समय हो गया है। क्या आपने अपनी {{medication_name}} ({{dose}}) ले ली है? कृपया [ले ली] या [अभी नहीं] लिखकर बताएं।",
+    "mr": "नमस्ते {{patient_name}}, {{time}} वाजले आहेत. तुम्ही तुमची {{medication_name}} ({{dose}}) घेतली का? कृपया [घेतली] किंवा [नाही] उत्तर द्या."
+  },
+  "reading_reminder": {
+    "en": "Namaste {{patient_name}}, we haven't received your sugar reading today. Please check your meter and reply with the number.",
+    "hi": "नमस्ते {{patient_name}} जी, आज हमें आपकी शुगर की रीडिंग नहीं मिली है। कृपया अपने मीटर से जांचें और नंबर यहां भेजें।",
+    "mr": "नमस्ते {{patient_name}}, आज आम्हाला तुमची साखरेची नोंद मिळालेली नाही. कृपया मीटर तपासा आणि नंबर पाठवा."
+  },
+  "caregiver_critical_alert": {
+    "en": "URGENT Caregiver Alert: {{patient_name}}'s sugar is {{level_word}} at {{time}}. Please check on them immediately. Clinic: {{clinic_phone}}. In an emergency call 112.",
+    "hi": "आपातकालीन केयरगिवर सूचना: {{patient_name}} जी की शुगर {{time}} पर {{level_word}} है। कृपया तुरंत उनसे संपर्क करें। क्लिनिक: {{clinic_phone}}। आपातकाल में 112 पर कॉल करें।",
+    "mr": "तातडीची काळजीवाहू सूचना: {{time}} वाजता {{patient_name}} यांची साखर {{level_word}} आहे. कृपया ताबडतोब त्यांची विचारपूस करा. क्लिनिक: {{clinic_phone}}. आपत्कालीन स्थितीत ११२ वर फोन करा."
+  },
+  "caregiver_missed_dose": {
+    "en": "Caregiver Alert: {{patient_name}} has not confirmed their {{medication_name}} scheduled for {{time}}. Please check in with them.",
+    "hi": "केयरगिवर सूचना: {{patient_name}} जी ने {{time}} की निर्धारित {{medication_name}} नहीं ली है। कृपया उनसे संपर्क करें।",
+    "mr": "काळजीवाहू सूचना: {{patient_name}} यांनी {{time}} ची {{medication_name}} घेतलेली नाही. कृपया त्यांची विचारपूस करा."
+  },
+  "care_team_message": {
+    "en": "Namaste {{patient_name}}, your care team has an important health update for you. Reply [Read it] to view.",
+    "hi": "नमस्ते {{patient_name}} जी, आपकी केयर टीम की ओर से एक महत्वपूर्ण संदेश है। देखने के लिए [पढ़ें] लिखकर भेजें।",
+    "mr": "नमस्ते {{patient_name}}, तुमच्या डॉक्टरांचा एक महत्त्वाचा संदेश आहे. वाचण्यासाठी [वाचा] उत्तर द्या."
+  },
+  "weekly_summary": {
+    "en": "Namaste {{patient_name}}, your weekly summary from Dr. {{doctor_name}} is ready: {{in_range_pct}}% time in range, {{doses_taken_pct}}% doses taken on time. Keep up the good work!",
+    "hi": "नमस्ते {{patient_name}} जी, डॉ. {{doctor_name}} द्वारा सत्यापित आपका साप्ताहिक सारांश: {{in_range_pct}}% समय शुगर नियंत्रण में रही, {{doses_taken_pct}}% दवाएं समय पर लीं।",
+    "mr": "नमस्ते {{patient_name}}, डॉ. {{doctor_name}} यांनी तपासलेला तुमचा साप्ताहिक अहवाल: {{in_range_pct}}% वेळ साखर नियंत्रणात, {{doses_taken_pct}}% औषधे वेळेवर घेतली."
   },
   "echo_confirmation": {
-    "en": "You recorded a glucose reading of {{glucose_val}} mg/dL ({{context}}). Is this correct? Reply [CONFIRM] or [RE-ENTER].",
-    "hi": "आपने {{glucose_val}} mg/dL ({{context}}) शुगर दर्ज किया है। क्या यह सही है? [सही है] या [फिर से दर्ज करें] बताएं।",
-    "mr": "तुम्ही नोंदवलेली रक्तातील साखर {{glucose_val}} mg/dL ({{context}}) आहे. हे बरोबर आहे का? [होय, बरोबर आहे] किंवा [पुन्हा नोंदवा] उत्तर द्या."
+    "en": "You recorded a glucose reading of {{glucose_val}} mg/dL ({{context}}). Is this correct? Reply [Yes, save] or [Change].",
+    "hi": "आपने {{glucose_val}} mg/dL ({{context}}) शुगर दर्ज किया है। क्या यह सही है? [हाँ, सहेजें] या [बदलें] बताएं।",
+    "mr": "तुम्ही नोंदवलेली रक्तातील साखर {{glucose_val}} mg/dL ({{context}}) आहे. हे बरोबर आहे का? [होय, सेव्ह करा] किंवा [बदला] उत्तर द्या."
   },
-  "missed_dose_caregiver_alert": {
-    "en": "Caregiver Alert: {{patient_name}} has not confirmed their {{medication_name}} scheduled for {{time}}. Please check in with them.",
-    "hi": "केयरगिवर सूचना: {{patient_name}} जी ने {{time}} की {{medication_name}} की पुष्टि नहीं की है। कृपया उनसे संपर्क करें।",
-    "mr": "काळजीवाहू सूचना: {{patient_name}} यांनी {{time}} ची {{medication_name}} औषध घेतल्याची पुष्टी केलेली नाही. कृपया त्यांच्याशी बोला."
+  "reading_saved_normal": {
+    "en": "Thank you {{patient_name}}! Your reading of {{glucose_val}} mg/dL has been recorded. Keep up the good work! ✅",
+    "hi": "धन्यवाद {{patient_name}} जी! आपकी शुगर {{glucose_val}} mg/dL दर्ज कर ली गई है। ✅",
+    "mr": "धन्यवाद {{patient_name}}! तुमची {{glucose_val}} mg/dL नोंद सेव्ह झाली आहे. ✅"
   },
   "high_glucose_warning": {
     "en": "Warning: Your glucose reading of {{glucose_val}} mg/dL is higher than your doctor-set limit. Please drink water and follow your care plan. A notification has been sent to your care team.",
@@ -24,9 +59,44 @@
     "hi": "आपातकालीन सूचना: आपकी शुगर {{glucose_val}} mg/dL (बहुत कम) है। तुरंत 3 चम्मच चीनी या फलों का जूस लें। चक्कर आने पर तुरंत 112 या 108 पर कॉल करें। आपके परिवार को सूचित कर दिया गया है।",
     "mr": "तातडीची सूचना: तुमची साखर {{glucose_val}} mg/dL (अतिशय कमी) आहे. लगेच ३ चमचे साखर किंवा फळांचा रस प्या. चक्कर येत असल्यास ताबडतोब ११२ किंवा १०८ वर फोन करा. तुमच्या कुटुंबाला कळवले आहे."
   },
-  "weekly_summary_greeting": {
-    "en": "Namaste {{patient_name}}, here is your weekly health summary verified by Dr. {{doctor_name}}.",
-    "hi": "नमस्ते {{patient_name}} जी, यह डॉ. {{doctor_name}} द्वारा सत्यापित आपका साप्ताहिक स्वास्थ्य सारांश है।",
-    "mr": "नमस्ते {{patient_name}}, डॉ. {{doctor_name}} यांनी तपासलेला तुमचा साप्ताहिक आरोग्य अहवाल येथे आहे."
+  "help_message": {
+    "en": "Diabeto is your personal diabetes assistant. Send your sugar number (like 140), a voice note, or a photo of your meter. For emergencies call 112 or 108. Clinic phone: {{clinic_phone}}.",
+    "hi": "Diabeto आपका व्यक्तिगत शुगर सहायक है। अपनी शुगर का नंबर (जैसे 140), वॉइस नोट या मीटर का फोटो भेजें। आपातकाल में 112 या 108 पर कॉल करें। क्लिनिक फोन: {{clinic_phone}}।",
+    "mr": "Diabeto तुमचा मधुमेह सहाय्यक आहे. साखरेचा नंबर (उदा. १४०), व्हॉइस नोट किंवा मीटरचा फोटो पाठवा. आपत्कालीन स्थितीत ११२ किंवा १०८ वर फोन करा. क्लिनिक फोन: {{clinic_phone}}."
+  },
+  "unregistered_sender": {
+    "en": "Namaste! This phone number is not registered with Diabeto. Please contact your diabetes clinic to get enrolled.",
+    "hi": "नमस्ते! यह फोन नंबर Diabeto में पंजीकृत नहीं है। कृपया पंजीकरण के लिए अपने मधुमेह क्लिनिक से संपर्क करें।",
+    "mr": "नमस्ते! हा फोन नंबर Diabeto मध्ये नोंदणीकृत नाही. कृपया नोंदणीसाठी तुमच्या क्लिनिकशी संपर्क साधा."
+  },
+  "opt_out_success": {
+    "en": "You have unsubscribed from Diabeto messages. You will no longer receive reminders. Reply START anytime to re-enable.",
+    "hi": "आपकी सदस्यता समाप्त कर दी गई है। अब आपको संदेश नहीं मिलेंगे। दोबारा शुरू करने के लिए कभी भी START भेजें।",
+    "mr": "तुमची नोंदणी रद्द केली आहे. यापुढे संदेश येणार नाहीत. पुन्हा सुरू करण्यासाठी कधीही START पाठवा."
+  },
+  "opt_in_success": {
+    "en": "Welcome to Diabeto! Your WhatsApp reminders and care support are now active. Send your sugar number (like 140) anytime.",
+    "hi": "Diabeto में आपका स्वागत है! आपके रिमाइंडर और देखभाल सहायता सक्रिय हो गए हैं। अपनी शुगर का नंबर (जैसे 140) कभी भी भेज सकते हैं।",
+    "mr": "Diabeto मध्ये आपले स्वागत आहे! तुमची स्मरणपत्रे सुरू झाली आहेत. साखरेचा नंबर (उदा. १४०) कधीही पाठवा."
+  },
+  "sms_critical_alert": {
+    "en": "Diabeto: {{patient_name}}'s sugar is {{level_word}}. Please check on them now. Clinic: {{clinic_phone}}. In an emergency call 112.",
+    "hi": "Diabeto: {{patient_name}} जी की शुगर {{level_word}} है। कृपया तुरंत संपर्क करें। क्लिनिक: {{clinic_phone}}। आपातकाल: 112.",
+    "mr": "Diabeto: {{patient_name}} यांची साखर {{level_word}} आहे. लगेच विचारपूस करा. क्लिनिक: {{clinic_phone}}. आपत्कालीन: ११२."
+  },
+  "voice_call_script": {
+    "en": "This is Diabeto calling about {{patient_name}}. Their sugar is {{level_word}}. Please check on them now. If they are dizzy or confused, call 112. Press 1 if you have checked on them. Press 2 to hear this again.",
+    "hi": "यह Diabeto से {{patient_name}} जी के बारे में कॉल है। उनकी शुगर {{level_word}} है। कृपया तुरंत संपर्क करें। यदि चक्कर आ रहे हैं तो 112 पर कॉल करें। पुष्टि के लिए 1 दबाएं। दोबारा सुनने के लिए 2 दबाएं।",
+    "mr": "हा Diabeto कडून {{patient_name}} यांच्याबद्दल फोन आहे. त्यांची साखर {{level_word}} आहे. कृपया लगेच त्यांची विचारपूस करा. चक्कर येत असल्यास ११२ वर फोन करा. पुष्टी करण्यासाठी १ दाबा. पुन्हा ऐकण्यासाठी २ दाबा."
+  },
+  "low_glucose_warning": {
+    "en": "Your sugar is {{glucose_val}} mg/dL, which is low. Please take 3 teaspoons of sugar or a glass of fruit juice now, and check again in 15 minutes. If you feel dizzy or confused, call 112 or 108.",
+    "hi": "आपकी शुगर {{glucose_val}} mg/dL है, जो कम है। कृपया अभी 3 चम्मच चीनी या एक गिलास फलों का जूस लें और 15 मिनट बाद फिर से जाँचें। चक्कर या उलझन हो तो 112 या 108 पर कॉल करें।",
+    "mr": "तुमची साखर {{glucose_val}} mg/dL आहे, जी कमी आहे. कृपया आत्ता 3 चमचे साखर किंवा एक ग्लास फळांचा रस घ्या आणि 15 मिनिटांनी पुन्हा तपासा. चक्कर किंवा गोंधळ वाटल्यास 112 किंवा 108 वर फोन करा."
+  },
+  "caregiver_info_reply": {
+    "en": "This number receives Diabeto alerts about your family member. To confirm you have checked on them, tap \"I've checked\" on the alert or reply OK. For anything else, please call the clinic.",
+    "hi": "इस नंबर पर आपके परिवार के सदस्य के बारे में Diabeto सूचनाएँ आती हैं। अगर आपने उनसे बात कर ली है, तो सूचना पर \"I've checked\" दबाएँ या OK लिखें। किसी और बात के लिए कृपया क्लिनिक को कॉल करें।",
+    "mr": "या नंबरवर तुमच्या कुटुंबातील व्यक्तीबद्दल Diabeto सूचना येतात. तुम्ही त्यांची विचारपूस केली असल्यास, सूचनेवरील \"I've checked\" दाबा किंवा OK लिहा. इतर कशासाठीही कृपया क्लिनिकला फोन करा."
   }
 }
