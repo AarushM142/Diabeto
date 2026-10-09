@@ -5,12 +5,15 @@ import { ClinicianPortal } from './components/ClinicianPortal';
 import { CoachPortal } from './components/CoachPortal';
 import { CaregiverPortal } from './components/CaregiverPortal';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
-import { LoginView } from './components/LoginView';
+import { AuthView } from './components/AuthView';
 import { LandingHero } from './components/LandingHero';
+import { RoleSelectModal, type OnboardingProfileData } from './components/RoleSelectModal';
+import { EditProfileModal } from './components/EditProfileModal';
 import { PageLoader } from './components/ui/page-loader';
-import { api, type User, type UserRole } from './api/client';
+import { api, saveAuthSession, getSavedProfileForEmail, type User, type UserRole } from './api/client';
+import { supabase } from './lib/supabase';
 import type { Language } from './lib/types';
-import { Phone, Type, LogOut } from 'lucide-react';
+import { Phone, Type, LogOut, UserCog } from 'lucide-react';
 import { t } from './lib/i18n';
 
 interface LoadingState {
@@ -19,17 +22,25 @@ interface LoadingState {
   targetAction: () => void;
 }
 
+interface PendingGoogleUser {
+  email: string;
+  name: string;
+  avatar?: string;
+}
+
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => api.getCurrentUser());
-  const [unauthView, setUnauthView] = useState<'hero' | 'login'>('hero');
+  const [unauthView, setUnauthView] = useState<'hero' | 'auth'>('hero');
   const [preferredRole, setPreferredRole] = useState<UserRole | undefined>(undefined);
+  const [pendingGoogleUser, setPendingGoogleUser] = useState<PendingGoogleUser | null>(null);
   
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>('patient');
   const [language, setLanguage] = useState<Language>('en');
   const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState(false);
 
-  // 1.5-second Loading Animation State
+  // Transition Animation State
   const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
 
   // Set default tab based on user's role upon login
@@ -60,6 +71,83 @@ export const App: React.FC = () => {
     }
   }, [currentUser?.role, currentUser?.id]);
 
+  // Handle Supabase Google OAuth Redirects
+  useEffect(() => {
+    const isOAuthRedirect = 
+      window.location.hash.includes('access_token') || 
+      window.location.hash.includes('error') || 
+      window.location.search.includes('code=');
+
+    const processSession = async (session: any) => {
+      // If user is ALREADY authenticated in current session, skip
+      const existingUser = api.getCurrentUser();
+      if (existingUser) {
+        setPendingGoogleUser(null);
+        setCurrentUser(existingUser);
+        applyRoleDefaultTab(existingUser.role);
+        return;
+      }
+
+      if (session?.user) {
+        const email = session.user.email || 'user@gmail.com';
+        const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || email.split('@')[0];
+        const avatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture;
+        
+        // Clean URL after OAuth callback
+        if (window.location.hash || window.location.search) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // Check if this user has a previously saved profile (from a prior session)
+        const savedProfile = getSavedProfileForEmail(email);
+        if (savedProfile) {
+          // Returning user: restore their session directly, skip onboarding
+          const restoredUser: User = {
+            ...savedProfile,
+            // Refresh avatar from Google in case it changed
+            avatar: avatar || savedProfile.avatar,
+          };
+          saveAuthSession(savedProfile.id ? `token_${savedProfile.id}` : `token_${Date.now()}`, restoredUser);
+          setPendingGoogleUser(null);
+          setCurrentUser(restoredUser);
+          applyRoleDefaultTab(restoredUser.role);
+          // Also attempt backend sync to refresh the token
+          try {
+            await api.googleAuth(email, restoredUser.name, restoredUser.role);
+          } catch {
+            // Silent fail – local session already restored
+          }
+          return;
+        }
+
+        // New user: show role onboarding modal
+        setPendingGoogleUser({ email, name, avatar });
+      }
+    };
+
+    // Only check existing session on mount if returning from an actual OAuth redirect
+    if (isOAuthRedirect) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          processSession(session);
+        }
+      });
+    }
+
+    // Listen for explicit OAuth sign-in event
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        processSession(session);
+      } else if (event === 'SIGNED_OUT') {
+        setPendingGoogleUser(null);
+      }
+    });
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
   // Periodic Backend Health Check
   useEffect(() => {
     const checkHealth = async () => {
@@ -81,7 +169,6 @@ export const App: React.FC = () => {
     }
   }, [isSimpleMode]);
 
-  // 1.5-second transition helper
   const triggerTransition = (message: string, subMessage: string, targetAction: () => void) => {
     setLoadingState({
       message,
@@ -90,20 +177,20 @@ export const App: React.FC = () => {
     });
   };
 
-  const handleLoaderComplete = () => {
+  const handleLoaderComplete = React.useCallback(() => {
     if (loadingState) {
       loadingState.targetAction();
       setLoadingState(null);
     }
-  };
+  }, [loadingState]);
 
   const handleOpenLogin = (role?: UserRole) => {
     triggerTransition(
-      'Loading Verified Authentication Desk...',
+      'Opening Verified Care Gateway...',
       'Securing HIPAA & ABDM Clinical Gateway',
       () => {
         setPreferredRole(role);
-        setUnauthView('login');
+        setUnauthView('auth');
       }
     );
   };
@@ -129,12 +216,86 @@ export const App: React.FC = () => {
     );
   };
 
-  const handleLogout = () => {
+  const handleRoleSelected = async (role: UserRole, profileData?: OnboardingProfileData) => {
+    if (!pendingGoogleUser) return;
+    const { email, name, avatar } = pendingGoogleUser;
+    
+    let userToSet: User;
+    try {
+      const res = await api.googleAuth(email, profileData?.name || name, role, profileData);
+      // Merge local profileData on top of backend response so all onboarding fields are preserved
+      userToSet = {
+        ...res.user,
+        avatar: avatar || res.user.avatar,
+        age: profileData?.age ?? res.user.age,
+        gender: profileData?.gender ?? res.user.gender,
+        phone: profileData?.phone ?? res.user.phone,
+        language: profileData?.language ?? res.user.language,
+        patient_profile: profileData?.patient_profile ?? res.user.patient_profile,
+        caregiver_profile: profileData?.caregiver_profile ?? res.user.caregiver_profile,
+        clinician_profile: profileData?.clinician_profile ?? res.user.clinician_profile,
+        coach_profile: profileData?.coach_profile ?? res.user.coach_profile,
+      };
+      // Explicitly persist the fully-merged profile to the email-keyed cache
+      saveAuthSession(res.access_token || `token_${Date.now()}`, userToSet);
+    } catch (e) {
+      console.warn('Backend googleAuth call failed, creating local authenticated session:', e);
+      userToSet = {
+        id: `goog_${Date.now()}`,
+        role: role,
+        clinic_id: 'clinic_pune_01',
+        name: profileData?.name || name,
+        email: email,
+        title: `Verified ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+        avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+        phone: profileData?.phone,
+        age: profileData?.age,
+        gender: profileData?.gender,
+        language: profileData?.language,
+        patient_profile: profileData?.patient_profile,
+        caregiver_profile: profileData?.caregiver_profile,
+        clinician_profile: profileData?.clinician_profile,
+        coach_profile: profileData?.coach_profile,
+      };
+      saveAuthSession('token_' + Date.now(), userToSet);
+    }
+
+    // Set state immediately so app directly enters dashboard
+    setPendingGoogleUser(null);
+    setCurrentUser(userToSet);
+    applyRoleDefaultTab(userToSet.role);
+    api.setPersona(userToSet.role, userToSet.id);
+
+    triggerTransition(
+      `Personalizing ${role.toUpperCase()} Sanctuary...`,
+      `Setting up verified dashboard for ${userToSet.name}`,
+      () => {
+        applyRoleDefaultTab(userToSet.role);
+      }
+    );
+  };
+
+  const handleLogout = async () => {
+    // 1. Clear session in local storage immediately
+    api.logout();
+    
+    // 2. Clear Supabase auth tokens so it does not auto re-trigger session
+    try {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('sb-') || key.includes('supabase.auth.token')) {
+          localStorage.removeItem(key);
+        }
+      });
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (err) {
+      console.warn('Supabase sign out error:', err);
+    }
+
     triggerTransition(
       'Signing out of Diabeto...',
       'Clearing session credentials securely',
       () => {
-        api.logout();
+        setPendingGoogleUser(null);
         setCurrentUser(null);
         setUnauthView('hero');
       }
@@ -160,19 +321,24 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {/* 1.0-Second Cool Loading Animation Overlay */}
+      {/* 1.0-Second Transition Loader */}
       {loadingState && (
         <PageLoader
           message={loadingState.message}
-          durationMs={1000}
+          durationMs={900}
           onComplete={handleLoaderComplete}
         />
       )}
 
-      {/* Main App Content */}
+      {/* Main App Content Flow */}
       {!currentUser ? (
-        unauthView === 'login' ? (
-          <LoginView
+        pendingGoogleUser ? (
+          <RoleSelectModal
+            user={pendingGoogleUser}
+            onSelectRole={handleRoleSelected}
+          />
+        ) : unauthView === 'auth' ? (
+          <AuthView
             onLoginSuccess={handleLoginSuccess}
             onBack={handleBackToHero}
             initialRole={preferredRole}
@@ -182,10 +348,10 @@ export const App: React.FC = () => {
         )
       ) : (
         <div className="app-container">
-          {/* Mandatory Tactile Paper Grain Overlay */}
+          {/* Paper Grain Overlay */}
           <div className="paper-grain-overlay" aria-hidden="true" />
 
-          {/* Solid In-Flow Botanical Sidebar Navigation */}
+          {/* Solid Botanical Sidebar Navigation */}
           <SidebarNav
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -196,6 +362,7 @@ export const App: React.FC = () => {
             isBackendHealthy={isBackendHealthy}
             currentUser={currentUser}
             onLogout={handleLogout}
+            onOpenEditProfile={() => setShowProfileModal(true)}
           />
 
           {/* Main Content Area */}
@@ -224,6 +391,28 @@ export const App: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {/* Manage Care Profile Button */}
+                <button
+                  onClick={() => setShowProfileModal(true)}
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 14px',
+                    fontSize: '0.8rem',
+                    borderRadius: '20px',
+                    fontWeight: 600,
+                    color: 'var(--text-forest)',
+                    backgroundColor: 'var(--surface-white)',
+                  }}
+                  title="Manage Personalized Care Profile & Health Targets"
+                >
+                  <UserCog size={14} />
+                  <span>Care Profile</span>
+                </button>
+
                 {/* Quick Emergency SOS */}
                 <a
                   href="tel:+918149680369"
@@ -291,11 +480,41 @@ export const App: React.FC = () => {
             {/* Dynamic Portal Screen Content */}
             <div style={{ flex: 1, paddingBottom: '32px' }}>
               <main style={{ position: 'relative', zIndex: 1 }}>
-                {activeTab === 'patient' && <PatientPortal language={language} />}
-                {activeTab === 'clinician' && <ClinicianPortal language={language} currentRole={currentUser.role} />}
-                {activeTab === 'coach' && <CoachPortal language={language} currentRole={currentUser.role} />}
-                {activeTab === 'caregiver' && <CaregiverPortal language={language} currentRole={currentUser.role} />}
-                {activeTab === 'simulator' && <WhatsAppSimulator language={language} />}
+                {activeTab === 'patient' && (
+                  <PatientPortal
+                    language={language}
+                    currentUser={currentUser}
+                    onOpenEditProfile={() => setShowProfileModal(true)}
+                  />
+                )}
+                {activeTab === 'clinician' && (
+                  <ClinicianPortal
+                    language={language}
+                    currentRole={currentUser.role}
+                    currentUser={currentUser}
+                  />
+                )}
+                {activeTab === 'coach' && (
+                  <CoachPortal
+                    language={language}
+                    currentRole={currentUser.role}
+                    currentUser={currentUser}
+                  />
+                )}
+                {activeTab === 'caregiver' && (
+                  <CaregiverPortal
+                    language={language}
+                    currentRole={currentUser.role}
+                    currentUser={currentUser}
+                    onOpenEditProfile={() => setShowProfileModal(true)}
+                  />
+                )}
+                {activeTab === 'simulator' && (
+                  <WhatsAppSimulator
+                    language={language}
+                    currentUser={currentUser}
+                  />
+                )}
               </main>
             </div>
 
@@ -325,6 +544,16 @@ export const App: React.FC = () => {
               </div>
             </footer>
           </div>
+
+          {/* Edit Profile Modal */}
+          {showProfileModal && (
+            <EditProfileModal
+              currentUser={currentUser}
+              isOpen={showProfileModal}
+              onClose={() => setShowProfileModal(false)}
+              onProfileUpdated={(updated) => setCurrentUser(updated)}
+            />
+          )}
         </div>
       )}
     </>

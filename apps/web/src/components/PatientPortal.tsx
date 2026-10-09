@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { 
   Pill, Calendar, AlertTriangle, CheckCircle2, 
   Droplets, Footprints, Video, CalendarCheck, 
-  TrendingUp, Award, Bell, Shield, X, User, MessageCircle, AlertCircle
+  TrendingUp, Award, Bell, Shield, X, User as UserIcon, MessageCircle, AlertCircle
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
   Tooltip, ReferenceLine 
 } from 'recharts';
-import { api, type TrendAnalytics } from '../api/client';
+import { api, type TrendAnalytics, type User } from '../api/client';
 import type { Language } from '../lib/types';
 
 interface PatientPortalProps {
   language: Language;
+  currentUser?: User;
+  onOpenEditProfile?: () => void;
 }
 
 interface MedicationEntry {
@@ -32,7 +34,11 @@ interface MedicationEntry {
   };
 }
 
-export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
+export const PatientPortal: React.FC<PatientPortalProps> = ({ 
+  language, 
+  currentUser, 
+  onOpenEditProfile 
+}) => {
   const [trends, setTrends] = useState<TrendAnalytics | null>(null);
   const [hydrationCount, setHydrationCount] = useState<number>(5);
   const [streakCount, setStreakCount] = useState<number>(7);
@@ -43,56 +49,90 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
   const [bookingToast, setBookingToast] = useState<string | null>(null);
   const [pillToast, setPillToast] = useState<string | null>(null);
 
+  // Personalized Patient Profile Data
+  const patientProfile = currentUser?.patient_profile;
+  const displayName = patientProfile?.name || currentUser?.name || 'Ramesh Kulkarni';
+  const age = patientProfile?.age || currentUser?.age || 68;
+  const gender = patientProfile?.gender || currentUser?.gender || 'Male';
+  const diabetesCondition = patientProfile?.diabetes_type || 'Type 2 Diabetes';
+  const caregiverContact = patientProfile?.caregiver_name || 'Ananya (Daughter)';
+  const caregiverTel = patientProfile?.caregiver_phone || '+91 98000 00002';
+  const targetFastingGoal = patientProfile?.target_fasting_glucose || 130;
+
   // Medication Schedule with Drug-Exercise & Side Effect Warning Rules
-  const [medications, setMedications] = useState<MedicationEntry[]>([
-    {
-      id: 'med_1',
-      name: 'Metformin Hydrochloride',
-      dose: '500 mg',
-      timeSlot: 'morning',
-      scheduledTime: '8:00 AM',
-      instructions: 'Take with breakfast',
-      status: 'taken',
-      takenAt: '8:15 AM',
-      warning: {
-        type: 'gi',
-        title: 'Gastric Comfort Alert',
-        description: 'Metformin can occasionally cause mild stomach fullness or acidity if taken on an empty stomach.',
-        precaution: 'Always take during or immediately following your morning breakfast (e.g. with Poha or Upma).'
-      }
-    },
-    {
-      id: 'med_2',
-      name: 'Teneligliptin',
-      dose: '20 mg',
-      timeSlot: 'afternoon',
-      scheduledTime: '1:30 PM',
-      instructions: 'Take after lunch',
-      status: 'taken',
-      takenAt: '1:45 PM',
-      warning: {
-        type: 'gi',
-        title: 'Steady Glycemic Control',
-        description: 'DPP-4 inhibitor that gently regulates post-meal sugar peaks with very low hypoglycemia risk.',
-        precaution: 'Maintain steady meal timings; drink adequate water throughout the afternoon.'
-      }
-    },
-    {
-      id: 'med_3',
-      name: 'Glimepiride',
-      dose: '1 mg',
-      timeSlot: 'night',
-      scheduledTime: '8:00 PM',
-      instructions: 'Take 15 minutes before dinner',
-      status: 'due',
-      warning: {
-        type: 'exercise',
-        title: '⚠️ Sulfonylurea & Evening Exercise Warning',
-        description: 'Glimepiride directly stimulates insulin release and significantly lowers blood sugar levels.',
-        precaution: 'If taking an evening stroll or doing yoga after dinner, do NOT walk vigorously or briskly without carrying 2 Marie biscuits or a small piece of jaggery in your pocket.'
-      }
+  const [medications, setMedications] = useState<MedicationEntry[]>(() => {
+    const customList = patientProfile?.medications;
+    if (customList && customList.length > 0) {
+      return customList.map((medStr: string, idx: number) => {
+        const parts = medStr.split('(');
+        const namePart = parts[0].trim();
+        const instructions = parts[1] ? parts[1].replace(')', '').trim() : 'Take as prescribed';
+        const isNight = namePart.toLowerCase().includes('glimepiride') || namePart.toLowerCase().includes('bedtime') || idx === customList.length - 1;
+        const isMorning = idx === 0;
+
+        return {
+          id: `med_${idx + 1}`,
+          name: namePart,
+          dose: namePart.match(/\d+\s*(mg|mcg|units)/i)?.[0] || 'Standard Dose',
+          timeSlot: isNight ? 'night' : isMorning ? 'morning' : 'afternoon',
+          scheduledTime: isNight ? '8:00 PM' : isMorning ? '8:00 AM' : '1:30 PM',
+          instructions: instructions,
+          status: idx === 0 ? 'taken' : idx === 1 ? 'taken' : 'due',
+          takenAt: idx === 0 ? '8:15 AM' : idx === 1 ? '1:45 PM' : undefined,
+          warning: namePart.toLowerCase().includes('glimepiride') ? {
+            type: 'exercise',
+            title: '⚠️ Sulfonylurea & Evening Exercise Warning',
+            description: 'Glimepiride directly stimulates insulin release and significantly lowers blood sugar levels.',
+            precaution: 'If taking an evening stroll, do NOT walk vigorously without carrying 2 Marie biscuits or a piece of jaggery in your pocket.',
+          } : undefined,
+        };
+      });
     }
-  ]);
+
+    return [
+      {
+        id: 'med_1',
+        name: 'Metformin Hydrochloride',
+        dose: '500 mg',
+        timeSlot: 'morning',
+        scheduledTime: '8:00 AM',
+        instructions: 'Take with breakfast',
+        status: 'taken',
+        takenAt: '8:15 AM',
+        warning: {
+          type: 'gi',
+          title: 'Gastric Comfort Alert',
+          description: 'Metformin can occasionally cause mild stomach fullness if taken on an empty stomach.',
+          precaution: 'Always take during or immediately following your morning breakfast.'
+        }
+      },
+      {
+        id: 'med_2',
+        name: 'Teneligliptin',
+        dose: '20 mg',
+        timeSlot: 'afternoon',
+        scheduledTime: '1:30 PM',
+        instructions: 'Take after lunch',
+        status: 'taken',
+        takenAt: '1:45 PM',
+      },
+      {
+        id: 'med_3',
+        name: 'Glimepiride',
+        dose: '1 mg',
+        timeSlot: 'night',
+        scheduledTime: '8:00 PM',
+        instructions: 'Take 15 minutes before dinner',
+        status: 'due',
+        warning: {
+          type: 'exercise',
+          title: '⚠️ Sulfonylurea & Evening Exercise Warning',
+          description: 'Glimepiride directly stimulates insulin release and significantly lowers blood sugar levels.',
+          precaution: 'If taking an evening stroll or doing yoga, do NOT exercise vigorously on an empty stomach. Always keep 2 glucose biscuits handy.'
+        }
+      }
+    ];
+  });
 
   useEffect(() => {
     const fetchTrends = async () => {
@@ -178,9 +218,10 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
       ];
 
   const getGreeting = () => {
-    if (language === 'hi') return 'नमस्ते रमेश जी 🙏';
-    if (language === 'mr') return 'नमस्कार रमेशजी 🙏';
-    return 'Namaste Ramesh ji 🙏';
+    const firstName = displayName.split(' ')[0] || displayName;
+    if (language === 'hi') return `नमस्ते ${firstName} जी 🙏`;
+    if (language === 'mr') return `नमस्कार ${firstName}जी 🙏`;
+    return `Namaste ${firstName} ji 🙏`;
   };
 
   const getDailyQuote = () => {
@@ -215,9 +256,46 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
                 <span className="status-dot ok" />
                 Care Protocol Active
               </span>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Pune Central Diabetes Clinic • Dr. Arvind Mehta
+              <span style={{
+                fontSize: '0.75rem',
+                backgroundColor: 'var(--surface-clay)',
+                padding: '2px 8px',
+                borderRadius: '6px',
+                color: 'var(--text-forest)',
+                fontWeight: 600,
+                border: '1px solid var(--border-stone)',
+              }}>
+                Age: {age} yrs • {gender}
               </span>
+              <span style={{
+                fontSize: '0.75rem',
+                backgroundColor: 'var(--accent-sage-subtle)',
+                padding: '2px 8px',
+                borderRadius: '6px',
+                color: 'var(--accent-sage-dark)',
+                fontWeight: 600,
+                border: '1px solid var(--accent-sage-border)',
+              }}>
+                {diabetesCondition}
+              </span>
+              {onOpenEditProfile && (
+                <button
+                  type="button"
+                  onClick={onOpenEditProfile}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--accent-sage-dark)',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    padding: '2px 4px',
+                  }}
+                >
+                  Edit Care Profile
+                </button>
+              )}
             </div>
             <h1 className="font-serif" style={{ fontSize: 'clamp(1.45rem, 4vw, 2.1rem)', color: 'var(--text-forest)', margin: 0, fontWeight: 600, lineHeight: 1.2 }}>
               {getGreeting()}
@@ -225,6 +303,21 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
             <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '6px', maxWidth: '640px', fontStyle: 'italic', lineHeight: 1.4 }}>
               {getDailyQuote()}
             </p>
+            
+            {/* Quick Profile Summary Bar */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginTop: '10px',
+              flexWrap: 'wrap',
+              fontSize: '0.78rem',
+              color: 'var(--text-dim)',
+            }}>
+              <span>🎯 Fasting Target: <strong>&le; {targetFastingGoal} mg/dL</strong></span>
+              <span>•</span>
+              <span>👨‍👩‍👧 Caregiver SOS: <strong>{caregiverContact} ({caregiverTel})</strong></span>
+            </div>
           </div>
 
           <div className="responsive-hero-actions">
@@ -581,7 +674,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({ language }) => {
           {/* Doctor Touchpoint & 1-Click Consultation */}
           <div className="botanical-card" style={{ padding: '24px' }}>
             <h3 className="font-serif" style={{ fontSize: '1.18rem', color: 'var(--text-forest)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <User size={18} color="var(--accent-sage)" />
+              <UserIcon size={18} color="var(--accent-sage)" />
               Attending Physician Touchpoint
             </h3>
 

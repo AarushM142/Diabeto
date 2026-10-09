@@ -23,6 +23,9 @@ docs/DECISIONS.md
 *.cert
 *.pfx
 secrets/
+apps/api/app/modules/auth/user_profiles.json
+user_profiles.json
+
 
 # ------------------------------------------------------------------------------
 # 3. Python & Virtual Environments

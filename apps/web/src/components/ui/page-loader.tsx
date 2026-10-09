@@ -14,6 +14,8 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
   onComplete,
 }) => {
   const [progress, setProgress] = useState(0);
+  const onCompleteRef = React.useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     const startTime = performance.now();
@@ -27,15 +29,15 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
       if (elapsed < durationMs) {
         animationFrameId = requestAnimationFrame(updateProgress);
       } else {
-        if (onComplete) {
-          onComplete();
+        if (onCompleteRef.current) {
+          onCompleteRef.current();
         }
       }
     };
 
     animationFrameId = requestAnimationFrame(updateProgress);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [durationMs, onComplete]);
+  }, [durationMs]);
 
   return (
     <AnimatePresence>

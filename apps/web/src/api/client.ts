@@ -1,6 +1,43 @@
-// Diabeto API Client for Web Portals with Multi-Tiered Authorization
-
 export type UserRole = 'clinician' | 'coach' | 'caregiver' | 'patient' | 'admin';
+
+export interface PatientProfile {
+  name: string;
+  age: number;
+  gender: string;
+  diabetes_type: string;
+  years_with_diabetes?: string;
+  language: 'en' | 'hi' | 'mr';
+  phone?: string;
+  caregiver_name?: string;
+  caregiver_phone?: string;
+  caregiver_relation?: string;
+  target_fasting_glucose?: number;
+  target_postmeal_glucose?: number;
+  medications?: string[];
+  emergency_notes?: string;
+}
+
+export interface CaregiverProfile {
+  caregiver_name: string;
+  relation: string;
+  patient_name: string;
+  patient_age: number;
+  patient_diabetes_type?: string;
+  emergency_phone: string;
+}
+
+export interface ClinicianProfile {
+  doctor_name: string;
+  clinic_name: string;
+  specialty: string;
+  license_number?: string;
+}
+
+export interface CoachProfile {
+  coach_name: string;
+  specialty: string;
+  clinic_name?: string;
+}
 
 export interface User {
   id: string;
@@ -11,6 +48,14 @@ export interface User {
   title: string;
   avatar?: string;
   linked_patient_id?: string;
+  age?: number;
+  gender?: string;
+  phone?: string;
+  language?: 'en' | 'hi' | 'mr';
+  patient_profile?: PatientProfile;
+  caregiver_profile?: CaregiverProfile;
+  clinician_profile?: ClinicianProfile;
+  coach_profile?: CoachProfile;
 }
 
 export interface AuthResponse {
@@ -154,10 +199,32 @@ export const getAuthToken = (): string | null => {
   }
 };
 
+export const saveProfileForEmail = (email: string, user: User) => {
+  if (!email) return;
+  try {
+    localStorage.setItem(`diabeto_profile_${email.toLowerCase().trim()}`, JSON.stringify(user));
+  } catch (e) {
+    console.warn('Failed to persist user profile by email:', e);
+  }
+};
+
+export const getSavedProfileForEmail = (email: string): User | null => {
+  if (!email) return null;
+  try {
+    const raw = localStorage.getItem(`diabeto_profile_${email.toLowerCase().trim()}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const saveAuthSession = (token: string, user: User) => {
   try {
     localStorage.setItem(AUTH_STORAGE_KEY, token);
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    if (user.email) {
+      saveProfileForEmail(user.email, user);
+    }
   } catch (e) {
     console.error('Failed to persist auth session:', e);
   }
@@ -216,6 +283,7 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, role }),
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -227,11 +295,17 @@ export const api = {
     return data;
   },
 
-  async googleAuth(email?: string, name?: string, role?: UserRole): Promise<AuthResponse> {
+  async googleAuth(
+    email?: string, 
+    name?: string, 
+    role?: UserRole, 
+    profile?: Partial<PatientProfile | CaregiverProfile | ClinicianProfile | CoachProfile>
+  ): Promise<AuthResponse> {
     const res = await fetch(`${API_BASE}/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, name, role }),
+      body: JSON.stringify({ email, name, role, profile }),
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -243,11 +317,47 @@ export const api = {
     return data;
   },
 
+  async updateUserProfile(updates: Partial<User>): Promise<User> {
+    const currentUser = getCurrentUser();
+    const updatedUser: User = {
+      ...(currentUser || {} as User),
+      ...updates,
+      patient_profile: updates.patient_profile || currentUser?.patient_profile,
+      caregiver_profile: updates.caregiver_profile || currentUser?.caregiver_profile,
+      clinician_profile: updates.clinician_profile || currentUser?.clinician_profile,
+      coach_profile: updates.coach_profile || currentUser?.coach_profile,
+    };
+    const token = getAuthToken() || `token_${Date.now()}`;
+    saveAuthSession(token, updatedUser);
+    
+    // Attempt backend sync - use returned token if available
+    try {
+      const syncRes = await fetch(`${API_BASE}/auth/profile`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(updates),
+        signal: AbortSignal.timeout(3000),
+      });
+      if (syncRes.ok) {
+        const syncData = await syncRes.json().catch(() => null);
+        if (syncData?.access_token) {
+          // Re-save with the new token that embeds updated profile data
+          saveAuthSession(syncData.access_token, updatedUser);
+        }
+      }
+    } catch (e) {
+      console.warn('Backend profile sync failed, local profile updated:', e);
+    }
+
+    return updatedUser;
+  },
+
   async signup(name: string, email: string, password: string, role: UserRole = 'clinician'): Promise<AuthResponse> {
     const res = await fetch(`${API_BASE}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, role }),
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -281,8 +391,8 @@ export const api = {
 
   async getHealth(): Promise<boolean> {
     try {
-      const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
-      return res.ok;
+      const res = await fetch(`${API_BASE}/health`, { cache: 'no-store' }).catch(() => null);
+      return Boolean(res && res.ok);
     } catch {
       return false;
     }

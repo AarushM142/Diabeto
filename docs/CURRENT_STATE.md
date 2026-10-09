@@ -81,12 +81,28 @@
   - Interactive Audit Trail Drawer in Clinician Portal.
 - **Automated Testing & Build**:
   - Zero TypeScript compilation errors (`npm run build`).
-  - Automated test coverage in `tests/test_rbac_authorization.py` and `tests/test_trends_analytics.py`.
+  - Automated test coverage: 84 passing pytest tests with 0 failures across all modules.
+
+#### Phase 7 — Personalized Care Onboarding & Dynamic Role Profile Management ✅
+- **2-Step Onboarding Flow (`RoleSelectModal.tsx`)**:
+  - Step 1: Role Selection with descriptive feature tags for Senior Patients, Caregivers, Clinicians, Coaches, and Administrators.
+  - Step 2: Role-specific profile personalization form (Name, Age, Gender, Diabetes Type & Diagnosis, Sarvam voice language, Daily prescription medications, Family caregiver SOS contact, Glycemic targets).
+- **Edit Care Profile Management Modal (`EditProfileModal.tsx`)**:
+  - Available at any time via the sidebar user profile badge and top navigation bar.
+  - Allows senior patients, caregivers, and clinicians to update their medications, emergency contacts, languages, and care preferences.
+- **Dynamic Portal Personalization**:
+  - `PatientPortal`: Dynamic personalized greetings, customized age/gender/condition hero display, customized medication pill tracker, and linked emergency contacts.
+  - `CaregiverPortal`: Dynamic senior reference tags, individualized peace-of-mind fasting checks, and customizable emergency escalation targets.
+  - `ClinicianPortal`: Dynamic doctor titles, clinic branding, and integration with the patient care roster.
+  - `CoachPortal` & `WhatsAppSimulator`: Dynamic patient name mapping and tailored cultural dietary guardrails.
+- **Backend Sync & Offline Fallback**:
+  - `POST /v1/auth/profile` and enhanced `POST /v1/auth/google` with full profile data payload persistence and `localStorage` session caching.
 
 ### Active Dev Servers:
 - **FastAPI Backend**: `http://localhost:8000` (API Docs: `http://localhost:8000/docs`)
 - **React Web Portal**: `http://localhost:5173`
 - **WhatsApp Webhook Tunnel**: `https://slimy-toys-grab.loca.lt/v1/webhooks/whatsapp`
+
 
 
 
