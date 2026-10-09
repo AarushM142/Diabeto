@@ -192,7 +192,14 @@ async def handle_whatsapp_webhook(
         await send_whatsapp_message(from_phone, err_msg)
         return {"status": "implausible_reading", "value": glucose_val}
 
-    # 5. Save Health Event in Database
+    # 5. Save Health Event in Database (Idempotent: skip duplicates if source_msg_id exists)
+    if source_msg_id:
+        existing_event = await db.execute(
+            select(HealthEvent).where(HealthEvent.source_msg_id == source_msg_id)
+        )
+        if existing_event.scalar_one_or_none():
+            return {"status": "duplicate_skipped", "source_msg_id": source_msg_id}
+
     event = HealthEvent(
         patient_id=patient_id,
         type="glucose",
