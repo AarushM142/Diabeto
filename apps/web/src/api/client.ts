@@ -533,5 +533,58 @@ export const api = {
   getAppointments(): any[] {
     return JSON.parse(localStorage.getItem('diabeto_appointments') || '[]');
   },
+
+  getClinicalPdfUrl(patientId: string, notes?: string): string {
+    const query = notes ? `?notes=${encodeURIComponent(notes)}` : '';
+    return `${API_BASE}/patients/${patientId}/report/pdf${query}`;
+  },
+
+  async downloadClinicalPdfReport(patientId: string, notes?: string): Promise<void> {
+    const url = this.getClinicalPdfUrl(patientId, notes);
+    const res = await fetch(url, { headers: getHeaders() });
+    if (!res.ok) throw new Error('Failed to generate clinical PDF report');
+    const blob = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = `diabeto_clinical_report_${patientId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(blobUrl);
+  },
+
+  async getEhrSummary(patientId: string): Promise<any> {
+    const res = await fetch(`${API_BASE}/patients/${patientId}/report/summary`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch EHR summary');
+    return res.json();
+  },
+
+  async analyzeMeal(patientId: string, fileOrHint: File | string, mealType?: string): Promise<any> {
+    const formData = new FormData();
+    formData.append('patient_id', patientId);
+    if (mealType) formData.append('meal_type', mealType);
+    if (typeof fileOrHint === 'string') {
+      formData.append('context_hint', fileOrHint);
+    } else {
+      formData.append('file', fileOrHint);
+    }
+    const res = await fetch(`${API_BASE}/meals/analyze`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Meal analysis failed');
+    return res.json();
+  },
+
+  async getMealPatterns(patientId: string): Promise<any> {
+    const res = await fetch(`${API_BASE}/meals/${patientId}/patterns`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) return { patterns: [] };
+    return res.json();
+  },
 };
 

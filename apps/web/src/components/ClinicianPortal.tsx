@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Activity, AlertOctagon, TrendingUp, 
-  Pill, FileText, UserCheck, RefreshCw, Award, Lock, ShieldCheck, History
+  Pill, FileText, UserCheck, RefreshCw, Award, Lock, ShieldCheck, History,
+  Download, X
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid 
@@ -44,9 +45,37 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
   const [doctorNotes, setDoctorNotes] = useState('Patient stable on current regimen. Continue daily fasting logs and morning Metformin.');
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [showEhrModal, setShowEhrModal] = useState(false);
+  const [ehrSummary, setEhrSummary] = useState<any>(null);
+  const [loadingEhr, setLoadingEhr] = useState(false);
 
   const patient = patientList.find(p => p.id === selectedPatientId) || patientList[0];
   const isAuthorizedDoctor = currentRole === 'clinician' || currentRole === 'admin';
+
+  const handleDownloadPdf = async () => {
+    setDownloadingPdf(true);
+    try {
+      await api.downloadClinicalPdfReport(selectedPatientId, doctorNotes);
+    } catch (err) {
+      alert('Failed to generate OPD PDF report: ' + err);
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
+  const handleOpenEhrSummary = async () => {
+    setLoadingEhr(true);
+    setShowEhrModal(true);
+    try {
+      const data = await api.getEhrSummary(selectedPatientId);
+      setEhrSummary(data);
+    } catch (err) {
+      console.error('Failed to load EHR summary:', err);
+    } finally {
+      setLoadingEhr(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -111,20 +140,39 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
         </div>
       )}
 
-      {/* Patient Triage Roster Selector & Audit Toggle */}
+      {/* Patient Triage Roster Selector & Clinical Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
         <h3 className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--text-forest)', margin: 0 }}>
           Assigned Clinical Roster (Pune Central)
         </h3>
-        {isAuthorizedDoctor && (
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
-            onClick={() => setShowAuditLogs(!showAuditLogs)}
+            onClick={handleOpenEhrSummary}
             className="btn btn-secondary btn-sm"
+            title="View Structured EHR / ABDM Clinical Summary"
           >
-            <History size={14} />
-            {showAuditLogs ? 'Hide Audit Logs' : `Audit Trail (${auditLogs.length})`}
+            <FileText size={14} />
+            EHR Summary
           </button>
-        )}
+          <button
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+            className="btn btn-primary btn-sm"
+            title="Generate and download 1-Click verified OPD consultation sheet"
+          >
+            <Download size={14} />
+            {downloadingPdf ? 'Generating PDF...' : 'Download OPD PDF'}
+          </button>
+          {isAuthorizedDoctor && (
+            <button
+              onClick={() => setShowAuditLogs(!showAuditLogs)}
+              className="btn btn-secondary btn-sm"
+            >
+              <History size={14} />
+              {showAuditLogs ? 'Hide Audit Logs' : `Audit Trail (${auditLogs.length})`}
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' }}>
@@ -421,6 +469,128 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Structured EHR & ABDM Summary Modal */}
+      {showEhrModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(18, 30, 23, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px',
+        }}>
+          <div className="botanical-card" style={{ maxWidth: '620px', width: '100%', padding: '28px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <FileText size={22} color="var(--accent-sage)" />
+                <h3 className="font-serif" style={{ fontSize: '1.3rem', color: 'var(--text-forest)', margin: 0 }}>
+                  Structured EHR & ABDM Export
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowEhrModal(false)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {loadingEhr ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                <RefreshCw size={24} className="spin" style={{ margin: '0 auto 12px' }} />
+                <p>Generating structured clinical impression...</p>
+              </div>
+            ) : ehrSummary ? (
+              <div>
+                <div style={{ background: 'var(--surface-clay)', padding: '16px', borderRadius: '16px', marginBottom: '20px', border: '1px solid var(--border-stone)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div>
+                      <strong style={{ fontSize: '1.05rem', color: 'var(--text-forest)' }}>{ehrSummary.patient_name}</strong>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: '8px' }}>ID: {ehrSummary.patient_id}</span>
+                    </div>
+                    <span className="status-pill ok">
+                      Status: {ehrSummary.ehr_export_status?.toUpperCase()}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', margin: 0 }}>
+                    FHIR Resource: <code>{ehrSummary.resourceType}</code> • Generated: {new Date(ehrSummary.generated_at).toLocaleString()}
+                  </p>
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                  <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '12px' }}>
+                    ADA Glycemic Performance Indicators
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+                    <div className="botanical-card" style={{ padding: '14px', textAlign: 'center', background: 'var(--surface-white)' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>ADA Control Grade</span>
+                      <div className="font-serif" style={{
+                        fontSize: '1.25rem',
+                        fontWeight: 700,
+                        marginTop: '4px',
+                        color: ehrSummary.ada_glycemic_metrics?.ada_control_grade === 'Optimal'
+                          ? 'var(--status-ok)'
+                          : ehrSummary.ada_glycemic_metrics?.ada_control_grade === 'Moderate'
+                          ? 'var(--terracotta)'
+                          : 'var(--status-danger)'
+                      }}>
+                        {ehrSummary.ada_glycemic_metrics?.ada_control_grade}
+                      </div>
+                    </div>
+
+                    <div className="botanical-card" style={{ padding: '14px', textAlign: 'center', background: 'var(--surface-white)' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Mean Glucose</span>
+                      <div className="font-serif" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-forest)', marginTop: '4px' }}>
+                        {ehrSummary.ada_glycemic_metrics?.mean_glucose_mgdl} <span style={{ fontSize: '0.75rem' }}>mg/dL</span>
+                      </div>
+                    </div>
+
+                    <div className="botanical-card" style={{ padding: '14px', textAlign: 'center', background: 'var(--surface-white)' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Est. HbA1c</span>
+                      <div className="font-serif" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-forest)', marginTop: '4px' }}>
+                        {ehrSummary.ada_glycemic_metrics?.estimated_hba1c_percent || 'N/A'}%
+                      </div>
+                    </div>
+
+                    <div className="botanical-card" style={{ padding: '14px', textAlign: 'center', background: 'var(--surface-white)' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Time-In-Range</span>
+                      <div className="font-serif" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--status-ok)', marginTop: '4px' }}>
+                        {ehrSummary.ada_glycemic_metrics?.time_in_range_percent}%
+                      </div>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>Target: &ge;70%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+                  <button
+                    onClick={handleDownloadPdf}
+                    disabled={downloadingPdf}
+                    className="btn btn-primary"
+                    style={{ flex: 1, padding: '12px' }}
+                  >
+                    <Download size={16} />
+                    {downloadingPdf ? 'Generating PDF...' : 'Download Full Verified PDF'}
+                  </button>
+                  <button
+                    onClick={() => setShowEhrModal(false)}
+                    className="btn btn-secondary"
+                    style={{ padding: '12px 20px' }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p style={{ color: 'var(--text-muted)' }}>No summary data available.</p>
+            )}
           </div>
         </div>
       )}

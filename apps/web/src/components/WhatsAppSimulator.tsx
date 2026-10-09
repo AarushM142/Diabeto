@@ -53,6 +53,13 @@ const PRESET_SCENARIOS: ScenarioPreset[] = [
     category: 'diet',
   },
   {
+    id: 'meal_photo_vision',
+    label: '📸 Meal Photo Vision ("2 Chapatis, Dal, Sabzi & Gulab Jamun")',
+    promptText: 'Maine lunch me 2 chapati, 1 katori dal tadka, bhindi sabzi aur 1 gulab jamun khaya',
+    description: 'Multimodal plate vision: estimates portion, carbs (~65g), flags sweets & gives Marathi/Hindi advice',
+    category: 'diet',
+  },
+  {
     id: 'missed_med',
     label: '💊 Missed Dose ("Dawa lena bhool gaya")',
     promptText: 'Main subah ki dawai lena bhool gaya, ab kya karu?',
@@ -186,6 +193,13 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({ language, 
       return lang === 'hi'
         ? '🥗 आहार सलाह: आम में प्राकृतिक मिठास अधिक होती है। आप दोपहर के खाने में 1-2 छोटे टुकड़े ले सकते हैं, लेकिन पूरा आम खाने से बचें।'
         : '🥗 Dietary Guidance: Mango is high in natural sugars. You may enjoy 1-2 small slices with a protein-rich meal, but avoid having a whole mango at once.';
+    }
+    if (text.includes('chapati') || text.includes('jamun') || text.includes('lunch') || text.includes('thali')) {
+      return lang === 'mr'
+        ? '🍽️ जेवणाचे विश्लेषण: २ चपात्या, डाळ आणि भाजी योग्य आहे (~६० ग्रॅम कार्ब्स). ⚠️ सावधगिरी: १ गुलाब जामुनमध्ये भरपूर साखर असते, यामुळे रक्तातील साखर वेगाने वाढू शकते. कृपया गोड खाणे टाळावे.'
+        : lang === 'hi'
+        ? '🍽️ भोजन विश्लेषण: २ रोटी, दाल और भिंडी सामान्य है (~६० ग्राम कार्ब्स)। ⚠️ सावधानी: १ गुलाब जामुन में अत्यधिक चीनी होती है जिससे शुगर तेजी से बढ़ सकती है। मिठाई से परहेज रखें।'
+        : '🍽️ Plate Analysis: 2 Chapatis, Dal & Bhindi Sabzi logged (~60g carbs). ⚠️ Warning: 1 Gulab Jamun detected with high glycemic spike risk. Avoid sugary sweets.';
     }
     return lang === 'hi'
       ? '✅ संदेश प्राप्त हुआ। आपकी स्वास्थ्य रिपोर्ट डॉक्टर और कोच के साथ साझा कर दी गई है।'

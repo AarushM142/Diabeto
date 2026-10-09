@@ -109,7 +109,7 @@ async def handle_whatsapp_webhook(
     patient_lang = patient.language if patient else "hi"
 
     # --- INBOUND MEAL PHOTO ROUTING ---
-    if incoming_image_url or (incoming_text and any(w in incoming_text.lower() for w in ["meal", "plate", "food", "khana", "jevan", "roti", "thali"])):
+    if incoming_image_url or (incoming_text and any(w in incoming_text.lower() for w in ["meal", "plate", "food", "khana", "jevan", "roti", "chapati", "thali", "lunch", "dinner", "nashta", "sabzi", "jamun"])):
         from apps.api.app.modules.meal_intelligence.gemini_vision_service import GeminiMealVisionService
         from apps.api.app.modules.meal_intelligence.cgm_correlator import correlate_meal_with_cgm
         from apps.api.app.modules.meal_intelligence.meal_history_service import record_meal_entry
