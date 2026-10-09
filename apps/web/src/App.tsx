@@ -73,10 +73,16 @@ export const App: React.FC = () => {
 
   // Handle Supabase Google OAuth Redirects
   useEffect(() => {
+    const isOAuthRedirect = 
+      window.location.hash.includes('access_token') || 
+      window.location.hash.includes('error') || 
+      window.location.search.includes('code=');
+
     const processSession = async (session: any) => {
-      // If user is ALREADY authenticated in storage or state, do NOT open role onboarding modal
+      // If user is ALREADY authenticated in storage, do NOT open role onboarding modal
       const existingUser = api.getCurrentUser();
-      if (existingUser || currentUser) {
+      if (existingUser) {
+        setPendingGoogleUser(null);
         return;
       }
 
@@ -95,22 +101,28 @@ export const App: React.FC = () => {
       }
     };
 
-    // Check existing session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      processSession(session);
-    });
+    // Only check existing session on mount if returning from an actual OAuth redirect
+    if (isOAuthRedirect) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          processSession(session);
+        }
+      });
+    }
 
-    // Listen for OAuth sign-in event
+    // Listen for explicit OAuth sign-in event
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+      if (event === 'SIGNED_IN') {
         processSession(session);
+      } else if (event === 'SIGNED_OUT') {
+        setPendingGoogleUser(null);
       }
     });
 
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [currentUser]);
+  }, []);
 
   // Periodic Backend Health Check
   useEffect(() => {
@@ -228,15 +240,28 @@ export const App: React.FC = () => {
     );
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // 1. Clear session in local storage immediately
+    api.logout();
+    
+    // 2. Clear Supabase auth tokens so it does not auto re-trigger session
+    try {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('sb-') || key.includes('supabase.auth.token')) {
+          localStorage.removeItem(key);
+        }
+      });
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (err) {
+      console.warn('Supabase sign out error:', err);
+    }
+
     triggerTransition(
       'Signing out of Diabeto...',
       'Clearing session credentials securely',
       () => {
-        api.logout();
-        supabase.auth.signOut().catch(() => {});
-        setCurrentUser(null);
         setPendingGoogleUser(null);
+        setCurrentUser(null);
         setUnauthView('hero');
       }
     );
