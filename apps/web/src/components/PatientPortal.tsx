@@ -3,13 +3,14 @@ import {
   Pill, Calendar, AlertTriangle, CheckCircle2, 
   Droplets, Footprints, Video, CalendarCheck, 
   TrendingUp, Award, Bell, Shield, X, User as UserIcon, MessageCircle, AlertCircle,
-  Utensils, Camera, Copy, Check, Share2
+  Utensils, Camera, Copy, Check, Share2, Phone
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
   Tooltip, ReferenceLine 
 } from 'recharts';
 import { api, type TrendAnalytics, type User } from '../api/client';
+import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
 import type { PatientSection } from './SidebarNav';
 
@@ -334,664 +335,805 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
         </div>
       )}
 
-      {/* Hero Welcome Banner */}
-      <div className="botanical-card responsive-hero-card" style={{ marginBottom: '20px', background: 'linear-gradient(135deg, var(--surface-white) 0%, var(--surface-clay) 100%)', borderLeft: '6px solid var(--accent-sage)', position: 'relative' }}>
-        <div className="responsive-hero-content">
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
-              <span className="status-pill ok">
-                <span className="status-dot ok" />
-                Care Protocol Active
-              </span>
-              <span style={{
-                fontSize: '0.75rem',
-                backgroundColor: 'var(--surface-clay)',
-                padding: '2px 8px',
-                borderRadius: '6px',
-                color: 'var(--text-forest)',
-                fontWeight: 600,
-                border: '1px solid var(--border-stone)',
-              }}>
-                Age: {age} yrs • {gender}
-              </span>
-              <span style={{
-                fontSize: '0.75rem',
-                backgroundColor: 'var(--accent-sage-subtle)',
-                padding: '2px 8px',
-                borderRadius: '6px',
-                color: 'var(--accent-sage-dark)',
-                fontWeight: 600,
-                border: '1px solid var(--accent-sage-border)',
-              }}>
-                {diabetesCondition}
-              </span>
-              {onOpenEditProfile && (
-                <button
-                  type="button"
-                  onClick={onOpenEditProfile}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--accent-sage-dark)',
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                    padding: '2px 4px',
-                  }}
-                >
-                  Edit Care Profile
-                </button>
-              )}
-            </div>
-            <h1 className="font-serif" style={{ fontSize: 'clamp(1.4rem, 4vw, 2.0rem)', color: 'var(--text-forest)', margin: 0, fontWeight: 600, lineHeight: 1.2 }}>
-              {getGreeting()}
-            </h1>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: '4px', maxWidth: '640px', fontStyle: 'italic', lineHeight: 1.4 }}>
-              {getDailyQuote()}
-            </p>
-            
-            {/* Quick Profile Summary Bar */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              marginTop: '8px',
-              flexWrap: 'wrap',
-              fontSize: '0.76rem',
-              color: 'var(--text-dim)',
-            }}>
-              <span>🎯 Fasting Target: <strong>&le; {targetFastingGoal} mg/dL</strong></span>
-              <span>•</span>
-              <span>👨‍👩‍👧 Caregiver: <strong>{caregiverContact} ({caregiverTel})</strong></span>
-            </div>
-          </div>
-
-          <div className="responsive-hero-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{
-              background: 'var(--surface-white)',
-              padding: '8px 16px',
-              borderRadius: '16px',
-              border: '1px solid var(--border-stone)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              boxShadow: 'var(--shadow-sm)',
-            }}>
-              <Award size={24} color="var(--terracotta)" />
+      {/* Modular Card Renderers */}
+      {(() => {
+        const renderHeroBanner = () => (
+          <div className="botanical-card responsive-hero-card" style={{ marginBottom: '20px', background: 'linear-gradient(135deg, var(--surface-white) 0%, var(--surface-clay) 100%)', borderLeft: '6px solid var(--accent-sage)', position: 'relative' }}>
+            <div className="responsive-hero-content">
               <div>
-                <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Care Streak
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                  <span className="status-pill ok">
+                    <span className="status-dot ok" />
+                    Care Protocol Active
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    backgroundColor: 'var(--surface-clay)',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    color: 'var(--text-forest)',
+                    fontWeight: 600,
+                    border: '1px solid var(--border-stone)',
+                  }}>
+                    Age: {age} yrs • {gender}
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    backgroundColor: 'var(--accent-sage-subtle)',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    color: 'var(--accent-sage-dark)',
+                    fontWeight: 600,
+                    border: '1px solid var(--accent-sage-border)',
+                  }}>
+                    {diabetesCondition}
+                  </span>
+                  {onOpenEditProfile && (
+                    <button
+                      type="button"
+                      onClick={onOpenEditProfile}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--accent-sage-dark)',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                        padding: '2px 4px',
+                      }}
+                    >
+                      Edit Care Profile
+                    </button>
+                  )}
                 </div>
-                <div className="font-serif" style={{ fontSize: '1.2rem', color: 'var(--text-forest)', fontWeight: 700 }}>
-                  {streakCount} Days 🌿
+                <h1 className="font-serif" style={{ fontSize: 'clamp(1.4rem, 4vw, 2.0rem)', color: 'var(--text-forest)', margin: 0, fontWeight: 600, lineHeight: 1.2 }}>
+                  {getGreeting()}
+                </h1>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: '4px', maxWidth: '640px', fontStyle: 'italic', lineHeight: 1.4 }}>
+                  {getDailyQuote()}
+                </p>
+                
+                {/* Quick Profile Summary Bar */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginTop: '8px',
+                  flexWrap: 'wrap',
+                  fontSize: '0.76rem',
+                  color: 'var(--text-dim)',
+                }}>
+                  <span>🎯 Fasting Target: <strong>&le; {targetFastingGoal} mg/dL</strong></span>
+                  <span>•</span>
+                  <span>👨‍👩‍👧 Caregiver: <strong>{caregiverContact} ({caregiverTel})</strong></span>
                 </div>
               </div>
-            </div>
 
-            {onOpenMealScanner && (
-              <button
-                type="button"
-                onClick={onOpenMealScanner}
-                className="btn btn-secondary"
-                style={{ padding: '10px 16px', fontSize: '0.86rem', borderColor: 'var(--accent-sage-border)', color: 'var(--accent-sage-dark)' }}
-              >
-                <Camera size={15} />
-                Scan Meal Photo
-              </button>
-            )}
-
-            <button
-              onClick={() => setShowBookingModal(true)}
-              className="btn btn-primary"
-              style={{ padding: '10px 18px', fontSize: '0.86rem' }}
-            >
-              <CalendarCheck size={15} />
-              Book Doctor Visit
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Filter Pills (Simplifies navigation, removes clutter) */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        overflowX: 'auto',
-        paddingBottom: '8px',
-        marginBottom: '16px',
-      }}>
-        {[
-          { id: 'overview' as PatientSection, label: 'All Sanctuary' },
-          { id: 'medications' as PatientSection, label: '💊 Daily Medicines' },
-          { id: 'glucose' as PatientSection, label: '📈 Glucose & CGM' },
-          { id: 'meals' as PatientSection, label: '🍲 Food & Meal Scanner' },
-          { id: 'careteam' as PatientSection, label: '🩺 Doctor & Care Team' },
-          { id: 'wellness' as PatientSection, label: '💧 Hydration & Milestones' },
-        ].map((tab) => {
-          const isActive = currentFilter === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setCurrentFilter(tab.id)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '12px',
-                border: isActive ? '1.5px solid var(--accent-sage-border)' : '1px solid var(--border-stone)',
-                background: isActive ? 'var(--accent-sage-subtle)' : 'var(--surface-white)',
-                color: isActive ? 'var(--accent-sage-dark)' : 'var(--text-forest)',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.82rem',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Main Responsive Grid Layout */}
-      <div className="responsive-grid-12">
-        
-        {/* Left Column (8 cols) */}
-        <div className="responsive-col-8" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          
-          {/* 1. Indian Meal Intelligence & Plate Scanner Card */}
-          {(showAll || currentFilter === 'meals') && (
-            <div className="botanical-card responsive-card" style={{ borderLeft: '6px solid var(--accent-sage)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-                <div>
-                  <h2 className="font-serif" style={{ fontSize: 'clamp(1.15rem, 3vw, 1.3rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                    <Utensils size={20} color="var(--accent-sage)" strokeWidth={1.5} />
-                    Indian Meal Intelligence & Food Scanner
-                  </h2>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    Multimodal Google Gemini Vision estimates Indian dishes, carbs & glycemic curves.
-                  </p>
+              <div className="responsive-hero-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{
+                  background: 'var(--surface-white)',
+                  padding: '8px 16px',
+                  borderRadius: '16px',
+                  border: '1px solid var(--border-stone)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  boxShadow: 'var(--shadow-sm)',
+                }}>
+                  <Award size={24} color="var(--terracotta)" />
+                  <div>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                      Care Streak
+                    </div>
+                    <div className="font-serif" style={{ fontSize: '1.2rem', color: 'var(--text-forest)', fontWeight: 700 }}>
+                      {streakCount} Days 🌿
+                    </div>
+                  </div>
                 </div>
 
                 {onOpenMealScanner && (
                   <button
                     type="button"
                     onClick={onOpenMealScanner}
-                    className="btn btn-primary btn-sm"
-                    style={{ fontSize: '0.82rem', padding: '7px 14px' }}
+                    className="btn btn-secondary"
+                    style={{ padding: '10px 16px', fontSize: '0.86rem', borderColor: 'var(--accent-sage-border)', color: 'var(--accent-sage-dark)' }}
                   >
-                    <Camera size={14} />
-                    Scan Food Plate
+                    <Camera size={15} />
+                    Scan Meal Photo
                   </button>
                 )}
-              </div>
 
-              {/* Logged Meal Cards Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
-                {loggedMeals.map((m) => (
-                  <div
-                    key={m.id}
-                    style={{
-                      background: 'var(--surface-clay)',
-                      border: '1px solid var(--border-stone)',
-                      borderRadius: '16px',
-                      padding: '12px 14px',
-                      display: 'flex',
-                      gap: '12px',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {m.image && (
-                      <img
-                        src={m.image}
-                        alt={m.title}
-                        style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }}
-                      />
-                    )}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
-                          {m.mealType} • {m.time.split(', ')[1]}
-                        </span>
-                        <span style={{
-                          fontSize: '0.65rem',
-                          fontWeight: 700,
-                          padding: '1px 6px',
-                          borderRadius: '6px',
-                          background: 'var(--surface-white)',
-                          color: m.impact === 'HIGH' ? 'var(--terracotta-dark)' : 'var(--status-ok)',
-                          border: '1px solid var(--border-stone)',
-                        }}>
-                          ~{m.carbs}g Carbs
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-forest)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {m.title}
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--accent-sage-dark)', fontWeight: 600, marginTop: '2px' }}>
-                        {m.impact} Glycemic Impact
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 2. Visual Medication Calendar & Daily Schedule */}
-          {(showAll || currentFilter === 'medications') && (
-            <div className="botanical-card responsive-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                <div>
-                  <h2 className="font-serif" style={{ fontSize: 'clamp(1.15rem, 3vw, 1.3rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                    <Calendar size={19} color="var(--accent-sage)" strokeWidth={1.5} />
-                    Visual Medication & Routine Schedule
-                  </h2>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    Track daily prescribed doses and confirm adherence with 1-tap.
-                  </p>
-                </div>
-
-                <span className="status-pill ok" style={{ fontSize: '0.75rem' }}>
-                  <CheckCircle2 size={13} color="var(--status-ok)" />
-                  2 of 3 Doses Taken Today
-                </span>
-              </div>
-
-              {/* 7-Day Week Scroller */}
-              <div className="calendar-week-row" style={{ marginBottom: '14px' }}>
-                {calendarDays.map((d, i) => (
-                  <div
-                    key={i}
-                    className="calendar-day-cell"
-                    style={{
-                      background: d.current ? 'var(--accent-sage-subtle)' : 'var(--surface-clay)',
-                      border: d.current ? '2px solid var(--accent-sage)' : '1px solid var(--border-stone)',
-                    }}
-                  >
-                    <div style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-muted)' }}>{d.label}</div>
-                    <div className="font-serif" style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-forest)', margin: '1px 0' }}>
-                      {d.date.split(' ')[1] || d.date}
-                    </div>
-                    <div style={{ fontSize: '0.65rem', color: d.current ? 'var(--status-warn)' : 'var(--status-ok)', fontWeight: 600 }}>
-                      {d.count}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Today's Dose Cards */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {medications.map((med) => {
-                  const isTaken = med.status === 'taken';
-
-                  return (
-                    <div
-                      key={med.id}
-                      style={{
-                        padding: '14px 16px',
-                        borderRadius: '16px',
-                        background: isTaken ? 'var(--surface-white)' : 'var(--terracotta-subtle)',
-                        border: isTaken ? '1px solid var(--border-stone)' : '1.5px solid var(--terracotta-border)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '12px',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '220px', flex: '1' }}>
-                        <div style={{
-                          width: '38px',
-                          height: '38px',
-                          borderRadius: '50%',
-                          background: isTaken ? 'var(--status-ok-bg)' : 'var(--terracotta-subtle)',
-                          border: isTaken ? '1px solid var(--status-ok-border)' : '1px solid var(--terracotta-border)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                        }}>
-                          <Pill size={18} color={isTaken ? 'var(--status-ok)' : 'var(--terracotta)'} />
-                        </div>
-
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <strong style={{ fontSize: '0.9rem', color: 'var(--text-forest)' }}>
-                              {med.name}
-                            </strong>
-                            <span style={{ fontSize: '0.72rem', background: 'var(--surface-clay)', padding: '1px 7px', borderRadius: '8px', color: 'var(--text-muted)' }}>
-                              {med.dose}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                            Scheduled: <strong>{med.scheduledTime}</strong> • {med.instructions}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        {isTaken ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--status-ok)', fontSize: '0.82rem', fontWeight: 600 }}>
-                            <CheckCircle2 size={15} />
-                            <span>Taken at {med.takenAt}</span>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => handleMarkTaken(med.id)}
-                            className="btn btn-primary btn-sm"
-                            style={{ padding: '6px 14px', fontSize: '0.8rem' }}
-                          >
-                            <CheckCircle2 size={13} />
-                            Mark Taken
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* 3. Drug-Exercise Safety Warnings */}
-          {(showAll || currentFilter === 'medications') && (
-            <div className="botanical-card responsive-card" style={{ borderLeft: '6px solid var(--terracotta)', background: 'var(--surface-white)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                <AlertTriangle size={20} color="var(--terracotta)" />
-                <h3 className="font-serif" style={{ fontSize: '1.1rem', color: 'var(--text-forest)', margin: 0 }}>
-                  Clinical Drug Precautions & Exercise Safety
-                </h3>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ background: 'var(--terracotta-subtle)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--terracotta-border)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--terracotta-dark)', fontWeight: 700, fontSize: '0.84rem' }}>
-                    <AlertCircle size={15} />
-                    <span>Glimepiride & Evening Physical Exertion Precaution:</span>
-                  </div>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-forest)', marginTop: '4px', lineHeight: 1.45, margin: 0 }}>
-                    Because you take <strong>Glimepiride 1mg</strong> tonight, your pancreas releases insulin. If taking an evening walk, <strong>do not exercise on an empty stomach</strong>. Always carry 2 glucose biscuits in your pocket.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 4. Graphical Analysis & CGM Trends */}
-          {(showAll || currentFilter === 'glucose') && (
-            <div className="botanical-card responsive-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                <div>
-                  <h2 className="font-serif" style={{ fontSize: 'clamp(1.15rem, 3vw, 1.3rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                    <TrendingUp size={19} color="var(--accent-sage)" strokeWidth={1.5} />
-                    Continuous Blood Sugar & CGM Corridor
-                  </h2>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    Safe corridor target range: 70 to 180 mg/dL.
-                  </p>
-                </div>
-
-                <div className="status-pill ok">
-                  <span className="status-dot ok" />
-                  88% Time in Range
-                </div>
-              </div>
-
-              {/* Quick Metrics Cards */}
-              <div className="responsive-grid-3" style={{ marginBottom: '16px' }}>
-                <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Average Sugar</div>
-                  <div className="font-serif tabular" style={{ fontSize: '1.4rem', color: 'var(--text-forest)', fontWeight: 700, marginTop: '2px' }}>
-                    128 <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>mg/dL</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Estimated HbA1c</div>
-                  <div className="font-serif tabular" style={{ fontSize: '1.4rem', color: 'var(--status-ok)', fontWeight: 700, marginTop: '2px' }}>
-                    6.7% <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>(Good)</span>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Hypo Episodes</div>
-                  <div className="font-serif tabular" style={{ fontSize: '1.4rem', color: 'var(--text-forest)', fontWeight: 700, marginTop: '2px' }}>
-                    0 <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>this week</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recharts Area Curve */}
-              <div style={{ width: '100%', height: 240 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="patientGlucoseGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--accent-sage)" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="var(--accent-sage)" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="time" stroke="var(--text-dim)" fontSize={11} tickLine={false} />
-                    <YAxis domain={[50, 220]} stroke="var(--text-dim)" fontSize={11} tickLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        background: 'var(--surface-white)',
-                        border: '1px solid var(--border-stone)',
-                        borderRadius: '12px',
-                        fontSize: '0.82rem',
-                        boxShadow: 'var(--shadow-md)',
-                      }}
-                    />
-                    <ReferenceLine y={180} stroke="var(--terracotta)" strokeDasharray="3 3" label={{ value: 'Target Max (180)', fill: 'var(--terracotta)', fontSize: 10 }} />
-                    <ReferenceLine y={70} stroke="var(--status-danger)" strokeDasharray="3 3" label={{ value: 'Target Min (70)', fill: 'var(--status-danger)', fontSize: 10 }} />
-                    <Area
-                      type="monotone"
-                      dataKey="mgdl"
-                      name="Blood Sugar (mg/dL)"
-                      stroke="var(--accent-sage-dark)"
-                      strokeWidth={2.5}
-                      fillOpacity={1}
-                      fill="url(#patientGlucoseGrad)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column (4 cols) */}
-        <div className="responsive-col-4" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          
-          {/* Smart Daily Reminders Card */}
-          {(showAll || currentFilter === 'wellness') && (
-            <div className="botanical-card responsive-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <h3 className="font-serif" style={{ fontSize: '1.12rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Bell size={17} color="var(--terracotta)" />
-                  Smart Daily Reminders
-                </h3>
-                <span className="status-pill ok" style={{ fontSize: '0.7rem' }}>
-                  Active
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {/* Hydration Goal */}
-                <div style={{ background: 'var(--surface-clay)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Droplets size={16} color="#4A90E2" />
-                      <div>
-                        <strong style={{ fontSize: '0.84rem', color: 'var(--text-forest)' }}>Daily Water</strong>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Target: 8 Glasses</div>
-                      </div>
-                    </div>
-                    <strong style={{ fontSize: '0.9rem', color: 'var(--text-forest)' }}>{hydrationCount}/8</strong>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '4px' }}>
-                    <div style={{ flex: '1', background: 'var(--border-stone)', height: '7px', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ width: `${(hydrationCount / 8) * 100}%`, background: '#4A90E2', height: '100%', transition: 'width 0.3s ease' }} />
-                    </div>
-                    <button
-                      onClick={handleAddWater}
-                      className="btn btn-secondary btn-sm"
-                      style={{ fontSize: '0.72rem', padding: '2px 7px' }}
-                    >
-                      + Glass
-                    </button>
-                  </div>
-                </div>
-
-                {/* Evening Stroll */}
-                <div style={{ background: 'var(--surface-clay)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Footprints size={16} color="var(--accent-sage-dark)" />
-                    <div>
-                      <strong style={{ fontSize: '0.84rem', color: 'var(--text-forest)' }}>15-Min Evening Stroll</strong>
-                      <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Scheduled for 8:45 PM after dinner</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Foot Check */}
-                <div style={{ background: 'var(--surface-clay)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Shield size={16} color="var(--accent-sage)" />
-                    <div>
-                      <strong style={{ fontSize: '0.84rem', color: 'var(--text-forest)' }}>Daily Foot Check</strong>
-                      <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Check feet for dry spots</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Doctor Touchpoint & 1-Click Consultation */}
-          {(showAll || currentFilter === 'careteam') && (
-            <div className="botanical-card" style={{ padding: '20px' }}>
-              <h3 className="font-serif" style={{ fontSize: '1.12rem', color: 'var(--text-forest)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <UserIcon size={17} color="var(--accent-sage)" />
-                Attending Physician Touchpoint
-              </h3>
-
-              <div style={{ background: 'var(--surface-clay)', padding: '14px', borderRadius: '16px', border: '1px solid var(--border-stone)', marginBottom: '14px' }}>
-                <strong style={{ fontSize: '0.9rem', color: 'var(--text-forest)' }}>Dr. Arvind Mehta, MD</strong>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>Senior Diabetologist • Pune Central Clinic</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--status-ok)', fontWeight: 600, marginTop: '4px' }}>
-                  Next Clinic Review: Oct 15, 2026
-                </div>
-              </div>
-
-              {/* Patient Care Connection Code */}
-              <div style={{
-                background: 'var(--accent-sage-subtle)',
-                border: '1.5px dashed var(--accent-sage-dark)',
-                borderRadius: '14px',
-                padding: '12px 14px',
-                marginBottom: '14px',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)', fontWeight: 700, textTransform: 'uppercase' }}>
-                    Your Care Connection Code
-                  </span>
-                  <span className="font-mono" style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-forest)', letterSpacing: '0.05em' }}>
-                    {currentUser?.patient_profile?.connection_code || 'DIA-RAM789'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(currentUser?.patient_profile?.connection_code || 'DIA-RAM789');
-                      setDoctorCodeCopied(true);
-                      setTimeout(() => setDoctorCodeCopied(false), 2000);
-                    }}
-                    className="btn btn-secondary btn-sm"
-                    style={{ flex: 1, fontSize: '0.74rem', padding: '6px 8px', justifyContent: 'center' }}
-                  >
-                    {doctorCodeCopied ? <Check size={13} color="var(--status-ok)" /> : <Copy size={13} />}
-                    <span>{doctorCodeCopied ? 'Copied!' : 'Copy Code'}</span>
-                  </button>
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Namaste Doctor, here is my Diabeto Care Connection Code: ${currentUser?.patient_profile?.connection_code || 'DIA-RAM789'}.`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-primary btn-sm"
-                    style={{ flex: 1, fontSize: '0.74rem', padding: '6px 8px', justifyContent: 'center', background: '#25D366', borderColor: '#25D366' }}
-                  >
-                    <Share2 size={13} />
-                    <span>WhatsApp</span>
-                  </a>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button
                   onClick={() => setShowBookingModal(true)}
                   className="btn btn-primary"
-                  style={{ width: '100%', justifyContent: 'center', fontSize: '0.84rem', padding: '9px 14px' }}
+                  style={{ padding: '10px 18px', fontSize: '0.86rem' }}
                 >
                   <CalendarCheck size={15} />
-                  Book Clinic Consultation
+                  Book Doctor Visit
                 </button>
+              </div>
+            </div>
+          </div>
+        );
 
-                <a
-                  href="https://wa.me/918149680369"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-secondary"
-                  style={{ width: '100%', justifyContent: 'center', fontSize: '0.84rem', padding: '9px 14px' }}
+        const renderMealScannerCard = () => (
+          <div className="botanical-card responsive-card" style={{ borderLeft: '6px solid var(--accent-sage)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h2 className="font-serif" style={{ fontSize: 'clamp(1.15rem, 3vw, 1.3rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                  <Utensils size={20} color="var(--accent-sage)" strokeWidth={1.5} />
+                  Indian Meal Intelligence & Food Scanner
+                </h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Multimodal Google Gemini Vision estimates Indian dishes, carbs & glycemic curves.
+                </p>
+              </div>
+
+              {onOpenMealScanner && (
+                <button
+                  type="button"
+                  onClick={onOpenMealScanner}
+                  className="btn btn-primary btn-sm"
+                  style={{ fontSize: '0.82rem', padding: '7px 14px' }}
                 >
-                  <MessageCircle size={15} />
-                  Message Clinic Desk
-                </a>
-              </div>
+                  <Camera size={14} />
+                  Scan Food Plate
+                </button>
+              )}
             </div>
-          )}
 
-          {/* Milestones & Encouragement Badges */}
-          {(showAll || currentFilter === 'wellness') && (
-            <div className="botanical-card" style={{ padding: '20px' }}>
-              <h3 className="font-serif" style={{ fontSize: '1.12rem', color: 'var(--text-forest)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Award size={17} color="var(--terracotta)" />
-                Senior Milestones & Badges
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+              {loggedMeals.map((m) => (
+                <div
+                  key={m.id}
+                  style={{
+                    background: 'var(--surface-clay)',
+                    border: '1px solid var(--border-stone)',
+                    borderRadius: '16px',
+                    padding: '12px 14px',
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'center',
+                  }}
+                >
+                  {m.image && (
+                    <img
+                      src={m.image}
+                      alt={m.title}
+                      style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }}
+                    />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
+                        {m.mealType} • {m.time.split(', ')[1]}
+                      </span>
+                      <span style={{
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        padding: '1px 6px',
+                        borderRadius: '6px',
+                        background: 'var(--surface-white)',
+                        color: m.impact === 'HIGH' ? 'var(--terracotta-dark)' : 'var(--status-ok)',
+                        border: '1px solid var(--border-stone)',
+                      }}>
+                        ~{m.carbs}g Carbs
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-forest)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {m.title}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--accent-sage-dark)', fontWeight: 600, marginTop: '2px' }}>
+                      {m.impact} Glycemic Impact
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+        const renderMedicationCard = () => (
+          <div className="botanical-card responsive-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="font-serif" style={{ fontSize: 'clamp(1.15rem, 3vw, 1.3rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                  <Calendar size={19} color="var(--accent-sage)" strokeWidth={1.5} />
+                  Visual Medication & Routine Schedule
+                </h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Track daily prescribed doses and confirm adherence with 1-tap.
+                </p>
+              </div>
+
+              <span className="status-pill ok" style={{ fontSize: '0.75rem' }}>
+                <CheckCircle2 size={13} color="var(--status-ok)" />
+                2 of 3 Doses Taken Today
+              </span>
+            </div>
+
+            <div className="calendar-week-row" style={{ marginBottom: '14px' }}>
+              {calendarDays.map((d, i) => (
+                <div
+                  key={i}
+                  className="calendar-day-cell"
+                  style={{
+                    background: d.current ? 'var(--accent-sage-subtle)' : 'var(--surface-clay)',
+                    border: d.current ? '2px solid var(--accent-sage)' : '1px solid var(--border-stone)',
+                  }}
+                >
+                  <div style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-muted)' }}>{d.label}</div>
+                  <div className="font-serif" style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-forest)', margin: '1px 0' }}>
+                    {d.date.split(' ')[1] || d.date}
+                  </div>
+                  <div style={{ fontSize: '0.65rem', color: d.current ? 'var(--status-warn)' : 'var(--status-ok)', fontWeight: 600 }}>
+                    {d.count}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {medications.map((med) => {
+                const isTaken = med.status === 'taken';
+
+                return (
+                  <div
+                    key={med.id}
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: '16px',
+                      background: isTaken ? 'var(--surface-white)' : 'var(--terracotta-subtle)',
+                      border: isTaken ? '1px solid var(--border-stone)' : '1.5px solid var(--terracotta-border)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '12px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '220px', flex: '1' }}>
+                      <div style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '50%',
+                        background: isTaken ? 'var(--status-ok-bg)' : 'var(--terracotta-subtle)',
+                        border: isTaken ? '1px solid var(--status-ok-border)' : '1px solid var(--terracotta-border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        <Pill size={18} color={isTaken ? 'var(--status-ok)' : 'var(--terracotta)'} />
+                      </div>
+
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <strong style={{ fontSize: '0.9rem', color: 'var(--text-forest)' }}>
+                            {med.name}
+                          </strong>
+                          <span style={{ fontSize: '0.72rem', background: 'var(--surface-clay)', padding: '1px 7px', borderRadius: '8px', color: 'var(--text-muted)' }}>
+                            {med.dose}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          Scheduled: <strong>{med.scheduledTime}</strong> • {med.instructions}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {isTaken ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--status-ok)', fontSize: '0.82rem', fontWeight: 600 }}>
+                          <CheckCircle2 size={15} />
+                          <span>Taken at {med.takenAt}</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleMarkTaken(med.id)}
+                          className="btn btn-primary btn-sm"
+                          style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+                        >
+                          <CheckCircle2 size={13} />
+                          Mark Taken
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+
+        const renderDrugPrecautionsCard = () => (
+          <div className="botanical-card responsive-card" style={{ borderLeft: '6px solid var(--terracotta)', background: 'var(--surface-white)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+              <AlertTriangle size={20} color="var(--terracotta)" />
+              <h3 className="font-serif" style={{ fontSize: '1.1rem', color: 'var(--text-forest)', margin: 0 }}>
+                Clinical Drug Precautions & Exercise Safety
               </h3>
+            </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                <div style={{ background: 'var(--accent-sage-subtle)', padding: '10px', borderRadius: '14px', textAlign: 'center', border: '1px solid var(--accent-sage-border)' }}>
-                  <div style={{ fontSize: '1.3rem' }}>🎖️</div>
-                  <strong style={{ fontSize: '0.76rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>Pill Master</strong>
-                  <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>7-day streak</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ background: 'var(--terracotta-subtle)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--terracotta-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--terracotta-dark)', fontWeight: 700, fontSize: '0.84rem' }}>
+                  <AlertCircle size={15} />
+                  <span>Glimepiride & Evening Physical Exertion Precaution:</span>
                 </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-forest)', marginTop: '4px', lineHeight: 1.45, margin: 0 }}>
+                  Because you take <strong>Glimepiride 1mg</strong> tonight, your pancreas releases insulin. If taking an evening walk, <strong>do not exercise on an empty stomach</strong>. Always carry 2 glucose biscuits in your pocket.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
 
-                <div style={{ background: 'var(--terracotta-subtle)', padding: '10px', borderRadius: '14px', textAlign: 'center', border: '1px solid var(--terracotta-border)' }}>
-                  <div style={{ fontSize: '1.3rem' }}>💧</div>
-                  <strong style={{ fontSize: '0.76rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>Hydration Star</strong>
-                  <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>Water logged</span>
+        const renderGlucoseChartCard = () => (
+          <div className="botanical-card responsive-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h2 className="font-serif" style={{ fontSize: 'clamp(1.15rem, 3vw, 1.3rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                  <TrendingUp size={19} color="var(--accent-sage)" strokeWidth={1.5} />
+                  Continuous Blood Sugar & CGM Corridor
+                </h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Safe corridor target range: 70 to 180 mg/dL.
+                </p>
+              </div>
+
+              <div className="status-pill ok">
+                <span className="status-dot ok" />
+                88% Time in Range
+              </div>
+            </div>
+
+            <div className="responsive-grid-3" style={{ marginBottom: '16px' }}>
+              <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Average Sugar</div>
+                <div className="font-serif tabular" style={{ fontSize: '1.4rem', color: 'var(--text-forest)', fontWeight: 700, marginTop: '2px' }}>
+                  128 <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>mg/dL</span>
                 </div>
+              </div>
 
-                <div style={{ background: 'var(--surface-clay)', padding: '10px', borderRadius: '14px', textAlign: 'center', border: '1px solid var(--border-stone)' }}>
-                  <div style={{ fontSize: '1.3rem' }}>👟</div>
-                  <strong style={{ fontSize: '0.76rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>Gentle Steps</strong>
-                  <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>Evening walk</span>
+              <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Estimated HbA1c</div>
+                <div className="font-serif tabular" style={{ fontSize: '1.4rem', color: 'var(--status-ok)', fontWeight: 700, marginTop: '2px' }}>
+                  6.7% <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>(Good)</span>
                 </div>
+              </div>
 
-                <div style={{ background: 'var(--surface-clay)', padding: '10px', borderRadius: '14px', textAlign: 'center', border: '1px solid var(--border-stone)' }}>
-                  <div style={{ fontSize: '1.3rem' }}>🌿</div>
-                  <strong style={{ fontSize: '0.76rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>Calm Harmony</strong>
-                  <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>0 hypo episodes</span>
+              <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Hypo Episodes</div>
+                <div className="font-serif tabular" style={{ fontSize: '1.4rem', color: 'var(--text-forest)', fontWeight: 700, marginTop: '2px' }}>
+                  0 <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>this week</span>
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
+
+            <div style={{ width: '100%', height: 260 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="patientGlucoseGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--accent-sage)" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="var(--accent-sage)" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="time" stroke="var(--text-dim)" fontSize={11} tickLine={false} />
+                  <YAxis domain={[50, 220]} stroke="var(--text-dim)" fontSize={11} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'var(--surface-white)',
+                      border: '1px solid var(--border-stone)',
+                      borderRadius: '12px',
+                      fontSize: '0.82rem',
+                      boxShadow: 'var(--shadow-md)',
+                    }}
+                  />
+                  <ReferenceLine y={180} stroke="var(--terracotta)" strokeDasharray="3 3" label={{ value: 'Target Max (180)', fill: 'var(--terracotta)', fontSize: 10 }} />
+                  <ReferenceLine y={70} stroke="var(--status-danger)" strokeDasharray="3 3" label={{ value: 'Target Min (70)', fill: 'var(--status-danger)', fontSize: 10 }} />
+                  <Area
+                    type="monotone"
+                    dataKey="mgdl"
+                    name="Blood Sugar (mg/dL)"
+                    stroke="var(--accent-sage-dark)"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#patientGlucoseGrad)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        );
+
+        const renderRemindersCard = () => (
+          <div className="botanical-card responsive-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 className="font-serif" style={{ fontSize: '1.12rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Bell size={17} color="var(--terracotta)" />
+                Smart Daily Reminders
+              </h3>
+              <span className="status-pill ok" style={{ fontSize: '0.7rem' }}>
+                Active
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ background: 'var(--surface-clay)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Droplets size={16} color="#4A90E2" />
+                    <div>
+                      <strong style={{ fontSize: '0.84rem', color: 'var(--text-forest)' }}>Daily Water</strong>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Target: 8 Glasses</div>
+                    </div>
+                  </div>
+                  <strong style={{ fontSize: '0.9rem', color: 'var(--text-forest)' }}>{hydrationCount}/8</strong>
+                </div>
+
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '4px' }}>
+                  <div style={{ flex: '1', background: 'var(--border-stone)', height: '7px', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${(hydrationCount / 8) * 100}%`, background: '#4A90E2', height: '100%', transition: 'width 0.3s ease' }} />
+                  </div>
+                  <button
+                    onClick={handleAddWater}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '0.72rem', padding: '2px 7px' }}
+                  >
+                    + Glass
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--surface-clay)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Footprints size={16} color="var(--accent-sage-dark)" />
+                  <div>
+                    <strong style={{ fontSize: '0.84rem', color: 'var(--text-forest)' }}>15-Min Evening Stroll</strong>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Scheduled for 8:45 PM after dinner</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--surface-clay)', padding: '12px 14px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Shield size={16} color="var(--accent-sage)" />
+                  <div>
+                    <strong style={{ fontSize: '0.84rem', color: 'var(--text-forest)' }}>Daily Foot Check</strong>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Check feet for dry spots</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+        const renderDoctorCard = () => (
+          <div className="botanical-card" style={{ padding: '20px' }}>
+            <h3 className="font-serif" style={{ fontSize: '1.12rem', color: 'var(--text-forest)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <UserIcon size={17} color="var(--accent-sage)" />
+              Attending Physician Touchpoint
+            </h3>
+
+            <div style={{ background: 'var(--surface-clay)', padding: '14px', borderRadius: '16px', border: '1px solid var(--border-stone)', marginBottom: '14px' }}>
+              <strong style={{ fontSize: '0.9rem', color: 'var(--text-forest)' }}>Dr. Arvind Mehta, MD</strong>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>Senior Diabetologist • Pune Central Clinic</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--status-ok)', fontWeight: 600, marginTop: '4px' }}>
+                Next Clinic Review: Oct 15, 2026
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                onClick={() => setShowBookingModal(true)}
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center', fontSize: '0.84rem', padding: '9px 14px' }}
+              >
+                <CalendarCheck size={15} />
+                Book Clinic Consultation
+              </button>
+
+              <a
+                href="https://wa.me/918149680369"
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-secondary"
+                style={{ width: '100%', justifyContent: 'center', fontSize: '0.84rem', padding: '9px 14px' }}
+              >
+                <MessageCircle size={15} />
+                Message Clinic Desk
+              </a>
+            </div>
+          </div>
+        );
+
+        const renderCareConnectionCard = () => (
+          <div className="botanical-card" style={{
+            padding: '18px',
+            background: 'var(--accent-sage-subtle)',
+            border: '1.5px dashed var(--accent-sage-dark)',
+            borderRadius: '16px',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', fontWeight: 700, textTransform: 'uppercase' }}>
+                Your Care Connection Code
+              </span>
+              <span className="font-mono" style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-forest)', letterSpacing: '0.05em' }}>
+                {currentUser?.patient_profile?.connection_code || 'DIA-RAM789'}
+              </span>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px', marginBottom: '10px' }}>
+              Share this code with your doctor to link your charts & telemetry.
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(currentUser?.patient_profile?.connection_code || 'DIA-RAM789');
+                  setDoctorCodeCopied(true);
+                  setTimeout(() => setDoctorCodeCopied(false), 2000);
+                }}
+                className="btn btn-secondary btn-sm"
+                style={{ flex: 1, fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'center' }}
+              >
+                {doctorCodeCopied ? <Check size={13} color="var(--status-ok)" /> : <Copy size={13} />}
+                <span>{doctorCodeCopied ? 'Copied!' : 'Copy Code'}</span>
+              </button>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`Namaste Doctor, here is my Diabeto Care Connection Code: ${currentUser?.patient_profile?.connection_code || 'DIA-RAM789'}.`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary btn-sm"
+                style={{ flex: 1, fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'center', background: '#25D366', borderColor: '#25D366' }}
+              >
+                <Share2 size={13} />
+                <span>WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        );
+
+        const renderCaregiverCard = () => (
+          <div className="botanical-card" style={{ padding: '18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
+                  Primary Caregiver
+                </span>
+                <strong style={{ fontSize: '0.98rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>
+                  {caregiverContact}
+                </strong>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Phone: {caregiverTel}
+                </div>
+              </div>
+              <a
+                href={`tel:${caregiverTel}`}
+                className="btn btn-secondary btn-sm"
+                style={{ padding: '7px 14px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Phone size={13} />
+                <span>Call</span>
+              </a>
+            </div>
+          </div>
+        );
+
+        const renderMilestonesCard = () => (
+          <div className="botanical-card" style={{ padding: '20px' }}>
+            <h3 className="font-serif" style={{ fontSize: '1.12rem', color: 'var(--text-forest)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Award size={17} color="var(--terracotta)" />
+              Senior Milestones & Badges
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              <div style={{ background: 'var(--accent-sage-subtle)', padding: '10px', borderRadius: '14px', textAlign: 'center', border: '1px solid var(--accent-sage-border)' }}>
+                <div style={{ fontSize: '1.3rem' }}>🎖️</div>
+                <strong style={{ fontSize: '0.76rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>Pill Master</strong>
+                <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>7-day streak</span>
+              </div>
+
+              <div style={{ background: 'var(--terracotta-subtle)', padding: '10px', borderRadius: '14px', textAlign: 'center', border: '1px solid var(--terracotta-border)' }}>
+                <div style={{ fontSize: '1.3rem' }}>💧</div>
+                <strong style={{ fontSize: '0.76rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>Hydration Star</strong>
+                <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>Water logged</span>
+              </div>
+
+              <div style={{ background: 'var(--surface-clay)', padding: '10px', borderRadius: '14px', textAlign: 'center', border: '1px solid var(--border-stone)' }}>
+                <div style={{ fontSize: '1.3rem' }}>👟</div>
+                <strong style={{ fontSize: '0.76rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>Gentle Steps</strong>
+                <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>Evening walk</span>
+              </div>
+
+              <div style={{ background: 'var(--surface-clay)', padding: '10px', borderRadius: '14px', textAlign: 'center', border: '1px solid var(--border-stone)' }}>
+                <div style={{ fontSize: '1.3rem' }}>🌿</div>
+                <strong style={{ fontSize: '0.76rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>Calm Harmony</strong>
+                <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>0 hypo episodes</span>
+              </div>
+            </div>
+          </div>
+        );
+
+        return (
+          <>
+            {/* 1. Sanctuary Overview (When activeSection is 'overview') */}
+            {showAll && (
+              <>
+                {renderHeroBanner()}
+
+                <div className="responsive-grid-12">
+                  <div className="responsive-col-8" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    {renderMealScannerCard()}
+                    {renderMedicationCard()}
+                    {renderDrugPrecautionsCard()}
+                    {renderGlucoseChartCard()}
+                  </div>
+                  <div className="responsive-col-4" style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    {renderRemindersCard()}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      {renderDoctorCard()}
+                      {renderCareConnectionCard()}
+                    </div>
+                    {renderMilestonesCard()}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* 2. Dedicated Section Pages (Direct, Clean & Clutter-Free) */}
+            {!showAll && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* A. Meals Section */}
+                {currentFilter === 'meals' && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>
+                          Diet & Nutrition
+                        </div>
+                        <h1 className="font-serif" style={{ fontSize: '1.8rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Utensils size={24} color="var(--accent-sage)" />
+                          {t('scanFoodPlate', language)}
+                        </h1>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          Multimodal Google Gemini Vision estimates Indian dishes, carbs, portion sizes & glycemic curves.
+                        </p>
+                      </div>
+                      {onOpenMealScanner && (
+                        <button
+                          type="button"
+                          onClick={onOpenMealScanner}
+                          className="btn btn-primary"
+                          style={{ padding: '10px 18px', fontSize: '0.88rem' }}
+                        >
+                          <Camera size={16} />
+                          Scan Food Plate
+                        </button>
+                      )}
+                    </div>
+                    {renderMealScannerCard()}
+                  </>
+                )}
+
+                {/* B. Medications Section */}
+                {currentFilter === 'medications' && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>
+                          Adherence Protocol
+                        </div>
+                        <h1 className="font-serif" style={{ fontSize: '1.8rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Pill size={24} color="var(--accent-sage)" />
+                          {t('medSchedule', language)}
+                        </h1>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          Track daily prescribed doses, verify timing, and review clinical exercise precautions.
+                        </p>
+                      </div>
+                      <span className="status-pill ok" style={{ fontSize: '0.82rem', padding: '6px 14px' }}>
+                        <CheckCircle2 size={15} color="var(--status-ok)" />
+                        2 of 3 Doses Taken Today
+                      </span>
+                    </div>
+                    {renderMedicationCard()}
+                    {renderDrugPrecautionsCard()}
+                  </>
+                )}
+
+                {/* C. Glucose Section */}
+                {currentFilter === 'glucose' && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>
+                          Glycemic Telemetry
+                        </div>
+                        <h1 className="font-serif" style={{ fontSize: '1.8rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <TrendingUp size={24} color="var(--accent-sage)" />
+                          {t('myGlucose', language)}
+                        </h1>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          Continuous glucose monitoring corridor (70–180 mg/dL), average sugar, and estimated A1c analytics.
+                        </p>
+                      </div>
+                      <div className="status-pill ok" style={{ fontSize: '0.82rem', padding: '6px 14px' }}>
+                        <span className="status-dot ok" />
+                        88% Time in Range
+                      </div>
+                    </div>
+                    {renderGlucoseChartCard()}
+                  </>
+                )}
+
+                {/* D. Care Team Section */}
+                {currentFilter === 'careteam' && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>
+                          Clinical Network
+                        </div>
+                        <h1 className="font-serif" style={{ fontSize: '1.8rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <CalendarCheck size={24} color="var(--accent-sage)" />
+                          {t('careTeam', language)}
+                        </h1>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          Attending diabetologist touchpoint, care connection code for chart linking, and family caregiver circle.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowBookingModal(true)}
+                        className="btn btn-primary"
+                        style={{ padding: '10px 18px', fontSize: '0.88rem' }}
+                      >
+                        <CalendarCheck size={16} />
+                        Book Clinic Consultation
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '18px' }}>
+                      {renderDoctorCard()}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {renderCareConnectionCard()}
+                        {renderCaregiverCard()}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* E. Wellness Section */}
+                {currentFilter === 'wellness' && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '2px' }}>
+                          Healthy Routines
+                        </div>
+                        <h1 className="font-serif" style={{ fontSize: '1.8rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Award size={24} color="var(--terracotta)" />
+                          Hydration, Habits & Senior Milestones
+                        </h1>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          Daily water intake tracking, gentle post-meal activity, and care streak milestones.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '18px' }}>
+                      {renderRemindersCard()}
+                      {renderMilestonesCard()}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {/* Appointment Booking Modal */}
       {showBookingModal && (

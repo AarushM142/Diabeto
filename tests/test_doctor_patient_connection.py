@@ -112,3 +112,14 @@ def test_google_auth_syncs_user_to_db():
     assert "access_token" in data
     assert data["user"]["email"] == "dr.dynamic.test@diabeto.care"
     assert data["user"]["id"].startswith("goog_")
+
+def test_get_patient_connection_code_dynamic_google_patient_id():
+    """Verify fetching connection code for dynamic Google patient ID creates patient & returns valid code without 404."""
+    res = client.get("/v1/patients/goog_8e45719a/connection-code")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["patient_id"] == "goog_8e45719a"
+    assert "connection_code" in data
+    assert data["connection_code"].startswith("DIA-")
+    assert "invite_link" in data
+

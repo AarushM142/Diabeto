@@ -158,14 +158,26 @@ export const App: React.FC = () => {
 
   // Periodic Backend Health Check
   useEffect(() => {
+    let isMounted = true;
     const checkHealth = async () => {
-      const healthy = await api.getHealth();
-      setIsBackendHealthy(healthy);
+      try {
+        const healthy = await api.getHealth();
+        if (isMounted) {
+          setIsBackendHealthy(healthy);
+        }
+      } catch {
+        if (isMounted) {
+          setIsBackendHealthy(false);
+        }
+      }
     };
 
     checkHealth();
     const interval = setInterval(checkHealth, 10000);
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Update HTML class for 3-Mode Elder Text Scaling (PRD §3)

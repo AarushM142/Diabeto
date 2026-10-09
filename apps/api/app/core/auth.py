@@ -190,3 +190,112 @@ async def ensure_db_user(
     await db.flush()
     return new_user
 
+async def ensure_db_patient(
+    db,
+    patient_id: str,
+    name: Optional[str] = None,
+    phone: Optional[str] = None,
+    language: str = "hi",
+    clinic_id: Optional[str] = None,
+    clinician_of_record_id: Optional[str] = None,
+):
+    """Ensures a patient row exists in the PostgreSQL patients table."""
+    import uuid
+    from sqlalchemy import select
+    from apps.api.app.models.entities import Patient, User, Clinic
+
+    stmt = select(Patient).where(Patient.id == patient_id)
+    res = await db.execute(stmt)
+    existing_p = res.scalar_one_or_none()
+    if existing_p:
+        return existing_p
+
+    # Check if a user with this id exists
+    user_stmt = select(User).where(User.id == patient_id)
+    user_res = await db.execute(user_stmt)
+    user = user_res.scalar_one_or_none()
+    if user:
+        name = name or user.name
+        phone = phone or user.phone
+        language = language or user.language
+        clinic_id = clinic_id or user.clinic_id
+
+    # Check PREDEFINED_PERSONAS
+    if not name:
+        for p in PREDEFINED_PERSONAS.values():
+            if p.get("id") == patient_id or p.get("patient_id") == patient_id:
+                name = p.get("name")
+                phone = p.get("phone")
+                language = p.get("language", "hi")
+                break
+
+    name = name or f"Patient {patient_id[-6:].upper()}"
+
+    # Ensure clinic exists
+    if not clinic_id:
+        clinic_res = await db.execute(select(Clinic.id))
+        clinic_id = clinic_res.scalars().first()
+        if not clinic_id:
+            default_clinic = Clinic(id="clinic_pune_central", name="Pune Central Diabetes Clinic", address="FC Road, Pune")
+            db.add(default_clinic)
+            await db.flush()
+            clinic_id = default_clinic.id
+
+    # Ensure clinician of record exists
+    if not clinician_of_record_id:
+        doc_res = await db.execute(select(User).where(User.role == "clinician"))
+        doc = doc_res.scalars().first()
+        if doc:
+            clinician_of_record_id = doc.id
+        else:
+            default_doc = await ensure_db_user(
+                db=db,
+                user_id="doc_mehta_101",
+                name="Dr. Arvind Mehta",
+                role="clinician",
+                phone="+919811111111",
+                language="en",
+                clinic_id=clinic_id,
+            )
+            clinician_of_record_id = default_doc.id
+
+    # Ensure user row exists for the patient if patient_id is used as a user_id
+    if not user:
+        await ensure_db_user(
+            db=db,
+            user_id=patient_id,
+            name=name,
+            role="patient",
+            phone=phone,
+            language=language,
+            clinic_id=clinic_id,
+        )
+
+    # Phone uniqueness for patient
+    if not phone:
+        phone = f"+9197{abs(hash(patient_id)) % 100000000:08d}"
+
+    phone_res = await db.execute(select(Patient).where(Patient.phone == phone))
+    if phone_res.scalar_one_or_none():
+        phone = f"+91{uuid.uuid4().hex[:10]}"
+
+    prefix = (name[:3] if len(name) >= 3 else "DIA").upper().replace(" ", "")
+    suffix = str(abs(hash(patient_id)))[:4]
+    code = f"DIA-{prefix}{suffix}"
+
+    new_patient = Patient(
+        id=patient_id,
+        clinic_id=clinic_id,
+        clinician_of_record_id=clinician_of_record_id,
+        name=name,
+        age=65,
+        gender="Male",
+        phone=phone,
+        language=language or "hi",
+        consent_flags={"connection_code": code, "view_raw_glucose": True, "emergency_escalation": True},
+    )
+    db.add(new_patient)
+    await db.flush()
+    return new_patient
+
+

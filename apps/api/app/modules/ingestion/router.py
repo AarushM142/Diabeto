@@ -129,6 +129,11 @@ async def get_patient_by_id(
     res = await db.execute(stmt)
     patient = res.scalar_one_or_none()
     if not patient:
+        from apps.api.app.core.auth import ensure_db_patient
+        patient = await ensure_db_patient(db=db, patient_id=patient_id)
+        await db.commit()
+
+    if not patient:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
     return patient
 
@@ -141,6 +146,11 @@ async def get_patient_connection_code(
     res = await db.execute(stmt)
     patient = res.scalar_one_or_none()
     if not patient:
+        from apps.api.app.core.auth import ensure_db_patient
+        patient = await ensure_db_patient(db=db, patient_id=patient_id)
+        await db.commit()
+
+    if not patient:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
 
     code = get_or_create_connection_code(patient)
@@ -149,6 +159,7 @@ async def get_patient_connection_code(
         flags["connection_code"] = code
         patient.consent_flags = flags
         await db.flush()
+        await db.commit()
 
     doc_name = "Dr. Arvind Mehta"
     if patient.clinician_of_record_id:

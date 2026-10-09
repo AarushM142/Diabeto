@@ -38,6 +38,11 @@ async def get_patient_trends(
     res = await db.execute(stmt)
     patient = res.scalar_one_or_none()
     if not patient:
+        from apps.api.app.core.auth import ensure_db_patient
+        patient = await ensure_db_patient(db=db, patient_id=patient_id)
+        await db.commit()
+
+    if not patient:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
 
     # Fetch thresholds
