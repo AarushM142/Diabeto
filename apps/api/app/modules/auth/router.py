@@ -1,4 +1,7 @@
 import uuid
+import json
+import os
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -54,6 +57,40 @@ class ConsentUpdateRequest(BaseModel):
     emergency_escalation: Optional[bool] = None
     share_with_coach: Optional[bool] = None
 
+# File-backed persistent registry for user-customized profiles (survives server restarts)
+_PROFILES_FILE = Path(__file__).parent / "user_profiles.json"
+
+def _load_profiles() -> Dict[str, Dict[str, Any]]:
+    try:
+        if _PROFILES_FILE.exists():
+            with open(_PROFILES_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+def _save_profiles(profiles: Dict[str, Dict[str, Any]]) -> None:
+    try:
+        with open(_PROFILES_FILE, "w", encoding="utf-8") as f:
+            json.dump(profiles, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[WARN] Failed to persist user profiles to disk: {e}")
+
+SAVED_USER_PROFILES: Dict[str, Dict[str, Any]] = _load_profiles()
+
+@router.get("/auth/user-profile")
+async def get_user_profile_by_email(email: str):
+    email_clean = email.lower().strip()
+    if email_clean in SAVED_USER_PROFILES:
+        return {"exists": True, "user": SAVED_USER_PROFILES[email_clean]}
+    
+    # Check predefined personas
+    for p in PREDEFINED_PERSONAS.values():
+        if p.get("email", "").lower() == email_clean:
+            return {"exists": True, "user": p}
+            
+    return {"exists": False, "user": None}
+
 @router.get("/auth/me")
 async def get_my_persona(current_user: dict = Depends(get_current_user)):
     return {
@@ -75,61 +112,91 @@ async def list_predefined_personas():
 async def login(payload: LoginRequest):
     email_clean = payload.email.lower().strip()
     
-    # Check predefined personas by email or role
-    matched_persona = None
-    for p in PREDEFINED_PERSONAS.values():
-        if p.get("email", "").lower() == email_clean or p.get("role") == email_clean:
-            matched_persona = p.copy()
-            break
-            
-    if not matched_persona:
-        role = payload.role or "clinician"
-        matched_persona = {
-            "id": f"usr_{uuid.uuid4().hex[:8]}",
-            "role": role,
-            "clinic_id": "clinic_pune_01",
-            "name": email_clean.split("@")[0].capitalize(),
-            "email": email_clean,
-            "title": f"Verified {role.capitalize()}",
-            "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-        }
+    # Check saved customized profiles first
+    if email_clean in SAVED_USER_PROFILES:
+        matched_persona = SAVED_USER_PROFILES[email_clean].copy()
+        if payload.role:
+            matched_persona["role"] = payload.role
+    else:
+        # Check predefined personas by email or role
+        matched_persona = None
+        for p in PREDEFINED_PERSONAS.values():
+            if p.get("email", "").lower() == email_clean or p.get("role") == email_clean:
+                matched_persona = p.copy()
+                break
+                
+        if not matched_persona:
+            role = payload.role or "clinician"
+            matched_persona = {
+                "id": f"usr_{uuid.uuid4().hex[:8]}",
+                "role": role,
+                "clinic_id": "clinic_pune_01",
+                "name": email_clean.split("@")[0].capitalize(),
+                "email": email_clean,
+                "title": f"Verified {role.capitalize()}",
+                "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+            }
+    # New user — save to registry
+    if email_clean not in SAVED_USER_PROFILES:
+        SAVED_USER_PROFILES[email_clean] = matched_persona
+        _save_profiles(SAVED_USER_PROFILES)
 
     token = create_access_token(matched_persona)
     return TokenResponse(access_token=token, user=matched_persona)
 
 @router.post("/auth/google", response_model=TokenResponse)
 async def google_auth(payload: GoogleAuthRequest):
-    email = payload.email or "user@gmail.com"
+    email = (payload.email or "user@gmail.com").lower().strip()
     name = payload.name or email.split("@")[0].replace(".", " ").title()
-    role = payload.role or "clinician"
+    role = payload.role or "patient"
 
-    matched_persona = None
-    for p in PREDEFINED_PERSONAS.values():
-        if p.get("email", "").lower() == email.lower():
-            matched_persona = p.copy()
-            break
+    # Check if we already have a saved profile for this user
+    if email in SAVED_USER_PROFILES:
+        matched_persona = SAVED_USER_PROFILES[email].copy()
+        if payload.role and not matched_persona.get("role"):
+            matched_persona["role"] = payload.role
+    else:
+        matched_persona = None
+        for p in PREDEFINED_PERSONAS.values():
+            if p.get("email", "").lower() == email:
+                matched_persona = p.copy()
+                break
 
-    if not matched_persona:
-        matched_persona = {
-            "id": f"goog_{uuid.uuid4().hex[:8]}",
-            "role": role,
-            "clinic_id": "clinic_pune_01",
-            "name": name,
-            "email": email,
-            "title": f"Google Authenticated ({role.capitalize()})",
-            "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-        }
+        if not matched_persona:
+            matched_persona = {
+                "id": f"goog_{uuid.uuid4().hex[:8]}",
+                "role": role,
+                "clinic_id": "clinic_pune_01",
+                "name": name,
+                "email": email,
+                "title": f"Verified {role.capitalize()}",
+                "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+            }
 
     if payload.profile:
-        matched_persona["patient_profile"] = payload.profile
+        if role == "patient" or "patient_profile" in payload.profile:
+            matched_persona["patient_profile"] = payload.profile.get("patient_profile", payload.profile)
+        if role == "caregiver" or "caregiver_profile" in payload.profile:
+            matched_persona["caregiver_profile"] = payload.profile.get("caregiver_profile", payload.profile)
+        if role == "clinician" or "clinician_profile" in payload.profile:
+            matched_persona["clinician_profile"] = payload.profile.get("clinician_profile", payload.profile)
+        if role == "coach" or "coach_profile" in payload.profile:
+            matched_persona["coach_profile"] = payload.profile.get("coach_profile", payload.profile)
+
         if payload.profile.get("name"):
             matched_persona["name"] = payload.profile["name"]
         if payload.profile.get("age"):
             matched_persona["age"] = payload.profile["age"]
+        if payload.profile.get("gender"):
+            matched_persona["gender"] = payload.profile["gender"]
         if payload.profile.get("language"):
             matched_persona["language"] = payload.profile["language"]
         if payload.profile.get("phone"):
             matched_persona["phone"] = payload.profile["phone"]
+
+    # Persist in registry
+    SAVED_USER_PROFILES[email] = matched_persona
+    _save_profiles(SAVED_USER_PROFILES)
 
     token = create_access_token(matched_persona)
     return TokenResponse(access_token=token, user=matched_persona)
@@ -158,6 +225,12 @@ async def update_user_profile(
         updated_user["clinician_profile"] = payload.clinician_profile
     if payload.coach_profile:
         updated_user["coach_profile"] = payload.coach_profile
+
+    # Save in global registry and persist to disk
+    user_email = updated_user.get("email", "").lower().strip()
+    if user_email:
+        SAVED_USER_PROFILES[user_email] = updated_user
+        _save_profiles(SAVED_USER_PROFILES)
 
     new_token = create_access_token(updated_user)
     return {"status": "ok", "user": updated_user, "access_token": new_token}

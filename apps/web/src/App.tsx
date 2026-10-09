@@ -10,7 +10,7 @@ import { LandingHero } from './components/LandingHero';
 import { RoleSelectModal, type OnboardingProfileData } from './components/RoleSelectModal';
 import { EditProfileModal } from './components/EditProfileModal';
 import { PageLoader } from './components/ui/page-loader';
-import { api, saveAuthSession, type User, type UserRole } from './api/client';
+import { api, saveAuthSession, getSavedProfileForEmail, type User, type UserRole } from './api/client';
 import { supabase } from './lib/supabase';
 import type { Language } from './lib/types';
 import { Phone, Type, LogOut, UserCog } from 'lucide-react';
@@ -79,10 +79,12 @@ export const App: React.FC = () => {
       window.location.search.includes('code=');
 
     const processSession = async (session: any) => {
-      // If user is ALREADY authenticated in storage, do NOT open role onboarding modal
+      // If user is ALREADY authenticated in current session, skip
       const existingUser = api.getCurrentUser();
       if (existingUser) {
         setPendingGoogleUser(null);
+        setCurrentUser(existingUser);
+        applyRoleDefaultTab(existingUser.role);
         return;
       }
 
@@ -96,7 +98,29 @@ export const App: React.FC = () => {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        // Show dedicated role onboarding modal for authenticated Google user
+        // Check if this user has a previously saved profile (from a prior session)
+        const savedProfile = getSavedProfileForEmail(email);
+        if (savedProfile) {
+          // Returning user: restore their session directly, skip onboarding
+          const restoredUser: User = {
+            ...savedProfile,
+            // Refresh avatar from Google in case it changed
+            avatar: avatar || savedProfile.avatar,
+          };
+          saveAuthSession(savedProfile.id ? `token_${savedProfile.id}` : `token_${Date.now()}`, restoredUser);
+          setPendingGoogleUser(null);
+          setCurrentUser(restoredUser);
+          applyRoleDefaultTab(restoredUser.role);
+          // Also attempt backend sync to refresh the token
+          try {
+            await api.googleAuth(email, restoredUser.name, restoredUser.role);
+          } catch {
+            // Silent fail – local session already restored
+          }
+          return;
+        }
+
+        // New user: show role onboarding modal
         setPendingGoogleUser({ email, name, avatar });
       }
     };
@@ -199,10 +223,21 @@ export const App: React.FC = () => {
     let userToSet: User;
     try {
       const res = await api.googleAuth(email, profileData?.name || name, role, profileData);
-      userToSet = res.user;
-      if (avatar) {
-        userToSet.avatar = avatar;
-      }
+      // Merge local profileData on top of backend response so all onboarding fields are preserved
+      userToSet = {
+        ...res.user,
+        avatar: avatar || res.user.avatar,
+        age: profileData?.age ?? res.user.age,
+        gender: profileData?.gender ?? res.user.gender,
+        phone: profileData?.phone ?? res.user.phone,
+        language: profileData?.language ?? res.user.language,
+        patient_profile: profileData?.patient_profile ?? res.user.patient_profile,
+        caregiver_profile: profileData?.caregiver_profile ?? res.user.caregiver_profile,
+        clinician_profile: profileData?.clinician_profile ?? res.user.clinician_profile,
+        coach_profile: profileData?.coach_profile ?? res.user.coach_profile,
+      };
+      // Explicitly persist the fully-merged profile to the email-keyed cache
+      saveAuthSession(res.access_token || `token_${Date.now()}`, userToSet);
     } catch (e) {
       console.warn('Backend googleAuth call failed, creating local authenticated session:', e);
       userToSet = {

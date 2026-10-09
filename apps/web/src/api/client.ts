@@ -199,10 +199,32 @@ export const getAuthToken = (): string | null => {
   }
 };
 
+export const saveProfileForEmail = (email: string, user: User) => {
+  if (!email) return;
+  try {
+    localStorage.setItem(`diabeto_profile_${email.toLowerCase().trim()}`, JSON.stringify(user));
+  } catch (e) {
+    console.warn('Failed to persist user profile by email:', e);
+  }
+};
+
+export const getSavedProfileForEmail = (email: string): User | null => {
+  if (!email) return null;
+  try {
+    const raw = localStorage.getItem(`diabeto_profile_${email.toLowerCase().trim()}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const saveAuthSession = (token: string, user: User) => {
   try {
     localStorage.setItem(AUTH_STORAGE_KEY, token);
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    if (user.email) {
+      saveProfileForEmail(user.email, user);
+    }
   } catch (e) {
     console.error('Failed to persist auth session:', e);
   }
@@ -308,14 +330,21 @@ export const api = {
     const token = getAuthToken() || `token_${Date.now()}`;
     saveAuthSession(token, updatedUser);
     
-    // Attempt backend sync
+    // Attempt backend sync - use returned token if available
     try {
-      await fetch(`${API_BASE}/auth/profile`, {
+      const syncRes = await fetch(`${API_BASE}/auth/profile`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(updates),
         signal: AbortSignal.timeout(3000),
       });
+      if (syncRes.ok) {
+        const syncData = await syncRes.json().catch(() => null);
+        if (syncData?.access_token) {
+          // Re-save with the new token that embeds updated profile data
+          saveAuthSession(syncData.access_token, updatedUser);
+        }
+      }
     } catch (e) {
       console.warn('Backend profile sync failed, local profile updated:', e);
     }
