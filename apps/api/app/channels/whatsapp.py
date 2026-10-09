@@ -109,7 +109,7 @@ async def handle_whatsapp_webhook(
     patient_lang = patient.language if patient else "hi"
 
     # --- INBOUND MEAL PHOTO ROUTING ---
-    if incoming_image_url or (incoming_text and any(w in incoming_text.lower() for w in ["meal", "plate", "food", "khana", "jevan", "roti", "thali"])):
+    if incoming_image_url or (incoming_text and any(w in incoming_text.lower() for w in ["meal", "plate", "food", "khana", "jevan", "roti", "chapati", "thali", "lunch", "dinner", "nashta", "sabzi", "jamun"])):
         from apps.api.app.modules.meal_intelligence.gemini_vision_service import GeminiMealVisionService
         from apps.api.app.modules.meal_intelligence.cgm_correlator import correlate_meal_with_cgm
         from apps.api.app.modules.meal_intelligence.meal_history_service import record_meal_entry
@@ -192,7 +192,14 @@ async def handle_whatsapp_webhook(
         await send_whatsapp_message(from_phone, err_msg)
         return {"status": "implausible_reading", "value": glucose_val}
 
-    # 5. Save Health Event in Database
+    # 5. Save Health Event in Database (Idempotent: skip duplicates if source_msg_id exists)
+    if source_msg_id:
+        existing_event = await db.execute(
+            select(HealthEvent).where(HealthEvent.source_msg_id == source_msg_id)
+        )
+        if existing_event.scalar_one_or_none():
+            return {"status": "duplicate_skipped", "source_msg_id": source_msg_id}
+
     event = HealthEvent(
         patient_id=patient_id,
         type="glucose",
