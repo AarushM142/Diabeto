@@ -3,14 +3,17 @@ import { Stethoscope, Sparkles, Terminal, HeartHandshake, Globe, Type, Shield } 
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
 import type { UserRole } from '../api/client';
+import type { TextSize } from './SidebarNav';
 
 interface HeaderProps {
   activeTab: 'clinician' | 'coach' | 'caregiver' | 'simulator';
   setActiveTab: (tab: 'clinician' | 'coach' | 'caregiver' | 'simulator') => void;
   language: Language;
   setLanguage: (lang: Language) => void;
-  isSimpleMode: boolean;
-  setIsSimpleMode: (simple: boolean) => void;
+  isSimpleMode?: boolean;
+  setIsSimpleMode?: (simple: boolean) => void;
+  textSize?: TextSize;
+  onCycleTextSize?: () => void;
   isBackendHealthy: boolean;
   currentRole: UserRole;
   setCurrentRole: (role: UserRole) => void;
@@ -23,6 +26,8 @@ export const Header: React.FC<HeaderProps> = ({
   setLanguage,
   isSimpleMode,
   setIsSimpleMode,
+  textSize,
+  onCycleTextSize,
   isBackendHealthy,
   currentRole,
   setCurrentRole,
@@ -196,9 +201,15 @@ export const Header: React.FC<HeaderProps> = ({
             ))}
           </div>
 
-          {/* Simple Mode Toggle */}
+          {/* Simple / Text Mode Toggle */}
           <button
-            onClick={() => setIsSimpleMode(!isSimpleMode)}
+            onClick={() => {
+              if (onCycleTextSize) {
+                onCycleTextSize();
+              } else if (setIsSimpleMode) {
+                setIsSimpleMode(!isSimpleMode);
+              }
+            }}
             className="btn btn-sm"
             style={{
               background: isSimpleMode ? 'var(--terracotta-subtle)' : 'var(--surface-clay)',
@@ -211,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Toggle Simple Mode (Large Typography & High Contrast)"
           >
             <Type size={13} />
-            {isSimpleMode ? 'Simple: ON' : 'Simple'}
+            {textSize ? (textSize === 'normal' ? '18px' : textSize === 'large' ? '22px' : '26px') : isSimpleMode ? 'Senior: ON' : 'Senior'}
           </button>
 
           {/* Health Status Pill */}

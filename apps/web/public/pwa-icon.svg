@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="128" fill="#2D3A31"/>
+  <circle cx="256" cy="256" r="210" fill="#F9F8F4" opacity="0.08"/>
+  <circle cx="256" cy="256" r="170" fill="#8C9A84" opacity="0.25"/>
+  <g transform="translate(136, 110)">
+    <!-- Botanical organic 'd.' icon with leaf-droplet -->
+    <path d="M120 40 V 260 H 70 C 31.34 260 0 228.66 0 190 C 0 151.34 31.34 120 70 120 C 88.5 120 105.5 127.2 118 139 V 40 H 160 Z M 70 216 C 84.36 216 96 204.36 96 190 C 96 175.64 84.36 164 70 164 C 55.64 164 44 175.64 44 190 C 44 204.36 55.64 216 70 216 Z" fill="#F9F8F4"/>
+    <!-- Organic Terracotta accent dot / glucose drop -->
+    <circle cx="190" cy="240" r="22" fill="#C27B66"/>
+  </g>
+</svg>

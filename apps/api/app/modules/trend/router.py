@@ -61,8 +61,14 @@ async def get_patient_trends(
     res_meds = await db.execute(select(MedicationSchedule).where(MedicationSchedule.patient_id == patient_id))
     schedules = res_meds.scalars().all()
 
-    # Extract glucose values
-    glucose_vals = [float(e.value["mgdl"]) for e in events if e.type == "glucose" and "mgdl" in e.value]
+    # Extract glucose values safely
+    glucose_vals = []
+    for e in events:
+        if e.type == "glucose" and isinstance(e.value, dict) and e.value.get("mgdl") is not None:
+            try:
+                glucose_vals.append(float(e.value["mgdl"]))
+            except (ValueError, TypeError):
+                pass
 
     glycemic = calculate_glycemic_metrics(
         glucose_vals,
@@ -78,15 +84,18 @@ async def get_patient_trends(
     consent_flags = patient.consent_flags or {}
     view_raw = consent_flags.get("view_raw_glucose", True)
 
-    readings = [
-        {
-            "measured_at": e.measured_at,
-            "mgdl": float(e.value.get("mgdl", 0)) if (user_role != "caregiver" or view_raw) else 0.0,
-            "context": str(e.value.get("context", "fasting")),
-        }
-        for e in events
-        if e.type == "glucose" and "mgdl" in e.value
-    ]
+    readings = []
+    for e in events:
+        if e.type == "glucose" and isinstance(e.value, dict) and e.value.get("mgdl") is not None:
+            try:
+                raw_mgdl = float(e.value.get("mgdl", 0))
+            except (ValueError, TypeError):
+                raw_mgdl = 0.0
+            readings.append({
+                "measured_at": e.measured_at,
+                "mgdl": raw_mgdl if (user_role != "caregiver" or view_raw) else 0.0,
+                "context": str(e.value.get("context", "fasting")),
+            })
 
     return {
         "patient_id": patient_id,

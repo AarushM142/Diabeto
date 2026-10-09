@@ -204,5 +204,31 @@ class PatientConsentUpdate(BaseModel):
     view_raw_glucose: Optional[bool] = None
     emergency_escalation: Optional[bool] = None
 
+class ConnectPatientRequest(BaseModel):
+    doctor_id: str
+    connection_code: str
 
+class ConnectionCodeResponse(BaseModel):
+    patient_id: str
+    patient_name: str
+    connection_code: str
+    doctor_id: str
+    doctor_name: Optional[str] = None
+    invite_link: str
 
+class ClinicianPatientSummary(BaseModel):
+    id: str
+    name: str
+    age: int
+    gender: str
+    phone: str
+    language: str
+    diagnosis: str
+    connection_code: str
+    severity: str  # 'critical' | 'watch' | 'stable'
+    latest_glucose: Optional[float] = None
+    latest_glucose_time: Optional[datetime] = None
+    tir_percentage: Optional[float] = None
+    adherence_score_pct: Optional[float] = None
+    active_alerts_count: int = 0
+    clinician_of_record_id: Optional[str] = None

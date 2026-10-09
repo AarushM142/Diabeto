@@ -1,15 +1,38 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="text-normal">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/pwa-icon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#2D3A31" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Diabeto" />
     <meta name="description" content="Diabeto — Closed-loop elderly diabetes care management platform with clinical safety nets, WhatsApp companion, and coach approvals desk." />
-    <title>Diabeto — Elderly Diabetes Care & Clinical Portal</title>
+    <title>Diabeto — Senior Diabetes Care & Decision Support</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          // In local development, unregister any active service worker to prevent Vite HMR & extension interception issues
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          });
+        } else if (window.location.protocol.startsWith('http')) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch((err) => {
+              console.warn('PWA ServiceWorker registration failed: ', err);
+            });
+          });
+        }
+      }
+    </script>
   </body>
 </html>
 

@@ -8,6 +8,7 @@ export interface PatientProfile {
   years_with_diabetes?: string;
   language: 'en' | 'hi' | 'mr';
   phone?: string;
+  connection_code?: string;
   caregiver_name?: string;
   caregiver_phone?: string;
   caregiver_relation?: string;
@@ -164,6 +165,60 @@ export interface WeeklySummary {
   risk_events_count: number;
   clinical_highlights: string[];
   doctor_action_recommendation: string;
+}
+
+export interface ClinicianPatientSummary {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  phone: string;
+  language: string;
+  diagnosis: string;
+  connection_code: string;
+  severity: 'critical' | 'watch' | 'stable';
+  latest_glucose?: number | null;
+  latest_glucose_time?: string | null;
+  tir_percentage?: number | null;
+  adherence_score_pct?: number | null;
+  active_alerts_count: number;
+  clinician_of_record_id?: string | null;
+}
+
+export interface ConnectionCodeResponse {
+  patient_id: string;
+  patient_name: string;
+  connection_code: string;
+  doctor_id: string;
+  doctor_name?: string | null;
+  invite_link: string;
+}
+
+export interface DetectedFoodItem {
+  food: string;
+  estimated_portion: string;
+  estimated_carbs_g: number;
+  carbs_range_g?: string;
+  confidence: number;
+  is_high_sugar: boolean;
+  glycemic_impact: 'LOW' | 'MEDIUM' | 'HIGH';
+  notes?: string;
+}
+
+export interface MealAnalysisResult {
+  meal_id: string;
+  patient_id: string;
+  meal_type: string;
+  timestamp: string;
+  foods: DetectedFoodItem[];
+  estimated_total_carbs_g: number;
+  carbohydrate_impact: 'LOW' | 'MEDIUM' | 'HIGH';
+  high_sugar_items: string[];
+  confidence: number;
+  elderly_explanation: string;
+  sugar_warning?: string;
+  notes: string;
+  safety_disclaimer: string;
 }
 
 export interface AuditLogItem {
@@ -562,23 +617,6 @@ export const api = {
     return res.json();
   },
 
-  async analyzeMeal(patientId: string, fileOrHint: File | string, mealType?: string): Promise<any> {
-    const formData = new FormData();
-    formData.append('patient_id', patientId);
-    if (mealType) formData.append('meal_type', mealType);
-    if (typeof fileOrHint === 'string') {
-      formData.append('context_hint', fileOrHint);
-    } else {
-      formData.append('file', fileOrHint);
-    }
-    const res = await fetch(`${API_BASE}/meals/analyze`, {
-      method: 'POST',
-      body: formData,
-    });
-    if (!res.ok) throw new Error('Meal analysis failed');
-    return res.json();
-  },
-
   async getMealPatterns(patientId: string): Promise<any> {
     const res = await fetch(`${API_BASE}/meals/${patientId}/patterns`, {
       headers: getHeaders(),
@@ -586,5 +624,88 @@ export const api = {
     if (!res.ok) return { patterns: [] };
     return res.json();
   },
+
+  async analyzeMeal(payload: {
+    image_base64?: string;
+    image_file?: File;
+    notes?: string;
+    patient_id?: string;
+    meal_type?: string;
+  }): Promise<MealAnalysisResult> {
+    if (payload.image_file) {
+      const formData = new FormData();
+      formData.append('file', payload.image_file);
+      formData.append('patient_id', payload.patient_id || 'pt_ramesh_001');
+      if (payload.meal_type) formData.append('meal_type', payload.meal_type);
+      if (payload.notes) formData.append('context_hint', payload.notes);
+
+      const token = getAuthToken();
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE}/meals/analyze`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Failed to analyze meal photograph');
+      return res.json();
+    } else {
+      const res = await fetch(`${API_BASE}/meals/analyze`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          image_base64: payload.image_base64,
+          notes: payload.notes,
+          patient_id: payload.patient_id || 'pt_ramesh_001',
+          meal_type: payload.meal_type,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to analyze meal');
+      return res.json();
+    }
+  },
+
+  async getMealHistory(patientId: string = 'pt_ramesh_001'): Promise<any[]> {
+    try {
+      const res = await fetch(`${API_BASE}/meals/history/${patientId}`, {
+        headers: getHeaders(),
+      });
+      if (!res.ok) return [];
+      return res.json();
+    } catch {
+      return [];
+    }
+  },
+
+  async getClinicianPatients(doctorId: string = 'doc_mehta_101'): Promise<ClinicianPatientSummary[]> {
+    const res = await fetch(`${API_BASE}/clinicians/${doctorId}/patients`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to load clinician patients roster');
+    return res.json();
+  },
+
+  async connectPatient(doctorId: string, connectionCode: string): Promise<{ success: boolean; message: string; patient: any }> {
+    const res = await fetch(`${API_BASE}/clinicians/connect-patient`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ doctor_id: doctorId, connection_code: connectionCode }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to connect patient' }));
+      throw new Error(err.detail || 'Failed to connect patient');
+    }
+    return res.json();
+  },
+
+  async getPatientConnectionCode(patientId: string = 'pt_ramesh_001'): Promise<ConnectionCodeResponse> {
+    const res = await fetch(`${API_BASE}/patients/${patientId}/connection-code`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch patient connection code');
+    return res.json();
+  },
 };
+
 

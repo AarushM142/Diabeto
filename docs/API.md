@@ -27,7 +27,13 @@
 * `POST /v1/escalations/{id}/ack`: Acknowledge an active risk event, stopping escalation timers.
 * `PUT /v1/patients/{id}/thresholds`: Update per-patient clinical thresholds and escalation timings (Clinician role only).
 
-### 7. Webhooks
+### 7. Clinician Roster & Doctor-Patient Connection System
+* `GET /v1/patients/{id}/connection-code`: Fetch patient's unique 6-character connection code (e.g. `DIA-RAM789`) and invite link.
+* `POST /v1/clinicians/connect-patient`: Connect patient to clinician roster using connection code. Updates `clinician_of_record_id`, creates `CareRelationship`, and records immutable `audit_logs` entry.
+* `GET /v1/clinicians/{doctor_id}/patients`: Fetch full clinician patient triage roster with computed severity rank (`critical`, `watch`, `stable`), latest glucose reading, ADA TIR %, active alerts, and adherence rate.
+* `GET /v1/meals/history/{patient_id}`: Retrieve real chronological food intake logs, carb counts, and glycemic responses.
+
+### 8. Webhooks
 * `GET /v1/webhooks/whatsapp`: Meta webhook handshake verification.
 * `POST /v1/webhooks/whatsapp`: Process inbound WhatsApp text/audio events (supports TwiML XML instant response and Sarvam STT).
 

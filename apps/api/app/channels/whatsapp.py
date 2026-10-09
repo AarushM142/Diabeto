@@ -162,20 +162,52 @@ async def handle_whatsapp_webhook(
             "impact": analysis.carbohydrate_impact.value
         }
 
-    # 3. Parse Numerical Glucose Reading
+    # 3. Parse Numerical Glucose Reading or Route to Intelligent LLM Elder Companion
     numbers = re.findall(r"\b\d{2,3}\b", incoming_text)
-    if not numbers:
-        # Generic reply if no number found
-        reply_msg = (
-            f"Namaste {patient_name}! Please send your blood glucose reading (e.g., '140' or a voice note in Hindi/Marathi)."
-            if patient_lang == "en" else
-            f"नमस्ते {patient_name} जी! कृपया अपना शुगर स्तर बताएं (जैसे '140' या बोलकर रिकॉर्ड करें)।"
+    
+    # Check if this is a health/lifestyle/symptom query or conversational voice note rather than just a glucose reading
+    is_conversational = (
+        not numbers 
+        or any(w in incoming_text.lower() for w in ["?", "kya", "kaise", "pain", "dard", "dawa", "medicine", "chakkar", "walk", "sair", "aam", "mango", "diet", "doctor", "kulkarni", "namaste", "namaskar", "hello", "hi", "feeling", "kaise", "ahe", "aahe"])
+    )
+
+    if not numbers or (is_conversational and not any(w in incoming_text.lower() for w in ["sugar", "reading", "fasting", "mgdl", "mg/dl"])):
+        from apps.api.app.modules.ai_gateway.elder_companion import generate_elder_companion_response
+        
+        companion_resp = await generate_elder_companion_response(
+            query_text=incoming_text,
+            patient_id=patient_id,
+            patient_name=patient_name,
+            patient_lang=patient_lang,
+            session=db,
+            is_voice=(media_type != "")
         )
+        reply_msg = companion_resp.get("reply_text", "")
+
+        # Record health event if adherence or symptoms mentioned
+        if any(w in incoming_text.lower() for w in ["dawa", "tablet", "goli", "medicine", "metformin", "glimepiride", "teneligliptin"]):
+            med_event = HealthEvent(
+                patient_id=patient_id,
+                type="adherence",
+                value={"status": "confirmed", "note": incoming_text},
+                measured_at=datetime.now(timezone.utc),
+                reported_by="patient",
+                source_msg_id=source_msg_id or None,
+            )
+            db.add(med_event)
+            await db.flush()
+
         if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
             twiml = f'<?xml version="1.0" encoding="UTF-8"?><Response><Message>{reply_msg}</Message></Response>'
             return Response(content=twiml, media_type="application/xml")
+        
         await send_whatsapp_message(from_phone, reply_msg)
-        return {"status": "prompted_for_reading"}
+        return {
+            "status": "answered_by_companion",
+            "reply": reply_msg,
+            "has_voice": companion_resp.get("has_voice_audio", False),
+            "voice_audio_base64": companion_resp.get("voice_audio_base64")
+        }
 
     glucose_val = float(numbers[0])
 

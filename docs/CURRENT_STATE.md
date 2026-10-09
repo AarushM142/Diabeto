@@ -95,13 +95,96 @@
   - `CaregiverPortal`: Dynamic senior reference tags, individualized peace-of-mind fasting checks, and customizable emergency escalation targets.
   - `ClinicianPortal`: Dynamic doctor titles, clinic branding, and integration with the patient care roster.
   - `CoachPortal` & `WhatsAppSimulator`: Dynamic patient name mapping and tailored cultural dietary guardrails.
-- **Backend Sync & Offline Fallback**:
-  - `POST /v1/auth/profile` and enhanced `POST /v1/auth/google` with full profile data payload persistence and `localStorage` session caching.
+#### Phase 8 — UI/UX De-Cluttering, Left Sidebar Widgets & Interactive Meal Intelligence ✅
+- **Sidebar Sub-Navigation & Quick Action Widgets (`SidebarNav.tsx`)**:
+  - Organized feature navigation for Senior Patients: Daily Sanctuary Overview, Medication Schedule, Glucose & CGM Corridor, Indian Meal & Plate Scanner, Attending Physician Touchpoint, and Hydration & Habits.
+  - Quick Health Glance Widgets:
+    - Fasting Sugar & Target Goal Card (`128 mg/dL 🎯 In Range`).
+    - Next Medicine Dose Tracker with instant 1-click confirmation (`Glimepiride 1mg Due 8:00 PM`).
+    - Quick Action Button: `📸 Scan Food Plate` trigger with animated sparkles.
+    - High-contrast 1-tap SOS Emergency dialer (Caregiver & 108/112 Ambulance).
+- **Interactive Indian Meal & Food Plate Scanner (`MealScannerModal.tsx`)**:
+  - Multimodal Google Gemini Vision photo analysis for Indian thalis, dosas, curries, and sweets.
+  - Interactive plate selector (Roti Thali, Plain Dosa & Sambar, Moong Khichdi, Alphonso Mango) and camera/photo file upload.
+  - Automatic carbohydrate breakdown, glycemic impact rating (LOW/MEDIUM/HIGH), sweet detection with high-sugar alerts, senior-friendly multilingual explanations (English, Hindi, Marathi), and simulated 2-hour postprandial glucose curves.
+- **De-Cluttered Senior Sanctuary (`PatientPortal.tsx`)**:
+  - Category Filter Pill Bar (`All Sanctuary` | `💊 Daily Medicines` | `📈 Glucose & CGM` | `🍲 Food & Meal Scanner` | `🩺 Doctor & Care Team` | `💧 Hydration & Milestones`) allowing seniors to focus on a single care task without visual fatigue.
+#### Phase 9 (PRD Phase 0) — Elder-Friendly Design System, PWA Shell & Today Screen ✅
+- **Devanagari Typography & Multi-Language Rendering**:
+  - Embedded `Noto Sans Devanagari` from Google Fonts to fix tofu/missing glyph rendering for Hindi and Marathi headings.
+  - Dynamic `[lang="hi"]` and `[lang="mr"]` typography rules applied to all headings and serif elements.
+- **Elder Design Standards & 3-Mode Text Scaling**:
+  - Increased base font size to 18px (`html.text-normal: 18px`, `html.text-large: 22px`, `html.text-xl: 26px`).
+  - Implemented 56px minimum tap target height across all interactive buttons (`.btn`).
+  - Switched from `100vh` to `100dvh` for notch and mobile browser safe-area support.
+- **PWA Application Shell**:
+  - Created `public/manifest.json` with standalone orientation and theme color tokens.
+  - Authored `public/sw.js` with static cache-first shell caching and network-first offline API fallback.
+  - Created high-resolution botanical vector PWA icon (`public/pwa-icon.svg`).
+  - Registered service worker in `index.html`.
+- **Elder Navigation & Today Screen (`TodayScreen.tsx`, `PatientBottomNav.tsx`)**:
+  - Implemented mobile bottom-navigation bar with 4 primary elder tabs (Today, Log, Ask, Me) and 56×56px touch targets.
+  - Integrated persistent floating Emergency SOS button with 1-tap dialer (`tel:112` / caregiver emergency phone).
+  - Built Today screen matching PRD §4 layout: locale-aware greeting and date, high-visibility latest glucose card with status indicators, scheduled medicine card with 56px "Taken" and "Snooze" triggers, daily health checklist with completion tracking, and doctor-verified care guidance card.
+
+#### Phase 10 — Senior-First Ergonomic UI Simplification & Simple Mode (ADR-007) ✅
+- **Cognitive & Motor Ergonomics for 60+ Users**:
+  - Researched senior UI guidelines (NN/g, AARP, GrandPad, Oscar Senior) to eliminate cognitive fatigue and visual clutter.
+  - Applied the **Rule of 3**: elevated immediate action (Next Medication Dose), peace of mind (Latest Blood Sugar), and daily checklist to the primary view hierarchy.
+- **Desktop Sidebar Independent Scrolling & Viewport Lock**:
+  - Configured `.app-container` with `height: 100dvh; overflow: hidden;`.
+  - Locked `.desktop-sidebar` with `height: 100dvh; position: sticky; top: 0; left: 0; overflow-y: auto;` preventing floating/dislodging during page scroll.
+  - Cleaned up patient sidebar navigation: streamlined to 5 serene tabs and hid developer jargon (`FastAPI Engine • Live`) from senior patient view.
+- **1-Click Senior Simple Mode**:
+  - Added `seniorSimpleMode` top-bar toggle (`🌿 Senior Simple Mode: ON/OFF`).
+  - Automatically activates 22px high-legibility text scale and reduces UI to essential daily cards.
+- **Devanagari Localization Completeness**:
+  - Fixed reactive language switching across all Devanagari labels (`hi`, `mr`, `en`) for checklist tasks, simple mode toggles, status pills, and bottom navigation tabs.
+
+#### Phase 11 — Minimalist Clinician Directory & Dedicated Patient Chart View ✅
+- **De-Cluttered Clinician Portal Architecture (`ClinicianPortal.tsx`)**:
+  - Eliminated dual-rendering clutter where the 8+ patient roster and detailed patient telemetry were simultaneously stacked on a single endless scrolling page.
+  - Implemented 2-stage hierarchical directory workflow:
+    1. **Patients Directory View (`viewMode: 'roster'`)**: Clean, minimalist grid of assigned patients with real-time search, triage filter pills (All, Needs Attention, Watch List, Stable), summary metric cards (Active Roster, Average TIR %, Needs Attention), and one-click transition into individual patient dossiers.
+    2. **Dedicated Patient Chart View (`viewMode: 'chart'`)**: Full-screen clinical workspace for the selected patient featuring:
+       - Top breadcrumb: `Patients → [Patient Name] ([Care Code])` with one-click return to the directory (`← Back to Patients Directory`).
+       - In-chart quick switcher (`Prev` / `Next` / dropdown) allowing clinicians to cycle through patients without bouncing back to the directory.
+       - Patient metadata hero card with direct OPD consultation sheet PDF download and phone dialer.
+       - 4 focused clinical tabs: 📊 Glycemic Telemetry & AGP, 🍲 Meal & Nutrition Logs, 💊 Medication Regimen & Adherence, 🩺 Weekly Consultation & Sign-Off.
+- **Multilingual Support**:
+  - Full English, Hindi, and Marathi localization for breadcrumbs, directory headers, and patient navigation actions.
+
+#### Phase 12 — Doctor-Patient Connection Code System & Real Meal Inspection ✅
+- **Elder-to-Doctor Connection Code Architecture**:
+  - Unique 6-letter uppercase codes (e.g. `DIA-RAM789`, `DIA-SHA402`, `DIA-ANA303`) eliminating complex onboarding friction for elderly patients.
+  - Endpoints added:
+    - `GET /v1/patients/{id}/connection-code`
+    - `POST /v1/clinicians/connect-patient`
+    - `GET /v1/clinicians/{id}/patients`
+    - `GET /v1/meals/history/{patient_id}`
+  - Automatically establishes `CareRelationship` and emits an immutable `audit_logs` record for clinical governance.
+- **Elderly Patient UI Integration**:
+  - Added dedicated **Care Connection Code Card** to the elder's Today Screen and Care Team tab.
+  - Features 1-click **[ 📋 Copy Code ]** and **[ 💬 Share with Doctor on WhatsApp ]** deep links.
+- **Role-Tailored Left Sidebar Navigation**:
+  - Cleaned up quick glance widgets in `SidebarNav.tsx`:
+    - Clinicians see active triage overview (Active patients count, TIR average, critical alerts) and quick connection guidance.
+    - Caregivers see personalized elder metrics (Fasting sugar, pill confirmation, plate scanner, emergency SOS).
+    - Removed food plate scanning and patient pill actions from doctor view.
+- **De-Cluttered Clinician Portal with Real Food Logs**:
+  - Replaced camera plate scanner in doctor view with photographic patient meal intake history (`GET /v1/meals/history/{patient_id}`).
+  - Fast triage sorting (`Needs Attention` first, `Lowest TIR%`, `Adherence %`, `A-Z`) with instant connection modal (`+ Connect Patient`).
+- **Automated Test Coverage & Dynamic User Foreign Key Safety**:
+  - Automatically ensures all authenticated clinicians (including dynamic Google OAuth IDs `goog_*` and customized personas) are persisted to the PostgreSQL `users` table via `ensure_db_user`, preventing foreign key constraint violations (`care_relationships_user_id_fkey`) upon patient connection.
+  - Full pytest suite passing with 0 failures (`tests/test_doctor_patient_connection.py`).
+  - Zero TypeScript compilation errors on Vite production build.
 
 ### Active Dev Servers:
 - **FastAPI Backend**: `http://localhost:8000` (API Docs: `http://localhost:8000/docs`)
 - **React Web Portal**: `http://localhost:5173`
 - **WhatsApp Webhook Tunnel**: `https://slimy-toys-grab.loca.lt/v1/webhooks/whatsapp`
+
+
 
 
 

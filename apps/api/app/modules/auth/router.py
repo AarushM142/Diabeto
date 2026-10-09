@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 
 from apps.api.app.core.database import get_db
-from apps.api.app.core.auth import get_current_user, require_roles, create_access_token, PREDEFINED_PERSONAS
+from apps.api.app.core.auth import get_current_user, require_roles, create_access_token, PREDEFINED_PERSONAS, ensure_db_user
 from apps.api.app.models.entities import AuditLog, Patient
 
 router = APIRouter(prefix="/v1", tags=["Authentication & Audit"])
@@ -109,7 +109,7 @@ async def list_predefined_personas():
     return list(PREDEFINED_PERSONAS.values())
 
 @router.post("/auth/login", response_model=TokenResponse)
-async def login(payload: LoginRequest):
+async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     email_clean = payload.email.lower().strip()
     
     # Check saved customized profiles first
@@ -141,11 +141,21 @@ async def login(payload: LoginRequest):
         SAVED_USER_PROFILES[email_clean] = matched_persona
         _save_profiles(SAVED_USER_PROFILES)
 
+    await ensure_db_user(
+        db=db,
+        user_id=matched_persona["id"],
+        name=matched_persona.get("name", "User"),
+        role=matched_persona.get("role", "clinician"),
+        phone=matched_persona.get("phone"),
+        language=matched_persona.get("language", "en"),
+    )
+    await db.commit()
+
     token = create_access_token(matched_persona)
     return TokenResponse(access_token=token, user=matched_persona)
 
 @router.post("/auth/google", response_model=TokenResponse)
-async def google_auth(payload: GoogleAuthRequest):
+async def google_auth(payload: GoogleAuthRequest, db: AsyncSession = Depends(get_db)):
     email = (payload.email or "user@gmail.com").lower().strip()
     name = payload.name or email.split("@")[0].replace(".", " ").title()
     role = payload.role or "patient"
@@ -198,6 +208,16 @@ async def google_auth(payload: GoogleAuthRequest):
     SAVED_USER_PROFILES[email] = matched_persona
     _save_profiles(SAVED_USER_PROFILES)
 
+    await ensure_db_user(
+        db=db,
+        user_id=matched_persona["id"],
+        name=matched_persona.get("name", name),
+        role=matched_persona.get("role", role),
+        phone=matched_persona.get("phone"),
+        language=matched_persona.get("language", "en"),
+    )
+    await db.commit()
+
     token = create_access_token(matched_persona)
     return TokenResponse(access_token=token, user=matched_persona)
 
@@ -236,7 +256,7 @@ async def update_user_profile(
     return {"status": "ok", "user": updated_user, "access_token": new_token}
 
 @router.post("/auth/signup", response_model=TokenResponse)
-async def signup(payload: SignupRequest):
+async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)):
     email_clean = payload.email.lower().strip()
     role = payload.role or "clinician"
     
@@ -249,6 +269,17 @@ async def signup(payload: SignupRequest):
         "title": f"Registered {role.capitalize()}",
         "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
     }
+    SAVED_USER_PROFILES[email_clean] = new_user
+    _save_profiles(SAVED_USER_PROFILES)
+
+    await ensure_db_user(
+        db=db,
+        user_id=new_user["id"],
+        name=new_user["name"],
+        role=new_user["role"],
+    )
+    await db.commit()
+
     token = create_access_token(new_user)
     return TokenResponse(access_token=token, user=new_user)
 

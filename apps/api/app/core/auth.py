@@ -126,3 +126,67 @@ def require_roles(allowed_roles: List[str]):
 
 def require_role(*roles: str):
     return require_roles(list(roles))
+
+async def ensure_db_user(
+    db,
+    user_id: str,
+    name: Optional[str] = None,
+    role: str = "clinician",
+    phone: Optional[str] = None,
+    language: str = "en",
+    clinic_id: Optional[str] = None,
+):
+    """Ensures a user row exists in the PostgreSQL users table to satisfy foreign key constraints."""
+    import uuid
+    from sqlalchemy import select
+    from apps.api.app.models.entities import User, Clinic
+
+    stmt = select(User).where(User.id == user_id)
+    res = await db.execute(stmt)
+    existing_user = res.scalar_one_or_none()
+    if existing_user:
+        return existing_user
+
+    # Find info from PREDEFINED_PERSONAS if available
+    for p in PREDEFINED_PERSONAS.values():
+        if p.get("id") == user_id:
+            name = name or p.get("name")
+            role = role or p.get("role", "clinician")
+            phone = phone or p.get("phone")
+            language = language or p.get("language", "en")
+            break
+
+    name = name or "Clinician"
+    role = role or "clinician"
+    language = language or "en"
+
+    # Generate phone if not provided
+    if not phone:
+        phone = f"+9198{abs(hash(user_id)) % 100000000:08d}"
+
+    # Verify phone uniqueness
+    phone_res = await db.execute(select(User).where(User.phone == phone))
+    if phone_res.scalar_one_or_none():
+        phone = f"+91{uuid.uuid4().hex[:10]}"
+
+    if not clinic_id:
+        clinic_res = await db.execute(select(Clinic.id))
+        clinic_id = clinic_res.scalars().first()
+        if not clinic_id:
+            default_clinic = Clinic(id="clinic_pune_central", name="Pune Central Diabetes Clinic", address="FC Road, Pune")
+            db.add(default_clinic)
+            await db.flush()
+            clinic_id = default_clinic.id
+
+    new_user = User(
+        id=user_id,
+        name=name,
+        role=role,
+        phone=phone,
+        language=language,
+        clinic_id=clinic_id,
+    )
+    db.add(new_user)
+    await db.flush()
+    return new_user
+

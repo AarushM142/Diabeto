@@ -1,0 +1,24 @@
+{
+  "name": "Diabeto — Senior Diabetes Care",
+  "short_name": "Diabeto",
+  "description": "Mobile-first elder-friendly diabetes care, medication tracker, and clinical decision support platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F9F8F4",
+  "theme_color": "#2D3A31",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

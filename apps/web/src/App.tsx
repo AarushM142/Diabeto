@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { SidebarNav, type ActiveTab } from './components/SidebarNav';
+import { SidebarNav, type ActiveTab, type PatientSection, type TextSize } from './components/SidebarNav';
 import { PatientPortal } from './components/PatientPortal';
+import { TodayScreen } from './components/TodayScreen';
+import { PatientBottomNav, type PatientNavTab } from './components/PatientBottomNav';
 import { ClinicianPortal } from './components/ClinicianPortal';
 import { CoachPortal } from './components/CoachPortal';
 import { CaregiverPortal } from './components/CaregiverPortal';
@@ -9,11 +11,12 @@ import { AuthView } from './components/AuthView';
 import { LandingHero } from './components/LandingHero';
 import { RoleSelectModal, type OnboardingProfileData } from './components/RoleSelectModal';
 import { EditProfileModal } from './components/EditProfileModal';
+import { MealScannerModal } from './components/MealScannerModal';
 import { PageLoader } from './components/ui/page-loader';
 import { api, saveAuthSession, getSavedProfileForEmail, type User, type UserRole } from './api/client';
 import { supabase } from './lib/supabase';
 import type { Language } from './lib/types';
-import { Phone, Type, LogOut, UserCog } from 'lucide-react';
+import { Phone, Type, LogOut, UserCog, Sparkles } from 'lucide-react';
 import { t } from './lib/i18n';
 
 interface LoadingState {
@@ -35,9 +38,13 @@ export const App: React.FC = () => {
   const [pendingGoogleUser, setPendingGoogleUser] = useState<PendingGoogleUser | null>(null);
   
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showMealScannerModal, setShowMealScannerModal] = useState(false);
+  const [activePatientSection, setActivePatientSection] = useState<PatientSection>('overview');
+  const [activePatientTab, setActivePatientTab] = useState<PatientNavTab>('today');
   const [activeTab, setActiveTab] = useState<ActiveTab>('patient');
   const [language, setLanguage] = useState<Language>('en');
-  const [isSimpleMode, setIsSimpleMode] = useState<boolean>(false);
+  const [textSize, setTextSize] = useState<TextSize>('normal');
+  const [seniorSimpleMode, setSeniorSimpleMode] = useState(false);
   const [isBackendHealthy, setIsBackendHealthy] = useState(false);
 
   // Transition Animation State
@@ -57,6 +64,7 @@ export const App: React.FC = () => {
         break;
       case 'patient':
         setActiveTab('patient');
+        setActivePatientTab('today');
         break;
       case 'admin':
         setActiveTab('clinician');
@@ -160,14 +168,20 @@ export const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Update HTML class for Simple Mode
+  // Update HTML class for 3-Mode Elder Text Scaling (PRD §3)
   useEffect(() => {
-    if (isSimpleMode) {
-      document.documentElement.classList.add('simple-mode');
-    } else {
-      document.documentElement.classList.remove('simple-mode');
-    }
-  }, [isSimpleMode]);
+    document.documentElement.classList.remove('text-normal', 'text-large', 'text-xl', 'simple-mode');
+    document.documentElement.classList.add(`text-${textSize}`);
+  }, [textSize]);
+
+  // Sync HTML lang attribute for Devanagari typography
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
+  const handleCycleTextSize = () => {
+    setTextSize((prev) => (prev === 'normal' ? 'large' : prev === 'large' ? 'xl' : 'normal'));
+  };
 
   const triggerTransition = (message: string, subMessage: string, targetAction: () => void) => {
     setLoadingState({
@@ -354,138 +368,166 @@ export const App: React.FC = () => {
           {/* Solid Botanical Sidebar Navigation */}
           <SidebarNav
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={(tab) => {
+              setActiveTab(tab);
+              if (tab === 'patient') {
+                setActivePatientTab('today');
+              }
+            }}
             language={language}
             setLanguage={setLanguage}
-            isSimpleMode={isSimpleMode}
-            setIsSimpleMode={setIsSimpleMode}
+            textSize={textSize}
+            onCycleTextSize={handleCycleTextSize}
             isBackendHealthy={isBackendHealthy}
             currentUser={currentUser}
             onLogout={handleLogout}
             onOpenEditProfile={() => setShowProfileModal(true)}
+            activePatientSection={activePatientSection}
+            onSelectPatientSection={(section) => {
+              setActivePatientSection(section);
+              if (section === 'overview') {
+                setActivePatientTab('today');
+              } else {
+                setActivePatientTab('log');
+              }
+            }}
+            onOpenMealScanner={() => setShowMealScannerModal(true)}
+            seniorSimpleMode={seniorSimpleMode}
+            onToggleSeniorSimpleMode={() => {
+              const next = !seniorSimpleMode;
+              setSeniorSimpleMode(next);
+              if (next) {
+                setTextSize('large');
+              }
+            }}
           />
 
           {/* Main Content Area */}
           <div className="main-content-area">
-            {/* Top Control Bar with Breadcrumb and Quick Triggers */}
-            <header style={{
-              position: 'sticky',
-              top: 0,
-              zIndex: 40,
-              display: 'flex',
-              height: '60px',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              borderBottom: '1px solid var(--border-stone)',
-              backgroundColor: 'rgba(249, 248, 244, 0.94)',
-              backdropFilter: 'blur(10px)',
-              padding: '0 32px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-dim)' }}>
-                  Portal:
+            {/* Top Control Bar with Breadcrumb and Quick Triggers (Desktop / Laptop Only) */}
+            <header className="desktop-top-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  color: 'var(--text-dim)',
+                  background: 'var(--surface-clay)',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-stone)',
+                }}>
+                  {t('portalPrefix', language)}:
                 </span>
-                <span className="font-serif" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+                <span className="font-serif" style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-forest)', whiteSpace: 'nowrap' }}>
                   {getPortalTitle()}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="desktop-top-actions">
+                {/* Senior Simple Mode Toggle (PRD §3) */}
+                {currentUser.role === 'patient' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !seniorSimpleMode;
+                      setSeniorSimpleMode(next);
+                      if (next) {
+                        setTextSize('large');
+                      }
+                    }}
+                    className={`btn header-btn ${seniorSimpleMode ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{
+                      borderColor: seniorSimpleMode ? 'var(--text-forest)' : 'var(--accent-sage)',
+                    }}
+                    title="Toggle Senior Ultra-Simple Mode"
+                  >
+                    <Sparkles size={13} color={seniorSimpleMode ? '#FFFFFF' : 'var(--terracotta)'} />
+                    <span>{t('seniorSimpleMode', language)}: {seniorSimpleMode ? 'ON' : 'OFF'}</span>
+                  </button>
+                )}
+
                 {/* Manage Care Profile Button */}
                 <button
                   onClick={() => setShowProfileModal(true)}
-                  className="btn btn-secondary btn-sm"
+                  className="btn btn-secondary header-btn"
                   type="button"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 14px',
-                    fontSize: '0.8rem',
-                    borderRadius: '20px',
-                    fontWeight: 600,
-                    color: 'var(--text-forest)',
-                    backgroundColor: 'var(--surface-white)',
-                  }}
                   title="Manage Personalized Care Profile & Health Targets"
                 >
                   <UserCog size={14} />
-                  <span>Care Profile</span>
+                  <span>{t('careProfile', language)}</span>
                 </button>
 
                 {/* Quick Emergency SOS */}
                 <a
-                  href="tel:+918149680369"
-                  className="btn btn-secondary btn-sm"
+                  href={`tel:${currentUser.patient_profile?.caregiver_phone || '112'}`}
+                  className="btn header-btn"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 16px',
-                    fontSize: '0.8rem',
                     borderColor: 'var(--status-danger-border)',
                     color: 'var(--status-danger)',
                     backgroundColor: 'var(--status-danger-bg)',
                     fontWeight: 700,
-                    borderRadius: '20px',
                   }}
                 >
                   <Phone size={13} className="shrink-0 animate-bounce" />
-                  <span>SOS Emergency</span>
+                  <span>{t('emergencySos', language)}</span>
                 </a>
 
-                {/* Big Text Mode Pill */}
+                {/* 3-Mode Elder Text Sizing Pill (PRD §3) */}
                 <button
-                  onClick={() => setIsSimpleMode(!isSimpleMode)}
-                  className="btn btn-secondary btn-sm"
+                  onClick={handleCycleTextSize}
+                  className="btn btn-secondary header-btn"
                   type="button"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 16px',
-                    fontSize: '0.8rem',
-                    borderRadius: '20px',
-                    fontWeight: 700,
-                  }}
-                  title="Toggle High-Contrast 19px Senior Mode"
+                  title="Cycle Text Size: Normal (18px) → Large (22px) → Extra Large (26px)"
                 >
                   <Type size={13} />
-                  <span>Senior Text</span>
-                  <span style={{ fontWeight: 800, color: 'var(--accent-sage-dark)' }}>{isSimpleMode ? 'ON' : 'OFF'}</span>
+                  <span>{t('seniorTextBtn', language)}</span>
+                  <span style={{ fontWeight: 800, color: 'var(--accent-sage-dark)' }}>
+                    {textSize === 'normal' ? '18px' : textSize === 'large' ? '22px' : '26px'}
+                  </span>
                 </button>
 
                 {/* Sign Out Button in Header */}
                 <button
                   onClick={handleLogout}
-                  className="btn btn-secondary btn-sm"
+                  className="btn btn-secondary header-btn"
                   type="button"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '6px 12px',
-                    fontSize: '0.8rem',
-                    borderRadius: '20px',
                     color: 'var(--text-muted)',
                   }}
-                  title="Sign Out"
+                  title={t('signOut', language)}
                 >
                   <LogOut size={13} />
-                  <span>Sign Out</span>
+                  <span>{t('signOut', language)}</span>
                 </button>
               </div>
             </header>
 
             {/* Dynamic Portal Screen Content */}
-            <div style={{ flex: 1, paddingBottom: '32px' }}>
+            <div style={{ flex: 1, paddingBottom: currentUser.role === 'patient' ? '92px' : '32px' }}>
               <main style={{ position: 'relative', zIndex: 1 }}>
                 {activeTab === 'patient' && (
-                  <PatientPortal
-                    language={language}
-                    currentUser={currentUser}
-                    onOpenEditProfile={() => setShowProfileModal(true)}
-                  />
+                  activePatientTab === 'today' ? (
+                    <TodayScreen
+                      language={language}
+                      currentUser={currentUser}
+                      onOpenMealScanner={() => setShowMealScannerModal(true)}
+                      onNavigateToSection={(section) => {
+                        setActivePatientSection(section as PatientSection);
+                        setActivePatientTab('log');
+                      }}
+                      seniorSimpleMode={seniorSimpleMode}
+                    />
+                  ) : (
+                    <PatientPortal
+                      language={language}
+                      currentUser={currentUser}
+                      onOpenEditProfile={() => setShowProfileModal(true)}
+                      activeSection={activePatientSection}
+                      onOpenMealScanner={() => setShowMealScannerModal(true)}
+                    />
+                  )
                 )}
                 {activeTab === 'clinician' && (
                   <ClinicianPortal
@@ -517,6 +559,31 @@ export const App: React.FC = () => {
                 )}
               </main>
             </div>
+
+            {/* Patient Mobile Bottom Navigation (PRD §3) */}
+            {currentUser.role === 'patient' && (
+              <PatientBottomNav
+                activePatientTab={activePatientTab}
+                onSelectTab={(tab) => {
+                  setActivePatientTab(tab);
+                  if (tab === 'today') {
+                    setActiveTab('patient');
+                  } else if (tab === 'log') {
+                    setActiveTab('patient');
+                    setActivePatientSection('glucose');
+                  } else if (tab === 'ask') {
+                    setActiveTab('patient');
+                    setActivePatientSection('careteam');
+                  } else if (tab === 'me') {
+                    setActiveTab('patient');
+                    setActivePatientSection('overview');
+                  }
+                }}
+                language={language}
+                caregiverPhone={currentUser.patient_profile?.caregiver_phone || '112'}
+                onOpenQuickLog={() => setShowMealScannerModal(true)}
+              />
+            )}
 
             {/* Platform Footer */}
             <footer style={{
@@ -552,6 +619,16 @@ export const App: React.FC = () => {
               isOpen={showProfileModal}
               onClose={() => setShowProfileModal(false)}
               onProfileUpdated={(updated) => setCurrentUser(updated)}
+            />
+          )}
+
+          {/* Meal Scanner Modal */}
+          {showMealScannerModal && (
+            <MealScannerModal
+              isOpen={showMealScannerModal}
+              onClose={() => setShowMealScannerModal(false)}
+              language={language}
+              patientId={currentUser.id}
             />
           )}
         </div>
