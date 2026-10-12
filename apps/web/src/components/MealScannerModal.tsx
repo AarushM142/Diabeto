@@ -15,13 +15,21 @@ interface MealScannerModalProps {
   onMealLogged?: (result: MealAnalysisResult) => void;
 }
 
-const SAMPLE_INDIAN_MEALS = [
+const SAMPLE_MEALS = [
   {
     id: 'sample_thali',
     title: 'Standard Roti Thali',
     description: '2 Chapatis, Dal Tadka, Bhindi Sabzi & 1 Gulab Jamun',
     prompt: '2 chapatis with yellow dal tadka, bhindi sabzi, cucumber salad and 1 gulab jamun sweet',
     imageUrl: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&auto=format&fit=crop&q=80',
+    mealType: 'lunch',
+  },
+  {
+    id: 'sample_burger',
+    title: 'Burger & Garden Salad',
+    description: '1 Veggie/Paneer Burger with Fresh Lettuce & Tomato',
+    prompt: '1 veggie burger in sesame bun with lettuce, tomato, cheese slice and side cucumber salad',
+    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&auto=format&fit=crop&q=80',
     mealType: 'lunch',
   },
   {
@@ -53,8 +61,8 @@ const SAMPLE_INDIAN_MEALS = [
 export const MealScannerModal: React.FC<MealScannerModalProps> = ({
   isOpen,
   onClose,
-  language,
-  patientId = 'pt_ramesh_001',
+  language: _language = 'en',
+  patientId = '',
   onMealLogged,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -80,7 +88,7 @@ export const MealScannerModal: React.FC<MealScannerModalProps> = ({
     }
   };
 
-  const handleSelectSample = (sample: typeof SAMPLE_INDIAN_MEALS[0]) => {
+  const handleSelectSample = (sample: typeof SAMPLE_MEALS[0]) => {
     setSelectedSample(sample.id);
     setSelectedFile(null);
     setPreviewUrl(sample.imageUrl);
@@ -92,7 +100,7 @@ export const MealScannerModal: React.FC<MealScannerModalProps> = ({
 
   const handleAnalyze = async () => {
     if (!selectedFile && !notes && !selectedSample) {
-      setError('Please upload a food photo or pick a sample Indian plate.');
+      setError('Please upload a food photo or pick a sample plate.');
       return;
     }
 
@@ -107,9 +115,16 @@ export const MealScannerModal: React.FC<MealScannerModalProps> = ({
           patient_id: patientId,
           meal_type: mealType,
         });
+      } else if (previewUrl && (previewUrl.startsWith('http://') || previewUrl.startsWith('https://') || previewUrl.startsWith('data:'))) {
+        analysis = await api.analyzeMeal({
+          image_base64: previewUrl,
+          notes: notes || undefined,
+          patient_id: patientId,
+          meal_type: mealType,
+        });
       } else {
         analysis = await api.analyzeMeal({
-          notes: notes || 'Indian meal plate',
+          notes: notes || 'Meal plate',
           patient_id: patientId,
           meal_type: mealType,
         });
@@ -117,34 +132,7 @@ export const MealScannerModal: React.FC<MealScannerModalProps> = ({
       setResult(analysis);
     } catch (err: any) {
       console.error('Meal analysis failed:', err);
-      // Construct realistic fallback result if Gemini offline
-      const fallbackResult: MealAnalysisResult = {
-        meal_id: `meal_${Date.now()}`,
-        patient_id: patientId,
-        meal_type: mealType,
-        timestamp: new Date().toISOString(),
-        foods: [
-          { food: 'Chapati / Roti', estimated_portion: '2 medium', estimated_carbs_g: 32, carbs_range_g: '28-36g', confidence: 0.95, is_high_sugar: false, glycemic_impact: 'MEDIUM' },
-          { food: 'Yellow Dal Tadka', estimated_portion: '1 bowl (~150g)', estimated_carbs_g: 18, carbs_range_g: '15-22g', confidence: 0.92, is_high_sugar: false, glycemic_impact: 'LOW' },
-          { food: 'Bhindi Sabzi', estimated_portion: '1 katori (~100g)', estimated_carbs_g: 8, carbs_range_g: '6-10g', confidence: 0.88, is_high_sugar: false, glycemic_impact: 'LOW' },
-          ...(notes.toLowerCase().includes('gulab jamun') || notes.toLowerCase().includes('sweet') ? [
-            { food: 'Gulab Jamun', estimated_portion: '1 piece', estimated_carbs_g: 24, carbs_range_g: '20-28g', confidence: 0.96, is_high_sugar: true, glycemic_impact: 'HIGH' as const }
-          ] : [])
-        ],
-        estimated_total_carbs_g: notes.toLowerCase().includes('gulab jamun') ? 82 : 58,
-        carbohydrate_impact: notes.toLowerCase().includes('gulab jamun') ? 'HIGH' : 'MEDIUM',
-        high_sugar_items: notes.toLowerCase().includes('gulab jamun') ? ['Gulab Jamun (Deep fried sweet)'] : [],
-        confidence: 0.92,
-        elderly_explanation: language === 'hi'
-          ? 'आपके भोजन में लगभग 58 ग्राम कार्बोहाइड्रेट हैं। दाल और भिंडी संतुलित हैं, लेकिन मीठे पर ध्यान दें।'
-          : language === 'mr'
-          ? 'तुमच्या जेवणात सुमारे ५८ ग्रॅम कार्ब्स आहेत. जेवणानंतर १५ मिनिटांची शांत चालणे ठेवा.'
-          : 'Your meal contains approx 58g carbohydrates with healthy fiber from dal. Keep a gentle 15-minute post-meal stroll.',
-        sugar_warning: notes.toLowerCase().includes('gulab jamun') ? '⚠️ High-sugar Indian sweet detected. Savor just 1 piece or share half with family.' : undefined,
-        notes: 'Assessed with Diabeto Indian Meal Intelligence.',
-        safety_disclaimer: 'Diabeto Indian Meal Intelligence estimates are for lifestyle awareness and do not prescribe insulin doses.'
-      };
-      setResult(fallbackResult);
+      setError(err?.message || 'Failed to analyze meal photograph. Please ensure the backend service is running and try again.');
     } finally {
       setLoading(false);
     }
@@ -233,10 +221,10 @@ export const MealScannerModal: React.FC<MealScannerModalProps> = ({
           </div>
           <div>
             <h2 className="font-serif" style={{ fontSize: '1.45rem', color: 'var(--text-forest)', margin: 0, fontWeight: 700 }}>
-              Indian Meal & Plate Scanner
+              Meal & Food Plate Scanner
             </h2>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
-              Multimodal Google Gemini AI vision for Indian thalis, dosas, curries & sweets.
+              Multimodal Google Gemini AI vision for meals, thalis, burgers, curries & snacks.
             </p>
           </div>
         </div>
@@ -311,7 +299,7 @@ export const MealScannerModal: React.FC<MealScannerModalProps> = ({
                   </div>
                   <div>
                     <strong style={{ fontSize: '0.95rem', color: 'var(--text-forest)', display: 'block' }}>
-                      Snap photo or upload Indian plate
+                      Snap photo or upload food plate
                     </strong>
                     <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                       Supports JPG, PNG from phone camera or gallery
@@ -331,10 +319,10 @@ export const MealScannerModal: React.FC<MealScannerModalProps> = ({
             <div>
               <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-forest)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Sparkles size={14} color="var(--terracotta)" />
-                Or Pick a Sample Indian Plate to Test:
+                Or Pick a Sample Plate to Test:
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
-                {SAMPLE_INDIAN_MEALS.map((s) => {
+                {SAMPLE_MEALS.map((s) => {
                   const isPicked = selectedSample === s.id;
                   return (
                     <div

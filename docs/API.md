@@ -27,13 +27,20 @@
 * `POST /v1/escalations/{id}/ack`: Acknowledge an active risk event, stopping escalation timers.
 * `PUT /v1/patients/{id}/thresholds`: Update per-patient clinical thresholds and escalation timings (Clinician role only).
 
-### 7. Clinician Roster & Doctor-Patient Connection System
-* `GET /v1/patients/{id}/connection-code`: Fetch patient's unique 6-character connection code (e.g. `DIA-RAM789`) and invite link.
+### 7. Clinician & Caregiver Connection System
+* `GET /v1/patients/{id}/connection-code`: Fetch patient's unique 6-character connection code (e.g. `DIA-XXX123`), doctor and caregiver connection status, and role-specific invite links (`doctor_invite_link`, `caregiver_invite_link`).
+* `POST /v1/patients/{id}/connect-caregiver`: Directly connect/link a family caretaker from the patient portal (validates name & phone, creates `User(role='caregiver')`, establishes `CareRelationship(role='caregiver')`, syncs patient profile, and writes immutable audit log).
 * `POST /v1/clinicians/connect-patient`: Connect patient to clinician roster using connection code. Updates `clinician_of_record_id`, creates `CareRelationship`, and records immutable `audit_logs` entry.
 * `GET /v1/clinicians/{doctor_id}/patients`: Fetch full clinician patient triage roster with computed severity rank (`critical`, `watch`, `stable`), latest glucose reading, ADA TIR %, active alerts, and adherence rate.
+* `POST /v1/caregivers/connect-patient`: Connect caregiver to elder using the elder's connection code. Creates `CareRelationship(role='caregiver')` and records immutable `audit_logs` entry.
+* `GET /v1/caregivers/{caregiver_id}/patients`: Fetch list of elders linked to the caregiver.
 * `GET /v1/meals/history/{patient_id}`: Retrieve real chronological food intake logs, carb counts, and glycemic responses.
 
-### 8. Webhooks
+### 8. Shared Care Thread & Realtime Messages
+* `GET /v1/care/{patient_id}/messages?limit=200`: Fetch persistent care-thread message history for an elder in chronological order.
+* `POST /v1/care/{patient_id}/messages`: Append a message to the elder's persistent care thread (supports idempotency with `client_msg_id`). Realtime broadcast is pushed live to all subscribers via Supabase Realtime.
+
+### 9. Webhooks
 * `GET /v1/webhooks/whatsapp`: Meta webhook handshake verification.
 * `POST /v1/webhooks/whatsapp`: Process inbound WhatsApp text/audio events (supports TwiML XML instant response and Sarvam STT).
 

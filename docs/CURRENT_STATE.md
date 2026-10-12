@@ -1,6 +1,43 @@
 # Current Project State
 
-## Status: Phase 5 Complete ✅
+## Status: Phase 17 Complete ✅
+
+#### Phase 17 — Bi-Directional Caregiver Connection, Direct Invite Links & Botanical Care Circle ✅
+- **Bi-Directional Caregiver Connection System**:
+  - Implemented `POST /v1/patients/{patient_id}/connect-caregiver` enabling elders/patients to register and pair their family caretaker directly (name, phone, relation e.g., "Son / Daughter", "Spouse", "Guardian").
+  - Dynamically provisions/links `User(role='caregiver')` and `CareRelationship(role='caregiver')` with `permissions['relation']`, syncs with active profile cache, and writes immutable `AuditLog` entry.
+  - Enhanced `GET /v1/patients/{patient_id}/connection-code` to return complete Care Circle status (`doctor_connected`, `caregiver_id`, `caregiver_name`, `caregiver_phone`, `caregiver_relation`, `caregiver_connected`, `doctor_invite_link`, `caregiver_invite_link`).
+- **Frontend Botanical Care Circle**:
+  - `TodayScreen.tsx`: Upgraded doctor card into an integrated **Care Circle Connection** botanical sanctuary card with dual WhatsApp share buttons (`🩺 Share with Doctor` & `🤝 Share with Caretaker`) and live status badges for both attending doctor and family caretaker.
+  - `PatientPortal.tsx`:
+    - Upgraded `renderCareConnectionCard` with dual WhatsApp shares, direct Caregiver Invite link copy (`?role=caregiver&connect_code=...`), and direct Doctor Invite link.
+    - Revamped `renderCaregiverCard` with live status indicators, "Call Caretaker" phone trigger, and interactive **"Connect Caretaker Modal"** for immediate elder-initiated linking.
+    - Embedded `renderCaregiverCard` into the primary Sanctuary Overview sidebar alongside Doctor and Connection Code cards.
+  - `apps/web/src/api/client.ts`: Added `connectCaregiverFromPatient` API call and updated `ConnectionCodeResponse`.
+  - `apps/web/src/lib/i18n.ts`: Multilingual translations (English, Hindi, Marathi) for care circle connection, dual WhatsApp share, relationship types, and connection status badges.
+- **Automated Verification**:
+  - Pytest unit & integration tests passing (`pytest tests/test_caregiver_connection_and_realtime.py tests/test_doctor_patient_connection.py -v`: 6/6 passing).
+  - Vite production build passing with 0 errors (`npm --prefix apps/web run build`).
+
+- **Purge of Seed Data**:
+  - Removed all hardcoded demo seed rows (`pt_ramesh_001`, `pt_shanti_002`, `pt_ananya_003`, `doc_mehta_101`, `cg_rohit_201`, etc.) from live Supabase PostgreSQL database tables.
+  - Eliminated hardcoded fallbacks in frontend (`LoginView`, `AuthView`, `CaregiverPortal`, `ClinicianPortal`, `PatientPortal`, `CoachPortal`, `MealScannerModal`, `whatsappStore`).
+  - Implemented dynamic user sign up / sign in and auto-provisioning for genuine onboarded users.
+- **Caretaker → Elder Connection Code System**:
+  - Mirrored the 6-character connection code mechanism (`DIA-XXX123`) for caregiver linking.
+  - Backend endpoints: `POST /v1/caregivers/connect-patient` (creates `CareRelationship(role='caregiver')` + audit log entry) and `GET /v1/caregivers/{caregiver_id}/patients`.
+  - Frontend: Caregivers can enter an elder's connection code from the `CaregiverPortal` to instantly link, observe telemetry, receive alerts, and participate in care.
+- **Supabase Realtime Shared Care Messages**:
+  - Created persistent `care_messages` table in Supabase PostgreSQL with RLS and indexed lookup.
+  - Enabled Supabase Realtime publication (`ALTER PUBLICATION supabase_realtime ADD TABLE care_messages`).
+  - Backend endpoints: `GET /v1/care/{patient_id}/messages` and `POST /v1/care/{patient_id}/messages` with client idempotency.
+  - `whatsappStore.ts`: Full Supabase Postgres persistence with Realtime live broadcast subscription, local optimistic updates, and offline fallback.
+- **Live Speech-to-Text & Realtime Voice Recognition**:
+  - Replaced legacy static prompt mocking in `CareGroupChat.tsx` with native continuous speech recognition (`SpeechRecognition` / `webkitSpeechRecognition`).
+  - Implemented real-time language mapping (`hi-IN`, `mr-IN`, `en-IN`), live streaming speech transcript preview, elapsed duration timer, and mic permission error handling.
+- **Automated Verification**:
+  - Vite production build passing (`2942 modules`, 0 errors).
+  - Pytest test suites passing (`tests/test_caregiver_connection_and_realtime.py` & `tests/test_doctor_patient_connection.py`, 5/5 passing).
 
 ### What Is Built:
 
@@ -178,6 +215,43 @@
   - Automatically ensures all authenticated clinicians (including dynamic Google OAuth IDs `goog_*` and customized personas) are persisted to the PostgreSQL `users` table via `ensure_db_user`, preventing foreign key constraint violations (`care_relationships_user_id_fkey`) upon patient connection.
   - Full pytest suite passing with 0 failures (`tests/test_doctor_patient_connection.py`).
   - Zero TypeScript compilation errors on Vite production build.
+
+#### Phase 13 — Clinician Workspace Navigation Refactor & AI Care Companion Rebrand ✅
+- **Pure Clinician Patient Workspace**:
+  - Completely eliminated the generic role "PORTALS" switcher block for clinicians.
+  - Replaced it with dedicated, patient-first sidebar navigation:
+    - 👥 **Patients Directory** (`roster`): Full enrolled roster, triage statuses, TIR & adherence scores.
+    - 🚨 **Triage & Urgent Alerts** (`triage`): Instant filtering to critical and watch patients.
+    - 📈 **Patient Chart & AGP** (`chart`): Glucose telemetry, CGM continuous graph, TIR metrics.
+    - 🥗 **Meal & Nutrition Logs** (`meals`): Vision AI food photos, carb counts, glycemic warnings.
+    - 💊 **Rx & ABDM Care Plan** (`careplan`): Prescriptions, adherence logs, clinical sign-offs.
+    - 🔗 **+ Connect Patient** (`connect`): One-click patient linking via 6-character Diabeto code.
+  - Removed generic `Portal: Clinician` label from desktop top bar, replacing it with verified physician metadata: `Dr. Arvind Mehta, MD • Pune Central Diabetes Clinic • ABDM Active`.
+  - Added real-time Selected Patient Summary card and ABDM Facility details in the clinician sidebar.
+- **AI Care Companion (WhatsApp Elder Assistant) Rebrand**:
+  - Rebranded the WhatsApp testing interface from "WhatsApp Simulator" / developer terminal to **"AI Care Companion"** (WhatsApp Elder Assistant).
+  - Updated all navigation icons (`MessageCircle` with WhatsApp styling), multilingual translations (English, Hindi, Marathi in `i18n.ts`), and header descriptions.
+  - Retained all rich multimodal voice notes (Sarvam AI STT/TTS), Gemini plate vision, and clinical emergency escalation logic.
+- **Automated Verification**:
+  - TypeScript build passing with 0 errors (`tsc -b && vite build`).
+  - Pytest suite running cleanly with 8/8 tests passing (`tests/test_doctor_patient_connection.py`).
+
+#### Phase 14 — Shared WhatsApp Care Thread: Patient Chat, Caregiver View-Only & Doctor Replies ✅
+- **Shared Thread Store (`apps/web/src/lib/whatsappStore.ts`)**:
+  - One conversation thread per patient, persisted in `localStorage` (`diabeto_wa_thread_<patientId>`) and synced across mounted views via a `diabeto:wa-thread-updated` CustomEvent — no new dependencies, no backend schema change.
+  - `useWhatsAppThread(patientId)` reactive hook; `resolveThreadPatientId()` maps viewer role → thread owner.
+  - `ChatMessage.sender` extended with `'doctor'` + `authorName` (`apps/web/src/lib/types.ts`).
+- **Reusable Emulator (`apps/web/src/components/WhatsAppEmulator.tsx`)** with role-gated `mode`:
+  - `patient` — full composer (text + voice-note sim); AI replies via live `POST /v1/webhooks/whatsapp` with offline fallback. **Only the patient can send.**
+  - `caregiver` — read-only window with view-only banner; no composer rendered.
+  - `doctor` — reply box posting as the doctor (🩺 terracotta badge + left border), visually distinct from 🤖 AI answers in the same thread.
+- **Dashboard Embeddings**:
+  - Patient Portal → Doctor & Family (`careteam`) section: full patient-mode chat (reachable via bottom-nav Ask tab).
+  - Caregiver Portal → read-only family window below the care network grid.
+  - Clinician Portal → new 5th dossier tab `💬 WhatsApp Replies` in the patient chart view (doctor reply mode, clinician-gated; read-only notice otherwise).
+  - `WhatsAppSimulator` (admin demo) migrated onto the same shared thread so demo messages appear in all three dashboards.
+- **Automated Verification**:
+  - Zero TypeScript errors, Vite production build passing (`npm run build`: 2943 modules transformed).
 
 ### Active Dev Servers:
 - **FastAPI Backend**: `http://localhost:8000` (API Docs: `http://localhost:8000/docs`)

@@ -14,48 +14,37 @@ PREDEFINED_PERSONAS: Dict[str, dict] = {
         "id": "doc_mehta_101",
         "role": "clinician",
         "clinic_id": "clinic_pune_01",
-        "name": "Dr. Arvind Mehta",
-        "title": "Senior Diabetologist (Clinician of Record)",
-        "email": "dr.mehta@diabeto.care",
+        "name": "Dr. Aarav Mehta",
+        "email": "dr.mehta@diabeto.org",
+        "title": "Lead Endocrinologist",
         "avatar": "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&auto=format&fit=crop&q=80",
     },
     "coach": {
-        "id": "coach_kavita_02",
+        "id": "coach_priya_02",
         "role": "coach",
         "clinic_id": "clinic_pune_01",
-        "name": "Sister Kavita Deshmukh",
-        "title": "Care Coordinator & Nutrition Coach",
-        "email": "kavita.coach@diabeto.care",
-        "avatar": "https://images.unsplash.com/photo-1594824813589-8d77c25091a1?w=100&auto=format&fit=crop&q=80",
+        "name": "Priya Sharma",
+        "email": "priya.coach@diabeto.org",
+        "title": "Certified Diabetes Educator",
+        "avatar": "https://images.unsplash.com/photo-1594824813589-9831a29369f6?w=100&auto=format&fit=crop&q=80",
     },
     "caregiver": {
         "id": "cg_ananya_03",
         "role": "caregiver",
         "clinic_id": "clinic_pune_01",
         "name": "Ananya Kulkarni",
-        "title": "Primary Family Caregiver (Daughter)",
-        "email": "ananya.k@example.com",
-        "linked_patient_id": "pt_ramesh_001",
-        "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80",
-    },
-    "patient": {
-        "id": "pt_ramesh_001",
-        "role": "patient",
-        "clinic_id": "clinic_pune_01",
-        "name": "Ramesh Kulkarni",
-        "title": "Senior Patient (Sanctuary)",
-        "email": "ramesh.kulkarni@example.com",
-        "linked_patient_id": "pt_ramesh_001",
-        "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80",
+        "email": "ananya.cg@diabeto.org",
+        "title": "Primary Family Caregiver",
+        "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80",
     },
     "admin": {
-        "id": "admin_pune_04",
+        "id": "admin_system_01",
         "role": "admin",
         "clinic_id": "clinic_pune_01",
-        "name": "Clinic Administrator",
-        "title": "Pune Central Clinic Admin",
-        "email": "admin@diabeto.care",
-        "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80",
+        "name": "System Administrator",
+        "email": "admin@diabeto.org",
+        "title": "Clinic & Compliance Admin",
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
     },
 }
 
@@ -95,18 +84,15 @@ async def get_current_user(
         except HTTPException:
             pass
 
-    # 2. Inspect X-User-Role / Persona Header (for instant frontend multi-persona testing)
+    # 2. Inspect X-User-Role / X-User-ID headers (real frontend session, no seeds).
+    # Role must be a valid role; id comes from the authenticated user record.
     role_header = request.headers.get("x-user-role", "").lower().strip()
-    if role_header in PREDEFINED_PERSONAS:
-        persona = PREDEFINED_PERSONAS[role_header].copy()
-        user_id_header = request.headers.get("x-user-id")
-        if user_id_header:
-            persona["id"] = user_id_header
-        return persona
+    user_id_header = request.headers.get("x-user-id", "").strip()
+    valid_roles = {"admin", "clinician", "coach", "caregiver", "patient"}
+    if role_header in valid_roles and user_id_header:
+        return {"id": user_id_header, "role": role_header}
 
-    # 3. Development Fallback default (Clinician)
-    if settings.ENVIRONMENT == "development":
-        return PREDEFINED_PERSONAS["clinician"].copy()
+    # 3. No development fallback with seed personas — require real credentials.
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -145,16 +131,13 @@ async def ensure_db_user(
     res = await db.execute(stmt)
     existing_user = res.scalar_one_or_none()
     if existing_user:
+        if name and (existing_user.name.lower().startswith("patient ") or (existing_user.name != name and not name.lower().startswith("patient "))):
+            existing_user.name = name
+            await db.flush()
         return existing_user
 
-    # Find info from PREDEFINED_PERSONAS if available
-    for p in PREDEFINED_PERSONAS.values():
-        if p.get("id") == user_id:
-            name = name or p.get("name")
-            role = role or p.get("role", "clinician")
-            phone = phone or p.get("phone")
-            language = language or p.get("language", "en")
-            break
+    # No seed-persona lookup: names/roles must be supplied by callers (real onboarding).
+    # Keep generic defaults only.
 
     name = name or "Clinician"
     role = role or "clinician"
@@ -190,6 +173,17 @@ async def ensure_db_user(
     await db.flush()
     return new_user
 
+import hashlib
+
+def generate_patient_connection_code(patient_id: str, name: Optional[str] = None) -> str:
+    """Generate a deterministic 6-7 char connection code for a patient."""
+    import re
+    clean_name = re.sub(r"[^A-Za-z]", "", name or "")
+    prefix = (clean_name[:3] if len(clean_name) >= 3 else "DIA").upper()
+    h = hashlib.sha256(patient_id.encode("utf-8")).hexdigest()
+    num = int(h[:6], 16) % 9000 + 1000
+    return f"DIA-{prefix}{num}"
+
 async def ensure_db_patient(
     db,
     patient_id: str,
@@ -198,6 +192,9 @@ async def ensure_db_patient(
     language: str = "hi",
     clinic_id: Optional[str] = None,
     clinician_of_record_id: Optional[str] = None,
+    age: Optional[int] = 65,
+    gender: Optional[str] = "Male",
+    consent_flags: Optional[dict] = None,
 ):
     """Ensures a patient row exists in the PostgreSQL patients table."""
     import uuid
@@ -208,6 +205,23 @@ async def ensure_db_patient(
     res = await db.execute(stmt)
     existing_p = res.scalar_one_or_none()
     if existing_p:
+        # Ensure connection code is populated in consent flags
+        code = generate_patient_connection_code(patient_id, existing_p.name or name)
+        flags = dict(existing_p.consent_flags or {})
+        if "connection_code" not in flags or not flags["connection_code"]:
+            flags["connection_code"] = code
+            existing_p.consent_flags = flags
+        if name and existing_p.name != name:
+            existing_p.name = name
+        if age and existing_p.age != age:
+            existing_p.age = age
+        if gender and existing_p.gender != gender:
+            existing_p.gender = gender
+        if phone and existing_p.phone != phone:
+            existing_p.phone = phone
+        if language and existing_p.language != language:
+            existing_p.language = language
+        await db.flush()
         return existing_p
 
     # Check if a user with this id exists
@@ -215,19 +229,23 @@ async def ensure_db_patient(
     user_res = await db.execute(user_stmt)
     user = user_res.scalar_one_or_none()
     if user:
-        name = name or user.name
+        if user.name and not user.name.lower().startswith("patient "):
+            name = name or user.name
         phone = phone or user.phone
         language = language or user.language
         clinic_id = clinic_id or user.clinic_id
 
-    # Check PREDEFINED_PERSONAS
-    if not name:
-        for p in PREDEFINED_PERSONAS.values():
-            if p.get("id") == patient_id or p.get("patient_id") == patient_id:
-                name = p.get("name")
-                phone = p.get("phone")
-                language = p.get("language", "hi")
-                break
+    # Check SAVED_USER_PROFILES if available
+    try:
+        from apps.api.app.modules.auth.router import SAVED_USER_PROFILES
+        for prof in SAVED_USER_PROFILES.values():
+            if prof.get("id") == patient_id:
+                prof_n = prof.get("name")
+                if prof_n and not prof_n.lower().startswith("patient "):
+                    name = name or prof_n
+                    break
+    except Exception:
+        pass
 
     name = name or f"Patient {patient_id[-6:].upper()}"
 
@@ -241,23 +259,22 @@ async def ensure_db_patient(
             await db.flush()
             clinic_id = default_clinic.id
 
-    # Ensure clinician of record exists
+    # Ensure clinician of record exists (generic — no seed doctor auto-created).
     if not clinician_of_record_id:
         doc_res = await db.execute(select(User).where(User.role == "clinician"))
         doc = doc_res.scalars().first()
         if doc:
             clinician_of_record_id = doc.id
         else:
-            default_doc = await ensure_db_user(
+            clinician_of_record_id = "pending_clinician_assignment"
+            await ensure_db_user(
                 db=db,
-                user_id="doc_mehta_101",
-                name="Dr. Arvind Mehta",
+                user_id="pending_clinician_assignment",
+                name="Unassigned Doctor",
                 role="clinician",
-                phone="+919811111111",
                 language="en",
                 clinic_id=clinic_id,
             )
-            clinician_of_record_id = default_doc.id
 
     # Ensure user row exists for the patient if patient_id is used as a user_id
     if not user:
@@ -279,20 +296,22 @@ async def ensure_db_patient(
     if phone_res.scalar_one_or_none():
         phone = f"+91{uuid.uuid4().hex[:10]}"
 
-    prefix = (name[:3] if len(name) >= 3 else "DIA").upper().replace(" ", "")
-    suffix = str(abs(hash(patient_id)))[:4]
-    code = f"DIA-{prefix}{suffix}"
+    code = generate_patient_connection_code(patient_id, name)
+    default_flags = {"connection_code": code, "view_raw_glucose": True, "emergency_escalation": True}
+    if consent_flags:
+        default_flags.update(consent_flags)
+    default_flags["connection_code"] = code
 
     new_patient = Patient(
         id=patient_id,
         clinic_id=clinic_id,
         clinician_of_record_id=clinician_of_record_id,
         name=name,
-        age=65,
-        gender="Male",
+        age=age or 65,
+        gender=gender or "Male",
         phone=phone,
         language=language or "hi",
-        consent_flags={"connection_code": code, "view_raw_glucose": True, "emergency_escalation": True},
+        consent_flags=default_flags,
     )
     db.add(new_patient)
     await db.flush()

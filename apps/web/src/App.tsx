@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { SidebarNav, type ActiveTab, type PatientSection, type TextSize } from './components/SidebarNav';
+import { SidebarNav, type ActiveTab, type PatientSection, type ClinicianSection, type TextSize } from './components/SidebarNav';
 import { PatientPortal } from './components/PatientPortal';
 import { TodayScreen } from './components/TodayScreen';
 import { PatientBottomNav, type PatientNavTab } from './components/PatientBottomNav';
 import { ClinicianPortal } from './components/ClinicianPortal';
 import { CoachPortal } from './components/CoachPortal';
 import { CaregiverPortal } from './components/CaregiverPortal';
-import { WhatsAppSimulator } from './components/WhatsAppSimulator';
+import { CareGroupChat } from './components/CareGroupChat';
 import { AuthView } from './components/AuthView';
 import { LandingHero } from './components/LandingHero';
 import { RoleSelectModal, type OnboardingProfileData } from './components/RoleSelectModal';
 import { EditProfileModal } from './components/EditProfileModal';
 import { MealScannerModal } from './components/MealScannerModal';
 import { PageLoader } from './components/ui/page-loader';
-import { api, saveAuthSession, getSavedProfileForEmail, type User, type UserRole } from './api/client';
+import { api, saveAuthSession, getSavedProfileForEmail, type User, type UserRole, type ClinicianPatientSummary } from './api/client';
 import { supabase } from './lib/supabase';
 import type { Language } from './lib/types';
-import { Phone, Type, LogOut, UserCog, Sparkles } from 'lucide-react';
+import { Phone, Type, LogOut, UserCog, Sparkles, Stethoscope } from 'lucide-react';
 import { t } from './lib/i18n';
 
 interface LoadingState {
@@ -40,6 +40,8 @@ export const App: React.FC = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showMealScannerModal, setShowMealScannerModal] = useState(false);
   const [activePatientSection, setActivePatientSection] = useState<PatientSection>('overview');
+  const [activeClinicianSection, setActiveClinicianSection] = useState<ClinicianSection>('roster');
+  const [selectedClinicianPatient, setSelectedClinicianPatient] = useState<ClinicianPatientSummary | null>(null);
   const [activePatientTab, setActivePatientTab] = useState<PatientNavTab>('today');
   const [activeTab, setActiveTab] = useState<ActiveTab>('patient');
   const [language, setLanguage] = useState<Language>('en');
@@ -55,6 +57,7 @@ export const App: React.FC = () => {
     switch (role) {
       case 'clinician':
         setActiveTab('clinician');
+        setActiveClinicianSection('roster');
         break;
       case 'coach':
         setActiveTab('coach');
@@ -404,6 +407,15 @@ export const App: React.FC = () => {
               }
             }}
             onOpenMealScanner={() => setShowMealScannerModal(true)}
+            activeClinicianSection={activeClinicianSection}
+            onSelectClinicianSection={setActiveClinicianSection}
+            selectedPatientSummary={selectedClinicianPatient ? {
+              name: selectedClinicianPatient.name,
+              age: selectedClinicianPatient.age,
+              latest_glucose: selectedClinicianPatient.latest_glucose,
+              tir_percentage: selectedClinicianPatient.tir_percentage,
+              severity: selectedClinicianPatient.severity,
+            } : undefined}
             seniorSimpleMode={seniorSimpleMode}
             onToggleSeniorSimpleMode={() => {
               const next = !seniorSimpleMode;
@@ -418,24 +430,52 @@ export const App: React.FC = () => {
           <div className="main-content-area">
             {/* Top Control Bar with Breadcrumb and Quick Triggers (Desktop / Laptop Only) */}
             <header className="desktop-top-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                <span style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  color: 'var(--text-dim)',
-                  background: 'var(--surface-clay)',
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--border-stone)',
-                }}>
-                  {t('portalPrefix', language)}:
-                </span>
-                <span className="font-serif" style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-forest)', whiteSpace: 'nowrap' }}>
-                  {getPortalTitle()}
-                </span>
-              </div>
+              {currentUser.role === 'clinician' ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    background: 'var(--accent-sage-subtle)',
+                    border: '1.5px solid var(--accent-sage-border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--text-forest)',
+                  }}>
+                    <Stethoscope size={16} />
+                  </div>
+                  <div>
+                    <div className="font-serif" style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+                      {currentUser.name || 'Dr. Arvind Mehta, MD'}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>Pune Central Diabetes Clinic</span>
+                      <span>•</span>
+                      <span style={{ color: 'var(--status-ok)', fontWeight: 600 }}>ABDM Active</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                  <span style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    color: 'var(--text-dim)',
+                    background: 'var(--surface-clay)',
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-stone)',
+                  }}>
+                    {t('portalPrefix', language)}:
+                  </span>
+                  <span className="font-serif" style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-forest)', whiteSpace: 'nowrap' }}>
+                    {getPortalTitle()}
+                  </span>
+                </div>
+              )}
 
               <div className="desktop-top-actions">
                 {/* Senior Simple Mode Toggle (PRD §3) */}
@@ -517,8 +557,19 @@ export const App: React.FC = () => {
             </header>
 
             {/* Dynamic Portal Screen Content */}
-            <div style={{ flex: 1, paddingBottom: currentUser.role === 'patient' ? '92px' : '32px' }}>
-              <main style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingBottom: currentUser.role === 'patient' ? (activeTab === 'caregroup' ? '76px' : '92px') : '24px',
+            }}>
+              <main style={{
+                position: 'relative',
+                zIndex: 1,
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+              }}>
                 {activeTab === 'patient' && (
                   activePatientTab === 'today' ? (
                     <TodayScreen
@@ -546,6 +597,9 @@ export const App: React.FC = () => {
                     language={language}
                     currentRole={currentUser.role}
                     currentUser={currentUser}
+                    activeClinicianSection={activeClinicianSection}
+                    onSelectClinicianSection={setActiveClinicianSection}
+                    onPatientSelected={setSelectedClinicianPatient}
                   />
                 )}
                 {activeTab === 'coach' && (
@@ -563,11 +617,22 @@ export const App: React.FC = () => {
                     onOpenEditProfile={() => setShowProfileModal(true)}
                   />
                 )}
-                {activeTab === 'simulator' && (
-                  <WhatsAppSimulator
-                    language={language}
-                    currentUser={currentUser}
-                  />
+                {activeTab === 'caregroup' && (
+                  <div style={{
+                    padding: '16px 24px',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: 'calc(100dvh - 180px)',
+                    height: 'calc(100dvh - 160px)',
+                  }}>
+                    <CareGroupChat
+                      language={language}
+                      currentUser={currentUser}
+                      patientId={selectedClinicianPatient?.id}
+                      patientName={selectedClinicianPatient?.name}
+                    />
+                  </div>
                 )}
               </main>
             </div>

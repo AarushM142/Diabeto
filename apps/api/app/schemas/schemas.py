@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field, ConfigDict
 
 # Patient Schemas
 class PatientCreate(BaseModel):
-    clinic_id: str
-    clinician_of_record_id: str
+    clinic_id: Optional[str] = "clinic_pune_central"
+    clinician_of_record_id: Optional[str] = None
     name: str
     age: int
     gender: str
@@ -17,8 +17,8 @@ class PatientResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    clinic_id: str
-    clinician_of_record_id: str
+    clinic_id: Optional[str] = None
+    clinician_of_record_id: Optional[str] = None
     name: str
     age: int
     gender: str
@@ -208,13 +208,34 @@ class ConnectPatientRequest(BaseModel):
     doctor_id: str
     connection_code: str
 
+
+class ConnectCaregiverRequest(BaseModel):
+    caregiver_id: str
+    connection_code: str
+
+
+class PatientConnectCaregiverRequest(BaseModel):
+    caregiver_name: str
+    caregiver_phone: str
+    relation: Optional[str] = "Family Member"
+    permissions: Optional[Dict[str, bool]] = None
+
+
 class ConnectionCodeResponse(BaseModel):
     patient_id: str
     patient_name: str
     connection_code: str
-    doctor_id: str
+    doctor_id: Optional[str] = None
     doctor_name: Optional[str] = None
+    doctor_connected: bool = False
+    caregiver_id: Optional[str] = None
+    caregiver_name: Optional[str] = None
+    caregiver_phone: Optional[str] = None
+    caregiver_relation: Optional[str] = None
+    caregiver_connected: bool = False
     invite_link: str
+    doctor_invite_link: Optional[str] = None
+    caregiver_invite_link: Optional[str] = None
 
 class ClinicianPatientSummary(BaseModel):
     id: str
@@ -232,3 +253,31 @@ class ClinicianPatientSummary(BaseModel):
     adherence_score_pct: Optional[float] = None
     active_alerts_count: int = 0
     clinician_of_record_id: Optional[str] = None
+
+
+# Phase 16: persistent shared care-thread messages
+class CareMessageCreate(BaseModel):
+    sender: str = Field(description="user | bot | doctor | coach | caretaker | system")
+    author_name: Optional[str] = None
+    author_id: Optional[str] = None
+    text: str = Field(min_length=1, max_length=4000)
+    is_voice: bool = False
+    voice_duration: Optional[str] = None
+    transcript: Optional[str] = None
+    client_msg_id: Optional[str] = None
+
+
+class CareMessageResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    patient_id: str
+    sender: str
+    author_name: Optional[str] = None
+    author_id: Optional[str] = None
+    text: str
+    is_voice: bool = False
+    voice_duration: Optional[str] = None
+    transcript: Optional[str] = None
+    client_msg_id: Optional[str] = None
+    created_at: datetime

@@ -11,6 +11,7 @@ from apps.api.app.modules.trend.router import router as trend_router
 from apps.api.app.modules.risk.router import router as risk_router
 from apps.api.app.modules.meal_intelligence.router import router as meal_router
 from apps.api.app.modules.auth.router import router as auth_router
+from apps.api.app.modules.care_chat.router import router as care_chat_router
 from apps.api.app.channels.whatsapp import router as whatsapp_router
 from apps.api.app.core.worker import run_background_worker
 
@@ -59,6 +60,7 @@ app.include_router(risk_router)
 app.include_router(meal_router)
 app.include_router(whatsapp_router)
 app.include_router(auth_router)
+app.include_router(care_chat_router)
 
 
 

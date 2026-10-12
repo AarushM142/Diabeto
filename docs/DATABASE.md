@@ -17,7 +17,9 @@
 - `approvals`: Audit record of human approval/rejection decisions.
 - `background_jobs`: Transactional outbox job queue.
 - `audit_logs`: Append-only tamper-evident security audit trail.
+- `care_messages`: Shared real-time care thread messages across patient, AI companion, caregiver, and doctor. Subscribed live via Supabase Realtime broadcast.
 
-## 3. Row-Level Security (RLS) Rules
-- Clinicians only access patients within their `clinic_id`.
+## 3. Row-Level Security (RLS) Rules & Realtime
+- Clinicians only access patients within their `clinic_id` or connected roster.
 - Caregivers only access patients mapped via `care_relationships` and only the fields permitted in `care_relationships.permissions`.
+- `care_messages` has RLS enabled and is registered in `supabase_realtime` publication for live multi-party chat sync.

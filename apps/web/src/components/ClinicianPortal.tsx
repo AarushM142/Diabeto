@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Activity, AlertOctagon, TrendingUp, 
+import {
+  Activity, AlertOctagon, TrendingUp,
   Pill, FileText, UserCheck, RefreshCw, Award, Lock, ShieldCheck, History,
   Search, Link as LinkIcon, Download, Utensils, CheckCircle2,
   X, ArrowLeft, ChevronRight, ChevronLeft, Users, Phone,
-  ArrowUpRight
+  ArrowUpRight, MessageCircle
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid 
@@ -20,20 +20,32 @@ import {
 } from '../api/client';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
+import { CareGroupChat } from './CareGroupChat';
+import type { ClinicianSection } from './SidebarNav';
 
 interface ClinicianPortalProps {
   language: Language;
   currentRole: UserRole;
   currentUser?: User;
+  activeClinicianSection?: ClinicianSection;
+  onSelectClinicianSection?: (section: ClinicianSection) => void;
+  onPatientSelected?: (patient: ClinicianPatientSummary) => void;
 }
 
 type ViewMode = 'roster' | 'chart';
 type TriageTab = 'all' | 'critical' | 'watch' | 'stable';
-type DossierTab = 'telemetry' | 'meals' | 'meds' | 'synthesis';
+type DossierTab = 'telemetry' | 'meals' | 'meds' | 'synthesis' | 'chat';
 
-export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, currentRole, currentUser }) => {
+export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({
+  language,
+  currentRole,
+  currentUser,
+  activeClinicianSection,
+  onSelectClinicianSection,
+  onPatientSelected,
+}) => {
   const [patients, setPatients] = useState<ClinicianPatientSummary[]>([]);
-  const [selectedPatientId, setSelectedPatientId] = useState<string>('pt_ramesh_001');
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [viewMode, setViewMode] = useState<ViewMode>('roster');
   
   const [trends, setTrends] = useState<TrendAnalytics | null>(null);
@@ -65,7 +77,30 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
   const [loadingEhr, setLoadingEhr] = useState(false);
 
   const isAuthorizedDoctor = currentRole === 'clinician' || currentRole === 'admin';
-  const doctorId = currentUser?.id || 'doc_mehta_101';
+  const doctorId = currentUser?.id ?? '';
+
+  // Synchronize incoming clinician navigation from Sidebar
+  useEffect(() => {
+    if (!activeClinicianSection) return;
+    if (activeClinicianSection === 'roster') {
+      setViewMode('roster');
+      setTriageFilter('all');
+    } else if (activeClinicianSection === 'triage') {
+      setViewMode('roster');
+      setTriageFilter('critical');
+    } else if (activeClinicianSection === 'chart') {
+      setViewMode('chart');
+      setActiveDossierTab('telemetry');
+    } else if (activeClinicianSection === 'meals') {
+      setViewMode('chart');
+      setActiveDossierTab('meals');
+    } else if (activeClinicianSection === 'careplan') {
+      setViewMode('chart');
+      setActiveDossierTab('meds');
+    } else if (activeClinicianSection === 'connect') {
+      setShowConnectModal(true);
+    }
+  }, [activeClinicianSection]);
 
   const handleDownloadPdf = async () => {
     setDownloadingPdf(true);
@@ -101,12 +136,10 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
         setSelectedPatientId(data[0].id);
       }
     } catch (err) {
-      console.warn('Using fallback clinician patient roster:', err);
-      setPatients([
-        { id: 'pt_ramesh_001', name: 'Ramesh Kulkarni', age: 68, gender: 'male', phone: '+91 8149680369', language: 'mr', diagnosis: 'Type 2 Diabetes (6 yrs)', connection_code: 'DIA-RAM789', severity: 'critical', latest_glucose: 128, tir_percentage: 78.6, adherence_score_pct: 95.2, active_alerts_count: 1 },
-        { id: 'pt_shanti_002', name: 'Shanti Devi', age: 72, gender: 'female', phone: '+91 98000 00002', language: 'hi', diagnosis: 'Type 2 Diabetes (12 yrs, Mild Neuropathy)', connection_code: 'DIA-SHA402', severity: 'watch', latest_glucose: 194, tir_percentage: 58.0, adherence_score_pct: 82.0, active_alerts_count: 0 },
-        { id: 'pt_ananya_003', name: 'Ananya Patil', age: 65, gender: 'female', phone: '+91 98000 00003', language: 'mr', diagnosis: 'Type 2 Diabetes + Hypo Unawareness', connection_code: 'DIA-ANA303', severity: 'critical', latest_glucose: 62, tir_percentage: 45.2, adherence_score_pct: 71.4, active_alerts_count: 2 },
-      ]);
+      console.warn('Clinician roster unavailable:', err);
+      // No seed fallback (Phase 16): show empty roster so the doctor
+      // links real patients via connection codes.
+      setPatients([]);
     } finally {
       setLoadingRoster(false);
     }
@@ -187,15 +220,39 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
       const res = await api.connectPatient(doctorId, connectionCodeInput.trim());
       setConnectToast({ type: 'success', message: res.message || t('connectSuccess', language) });
       setConnectionCodeInput('');
-      await fetchRoster();
+      
       if (res.patient?.id) {
+        const newSummary: ClinicianPatientSummary = {
+          id: res.patient.id,
+          name: res.patient.name,
+          age: res.patient.age || 65,
+          gender: res.patient.gender || 'male',
+          phone: res.patient.phone || '',
+          language: res.patient.language || 'hi',
+          diagnosis: 'Type 2 Diabetes',
+          connection_code: res.patient.connection_code || connectionCodeInput.trim(),
+          severity: 'stable',
+          latest_glucose: 130,
+          latest_glucose_time: new Date().toISOString(),
+          tir_percentage: 85,
+          adherence_score_pct: 95,
+          active_alerts_count: 0,
+          clinician_of_record_id: doctorId,
+        };
+        setPatients((prev) => [newSummary, ...prev.filter((p) => p.id !== res.patient.id)]);
         setSelectedPatientId(res.patient.id);
+        if (onPatientSelected) {
+          onPatientSelected(newSummary);
+        }
         setViewMode('chart');
       }
+
+      await fetchRoster();
+
       setTimeout(() => {
         setShowConnectModal(false);
         setConnectToast(null);
-      }, 1500);
+      }, 1200);
     } catch (err: any) {
       setConnectToast({ type: 'error', message: err.message || 'Connection failed. Please verify code.' });
     } finally {
@@ -257,14 +314,27 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
   const selectedPatient = patients.find(p => p.id === selectedPatientId) || patients[0];
   const currentPatientIndex = sortedPatients.findIndex(p => p.id === selectedPatientId);
 
+  // Report selected patient summary to parent for sidebar display
+  useEffect(() => {
+    if (selectedPatient && onPatientSelected) {
+      onPatientSelected(selectedPatient);
+    }
+  }, [selectedPatientId, patients]);
+
   const handleOpenPatientChart = (patientId: string) => {
     setSelectedPatientId(patientId);
     setViewMode('chart');
+    if (onSelectClinicianSection) {
+      onSelectClinicianSection('chart');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToRoster = () => {
     setViewMode('roster');
+    if (onSelectClinicianSection) {
+      onSelectClinicianSection('roster');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -354,7 +424,7 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
                   borderRadius: '12px',
                   border: '1px solid var(--accent-sage-border)',
                 }}>
-                  Dr. Arvind Mehta, MD • Pune Central Clinic
+                  {currentUser?.name ? `${currentUser.name} • Clinician` : 'Clinician Workspace'}
                 </span>
               </div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
@@ -914,13 +984,22 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
                 { id: 'meals', label: `🍲 ${t('patientMealLogs', language)} (${mealLogs.length})`, icon: Utensils },
                 { id: 'meds', label: `💊 ${t('patientMedications', language)}`, icon: Pill },
                 { id: 'synthesis', label: `🩺 ${t('verifiedConsultation', language)}`, icon: FileText },
+                { id: 'chat', label: `💬 WhatsApp Replies`, icon: MessageCircle },
               ].map((tab) => {
                 const isActive = activeDossierTab === tab.id;
                 return (
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setActiveDossierTab(tab.id as DossierTab)}
+                    onClick={() => {
+                      const newTab = tab.id as DossierTab;
+                      setActiveDossierTab(newTab);
+                      if (onSelectClinicianSection) {
+                        if (newTab === 'meals') onSelectClinicianSection('meals');
+                        else if (newTab === 'meds') onSelectClinicianSection('careplan');
+                        else if (newTab === 'telemetry') onSelectClinicianSection('chart');
+                      }
+                    }}
                     className="header-btn"
                     style={{
                       padding: '8px 18px',
@@ -1319,7 +1398,7 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
                           }}>
                             <Award size={22} color="var(--status-ok)" />
                             <div>
-                              <div>Clinically Verified by {summary.verified_by || 'Dr. Arvind Mehta'}</div>
+                              <div>Clinically Verified by {summary.verified_by || currentUser?.name || 'Clinician'}</div>
                               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Logged at {new Date(summary.verified_at || Date.now()).toLocaleTimeString()}</div>
                             </div>
                           </div>
@@ -1339,6 +1418,44 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
                           </button>
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {/* TAB 5: WhatsApp Thread — Doctor Replies alongside AI */}
+                  {activeDossierTab === 'chat' && (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h4 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', margin: 0 }}>
+                            WhatsApp Care Thread with {selectedPatient.name}
+                          </h4>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                            Same thread the patient chats in and the family observes. Reply below — your messages post as the doctor, distinct from 🤖 AI answers.
+                          </p>
+                        </div>
+                        <span className="status-pill ok">
+                          <span className="status-dot ok" />
+                          Live Thread
+                        </span>
+                      </div>
+
+                      {!isAuthorizedDoctor ? (
+                        <div className="botanical-callout warn" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Lock size={18} color="var(--terracotta)" />
+                          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-forest)' }}>
+                            Read-only preview as {currentRole.toUpperCase()}. Doctor replies require CLINICIAN authorization.
+                          </span>
+                        </div>
+                      ) : (
+                        <div style={{ height: '640px', minHeight: '520px', display: 'flex', flexDirection: 'column' }}>
+                          <CareGroupChat
+                            language={language}
+                            currentUser={currentUser || { id: doctorId, role: 'clinician', name: 'Doctor' }}
+                            patientId={selectedPatientId}
+                            patientName={selectedPatient.name}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
@@ -1538,7 +1655,7 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
                   type="text"
                   value={connectionCodeInput}
                   onChange={(e) => setConnectionCodeInput(e.target.value.toUpperCase())}
-                  placeholder="e.g. DIA-RAM789"
+                  placeholder="e.g. DIA-ABC1234"
                   style={{
                     width: '100%',
                     padding: '12px 16px',
@@ -1557,32 +1674,9 @@ export const ClinicianPortal: React.FC<ClinicianPortalProps> = ({ language, curr
                 />
               </div>
 
-              {/* Demo quick fillers */}
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', alignSelf: 'center' }}>Demo shortcuts:</span>
-                {[
-                  { label: 'Ramesh', code: 'DIA-RAM789' },
-                  { label: 'Shanti', code: 'DIA-SHA402' },
-                  { label: 'Ananya', code: 'DIA-ANA303' },
-                ].map((demo) => (
-                  <button
-                    key={demo.code}
-                    type="button"
-                    onClick={() => setConnectionCodeInput(demo.code)}
-                    style={{
-                      fontSize: '0.7rem',
-                      padding: '2px 8px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--border-stone)',
-                      background: 'var(--surface-white)',
-                      color: 'var(--text-forest)',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {demo.label} ({demo.code})
-                  </button>
-                ))}
+              {/* Code format hint — no demo shortcuts (seed users removed) */}
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: '20px' }}>
+                Format: DIA- followed by letters/digits (ask the patient for their code).
               </div>
 
               {/* Toast message */}

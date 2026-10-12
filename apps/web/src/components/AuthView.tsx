@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Stethoscope, Sparkles, HeartHandshake, Heart, Shield, 
-  ArrowRight, ArrowLeft, Mail, Lock, User as UserIcon, Eye, EyeOff, 
-  AlertCircle, CheckCircle2, Loader2 
+import {
+  ArrowRight, ArrowLeft, Mail, Lock, User as UserIcon, Eye, EyeOff,
+  AlertCircle, CheckCircle2, Loader2
 } from 'lucide-react';
 import { api, saveAuthSession, type User, type UserRole } from '../api/client';
 import { signInWithGoogleOAuth } from '../lib/supabase';
@@ -26,63 +25,9 @@ interface DemoPersona {
   clinic: string;
 }
 
-const DEMO_PERSONAS: DemoPersona[] = [
-  {
-    role: 'clinician',
-    name: 'Dr. Arvind Mehta',
-    title: 'Senior Diabetologist (Clinician of Record)',
-    email: 'dr.mehta@diabeto.care',
-    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&auto=format&fit=crop&q=80',
-    icon: Stethoscope,
-    badge: 'MD Gated Portal',
-    badgeColor: 'var(--status-ok)',
-    clinic: 'Pune Central Diabetes Clinic',
-  },
-  {
-    role: 'coach',
-    name: 'Sister Kavita Deshmukh',
-    title: 'Care Coordinator & Nutrition Coach',
-    email: 'kavita.coach@diabeto.care',
-    avatar: 'https://images.unsplash.com/photo-1594824813589-8d77c25091a1?w=100&auto=format&fit=crop&q=80',
-    icon: Sparkles,
-    badge: 'Care Coach',
-    badgeColor: 'var(--terracotta)',
-    clinic: 'Pune Central Diabetes Clinic',
-  },
-  {
-    role: 'caregiver',
-    name: 'Ananya Kulkarni',
-    title: 'Primary Family Caregiver (Daughter)',
-    email: 'ananya.k@example.com',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
-    icon: HeartHandshake,
-    badge: 'Family Portal',
-    badgeColor: 'var(--text-forest)',
-    clinic: 'Linked: Ramesh Kulkarni',
-  },
-  {
-    role: 'patient',
-    name: 'Ramesh Kulkarni',
-    title: 'Senior Patient (72 yrs)',
-    email: 'ramesh.kulkarni@example.com',
-    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80',
-    icon: Heart,
-    badge: 'Senior Sanctuary',
-    badgeColor: 'var(--accent-sage)',
-    clinic: 'Pune Central Patient #pt_001',
-  },
-  {
-    role: 'admin',
-    name: 'Clinic Admin Desk',
-    title: 'Clinic Operations Administrator',
-    email: 'admin@diabeto.care',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
-    icon: Shield,
-    badge: 'Admin Desk',
-    badgeColor: 'var(--accent-sage-dark)',
-    clinic: 'Pune Central Clinic Admin',
-  },
-];
+// Seed demo personas removed (Phase 16): real signup/signin only.
+// Kept as an empty list so the demo tab renders an explanatory empty state.
+const DEMO_PERSONAS: DemoPersona[] = [];
 
 // Clean Google G SVG Icon
 const GoogleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -847,9 +792,14 @@ export const AuthView: React.FC<AuthViewProps> = ({
         {tab === 'demo' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600 }}>
-              1-Click instant access to persona dashboards:
+              Demo accounts removed — please sign up or sign in with a real account.
             </div>
 
+            {DEMO_PERSONAS.length === 0 && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '12px', textAlign: 'center' }}>
+                No demo personas available. Use Sign In / Sign Up above.
+              </div>
+            )}
             {DEMO_PERSONAS.map((persona) => {
               const Icon = persona.icon;
               return (

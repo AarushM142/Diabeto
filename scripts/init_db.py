@@ -7,7 +7,7 @@ from apps.api.app.core.database import engine, Base
 from apps.api.app.models.entities import (
     Clinic, User, Patient, CareRelationship, PatientThreshold,
     MedicationSchedule, HealthEvent, RiskEvent, Recommendation,
-    Approval, BackgroundJob, AuditLog
+    Approval, BackgroundJob, AuditLog, CareMessage
 )
 
 async def init_tables():

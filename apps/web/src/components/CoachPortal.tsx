@@ -39,7 +39,7 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({
   const [actionInProgress, setActionInProgress] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const targetPatientName = currentUser?.patient_profile?.name || (currentUser?.role === 'patient' ? currentUser?.name : 'Ramesh Kulkarni');
+  const targetPatientName = currentUser?.patient_profile?.name || currentUser?.name || 'Patient';
 
   const canReviewAndDispatch = currentRole === 'coach' || currentRole === 'clinician' || currentRole === 'admin';
 
@@ -204,7 +204,7 @@ export const CoachPortal: React.FC<CoachPortalProps> = ({
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <strong className="font-serif" style={{ fontSize: '0.975rem', color: 'var(--text-forest)' }}>
-                      {rec.patient_id === 'pt_ramesh_001' ? 'Ramesh Kulkarni' : rec.patient_id}
+                      {(rec as any).patient_name || rec.patient_id}
                     </strong>
                     <span className="status-pill ok" style={{ fontSize: '0.7rem', padding: '2px 8px', textTransform: 'capitalize' }}>
                       {rec.confidence_label || 'High'}

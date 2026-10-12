@@ -140,13 +140,13 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
   const [targetPostmeal] = useState<number>(180);
 
   // Caregiver Profile State
-  const [caregiverRelation, setCaregiverRelation] = useState('Daughter');
-  const [linkedSeniorName, setLinkedSeniorName] = useState('Father (Ramesh)');
-  const [linkedSeniorAge, setLinkedSeniorAge] = useState<number>(72);
-  const [emergencyPhone, setEmergencyPhone] = useState('+91 98000 00002');
+  const [caregiverRelation, setCaregiverRelation] = useState('Family Member');
+  const [linkedSeniorName, setLinkedSeniorName] = useState('');
+  const [linkedSeniorAge, setLinkedSeniorAge] = useState<number>(70);
+  const [emergencyPhone, setEmergencyPhone] = useState('');
 
   // Clinician Profile State
-  const [doctorTitle, setDoctorTitle] = useState('Dr. ' + (user.name || 'Arvind Mehta') + ', MD');
+  const [doctorTitle, setDoctorTitle] = useState(user.name ? `Dr. ${user.name}, MD` : 'Dr. Diabetologist, MD');
   const [clinicName, setClinicName] = useState('Pune Central Diabetes Clinic');
   const [specialty, setSpecialty] = useState('Consultant Endocrinologist & Diabetologist');
 
@@ -202,7 +202,7 @@ export const RoleSelectModal: React.FC<RoleSelectModalProps> = ({
       profileData.caregiver_profile = {
         caregiver_name: fullName.trim() || user.name,
         relation: caregiverRelation,
-        patient_name: linkedSeniorName.trim() || 'Ramesh Kulkarni',
+        patient_name: linkedSeniorName.trim() || 'Elder',
         patient_age: Number(linkedSeniorAge) || 72,
         emergency_phone: emergencyPhone.trim(),
       };

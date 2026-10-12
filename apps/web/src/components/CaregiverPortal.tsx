@@ -6,6 +6,7 @@ import {
 import { api, type UserRole, type TrendAnalytics, type User } from '../api/client';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
+import { CareGroupChat } from './CareGroupChat';
 
 interface CaregiverPortalProps {
   language: Language;
@@ -24,32 +25,97 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({
   const [allowRawGlucose, setAllowRawGlucose] = useState<boolean>(true);
   const [updatingConsent, setUpdatingConsent] = useState<boolean>(false);
   const [consentSuccessToast, setConsentSuccessToast] = useState<string | null>(null);
+  const [connectCode, setConnectCode] = useState('');
+  const [connecting, setConnecting] = useState(false);
+  const [connectMsg, setConnectMsg] = useState<string | null>(null);
+  const [linkedElders, setLinkedElders] = useState<{ id: string; name: string; connection_code: string }[]>([]);
+  const [selectedElderId, setSelectedElderId] = useState<string>('');
 
   // Dynamic Caregiver Profile Data
   const caregiverProfile = currentUser?.caregiver_profile;
-  const patientName = caregiverProfile?.patient_name || 'Ramesh Kulkarni';
+  const activeElder = linkedElders.find((e) => e.id === selectedElderId) || linkedElders[0];
+  const linkedPatientId =
+    selectedElderId ||
+    (currentUser as (User & { linked_patient_id?: string }) | undefined)?.linked_patient_id?.trim() ||
+    activeElder?.id ||
+    '';
+  const patientName = activeElder?.name || caregiverProfile?.patient_name || 'Your Elder';
   const patientFirstName = patientName.split(' ')[0] || patientName;
   const caregiverName = caregiverProfile?.caregiver_name || currentUser?.name || 'Family Caregiver';
   const relation = caregiverProfile?.relation || 'Primary Caregiver';
   const emergencyPhone = caregiverProfile?.emergency_phone || '+91 8149680369';
 
   useEffect(() => {
-    const loadTrends = async () => {
+    const loadLinked = async () => {
+      if (!currentUser?.id) return;
       try {
-        const data = await api.getTrends('pt_ramesh_001', 7);
+        const elders = await api.getCaregiverPatients(currentUser.id);
+        const mapped = elders.map((e) => ({ id: e.id, name: e.name, connection_code: e.connection_code }));
+        setLinkedElders(mapped);
+        if (mapped.length > 0 && !selectedElderId) {
+          setSelectedElderId(mapped[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to load linked elders:', err);
+      }
+    };
+    loadLinked();
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    const loadTrends = async () => {
+      if (!linkedPatientId) {
+        setTrends(null);
+        return;
+      }
+      try {
+        const data = await api.getTrends(linkedPatientId, 7);
         setTrends(data);
       } catch (err) {
         console.error('Failed to load caregiver trends:', err);
       }
     };
     loadTrends();
-  }, [allowRawGlucose, currentRole]);
+  }, [allowRawGlucose, currentRole, linkedPatientId]);
+
+  const handleConnectElder = async () => {
+    if (!currentUser?.id || !connectCode.trim()) return;
+    setConnecting(true);
+    setConnectMsg(null);
+    try {
+      const res = await api.connectCaregiver(currentUser.id, connectCode.trim());
+      setConnectMsg(`✅ ${res.message}`);
+      setConnectCode('');
+      if (res.patient?.id) {
+        const newEntry = {
+          id: res.patient.id,
+          name: res.patient.name,
+          connection_code: res.patient.connection_code,
+        };
+        setLinkedElders((prev) => {
+          const exists = prev.some((e) => e.id === newEntry.id);
+          return exists ? prev : [newEntry, ...prev];
+        });
+        setSelectedElderId(res.patient.id);
+      }
+      const elders = await api.getCaregiverPatients(currentUser.id);
+      if (elders && elders.length > 0) {
+        const mapped = elders.map((e) => ({ id: e.id, name: e.name, connection_code: e.connection_code }));
+        setLinkedElders(mapped);
+      }
+    } catch (err: any) {
+      setConnectMsg(`❌ ${err.message || 'Failed to link elder'}`);
+    } finally {
+      setConnecting(false);
+    }
+  };
 
   const handleToggleConsent = async () => {
+    if (!linkedPatientId) return;
     setUpdatingConsent(true);
     const newFlag = !allowRawGlucose;
     try {
-      await api.updatePatientConsent('pt_ramesh_001', {
+      await api.updatePatientConsent(linkedPatientId, {
         view_raw_glucose: newFlag,
         emergency_escalation: true,
       });
@@ -155,6 +221,81 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({
           <span>{consentSuccessToast}</span>
         </div>
       )}
+
+      {/* Caretaker → Elder Connection Code Card (same system as doctor linking) */}
+      <div className="botanical-card" style={{ padding: '20px 24px', marginBottom: '24px', borderLeft: '6px solid var(--terracotta)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+          <HeartHandshake size={20} color="var(--terracotta)" />
+          <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+            Link Your Elder with a Care Connection Code
+          </div>
+        </div>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 12px' }}>
+          Ask your elder to share their code from their Today Screen (e.g. DIA-ABC1234), enter it below, and you will be linked to their care thread, readings, and alerts.
+        </p>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            value={connectCode}
+            onChange={(e) => setConnectCode(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === 'Enter' && handleConnectElder()}
+            placeholder="DIA-XXXXXX"
+            style={{
+              flex: '1 1 200px', border: '1.5px dashed var(--border-stone)', borderRadius: '10px',
+              padding: '10px 14px', fontSize: '0.95rem', fontWeight: 700, letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleConnectElder}
+            disabled={connecting || !connectCode.trim()}
+            className="btn btn-primary"
+            style={{ opacity: connecting || !connectCode.trim() ? 0.5 : 1 }}
+          >
+            {connecting ? 'Linking…' : '🔗 Link Elder'}
+          </button>
+        </div>
+        {connectMsg && (
+          <div style={{ fontSize: '0.82rem', marginTop: '10px', fontWeight: 600 }}>{connectMsg}</div>
+        )}
+        {linkedElders.length > 0 && (
+          <div style={{ marginTop: '12px' }}>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '6px' }}>
+              Linked Elders ({linkedElders.length}):
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {linkedElders.map((e) => {
+                const isSelected = (activeElder?.id === e.id);
+                return (
+                  <button
+                    key={e.id}
+                    type="button"
+                    onClick={() => setSelectedElderId(e.id)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      border: isSelected ? '1.5px solid var(--terracotta)' : '1px solid var(--border-stone)',
+                      background: isSelected ? 'var(--terracotta-subtle)' : 'var(--surface-white)',
+                      color: isSelected ? 'var(--terracotta)' : 'var(--text-forest)',
+                      fontWeight: isSelected ? 700 : 500,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <span>{e.name}</span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.8, fontFamily: 'monospace' }}>({e.connection_code})</span>
+                    {isSelected && <span>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* DPDP Consent & Access Governance Card */}
       <div className="botanical-card" style={{ padding: '16px 24px', marginBottom: '24px', background: 'var(--surface-clay)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
@@ -364,6 +505,27 @@ export const CaregiverPortal: React.FC<CaregiverPortalProps> = ({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Family WhatsApp Window — read-only: only the patient can send messages */}
+      <div className="botanical-card responsive-card" style={{ marginTop: '24px', borderLeft: '6px solid #25D366' }}>
+        <div style={{ marginBottom: '14px' }}>
+          <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <MessageSquare size={18} color="#25D366" />
+            {patientFirstName}'s WhatsApp Care Chat
+          </h3>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+            Follow {patientFirstName}'s conversation with the AI companion and the doctor. This window is view-only — only the patient can send messages.
+          </p>
+        </div>
+        <div style={{ height: '640px', minHeight: '520px', display: 'flex', flexDirection: 'column' }}>
+          <CareGroupChat
+            language={language}
+            currentUser={currentUser || { id: 'caretaker_guest', role: 'caregiver', name: caregiverName }}
+            patientId={linkedPatientId}
+            patientName={patientName}
+          />
         </div>
       </div>
     </div>

@@ -162,3 +162,30 @@ class AuditLog(Base):
     target_id: Mapped[str] = mapped_column(String, nullable=False)
     details: Mapped[dict] = mapped_column(JSONB, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
+class CareMessage(Base):
+    """Phase 16: persistent shared care-thread message (Supabase Postgres).
+
+    One thread per patient; every role (patient/caretaker/doctor/bot) appends here.
+    Frontend subscribes via Supabase Realtime on this table for live cross-device sync,
+    with REST polling + localStorage as fallbacks.
+    """
+
+    __tablename__ = "care_messages"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=generate_uuid)
+    patient_id: Mapped[str] = mapped_column(String, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True)
+    sender: Mapped[str] = mapped_column(String(50), nullable=False)  # user | bot | doctor | coach | caretaker | system
+    author_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    author_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    is_voice: Mapped[bool] = mapped_column(Boolean, default=False)
+    voice_duration: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    transcript: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    client_msg_id: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)
+
+    __table_args__ = (
+        Index("idx_care_messages_patient_created", "patient_id", "created_at"),
+    )

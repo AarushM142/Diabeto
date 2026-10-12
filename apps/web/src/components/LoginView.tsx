@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Shield, Stethoscope, Sparkles, HeartHandshake, Heart, 
+import {
   ArrowRight, ArrowLeft, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { api, type User, type UserRole } from '../api/client';
@@ -24,58 +23,8 @@ interface DemoRole {
   badgeColor: string;
 }
 
-const DEMO_ROLES: DemoRole[] = [
-  {
-    role: 'clinician',
-    name: 'Dr. Arvind Mehta',
-    title: 'Senior Diabetologist (Clinician of Record)',
-    email: 'dr.mehta@diabeto.care',
-    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&auto=format&fit=crop&q=80',
-    icon: Stethoscope,
-    badge: 'MD Gated Portal',
-    badgeColor: 'var(--status-ok)',
-  },
-  {
-    role: 'coach',
-    name: 'Sister Kavita Deshmukh',
-    title: 'Care Coordinator & Nutrition Coach',
-    email: 'kavita.coach@diabeto.care',
-    avatar: 'https://images.unsplash.com/photo-1594824813589-8d77c25091a1?w=100&auto=format&fit=crop&q=80',
-    icon: Sparkles,
-    badge: 'Care Specialist',
-    badgeColor: 'var(--terracotta)',
-  },
-  {
-    role: 'caregiver',
-    name: 'Ananya Kulkarni',
-    title: 'Primary Family Caregiver (Daughter)',
-    email: 'ananya.k@example.com',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
-    icon: HeartHandshake,
-    badge: 'Family Portal',
-    badgeColor: 'var(--text-forest)',
-  },
-  {
-    role: 'patient',
-    name: 'Ramesh Kulkarni',
-    title: 'Senior Patient (72 yrs)',
-    email: 'ramesh.kulkarni@example.com',
-    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80',
-    icon: Heart,
-    badge: 'Senior Sanctuary',
-    badgeColor: 'var(--accent-sage)',
-  },
-  {
-    role: 'admin',
-    name: 'Clinic Admin Desk',
-    title: 'Clinic Operations Administrator',
-    email: 'admin@diabeto.care',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
-    icon: Shield,
-    badge: 'Admin Audit',
-    badgeColor: 'var(--accent-sage-dark)',
-  },
-];
+// Seed demo roles removed (Phase 16): real signup/signin only.
+const DEMO_ROLES: DemoRole[] = [];
 
 export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, initialRole }) => {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup' | 'demo'>('signin');
@@ -338,9 +287,14 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack, in
         {activeTab === 'demo' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600 }}>
-              1-Click instant access to persona dashboards:
+              Demo accounts removed — please sign in or sign up with a real account.
             </div>
 
+            {DEMO_ROLES.length === 0 && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', padding: '12px', textAlign: 'center' }}>
+                No demo roles available.
+              </div>
+            )}
             {DEMO_ROLES.map((demo) => {
               return (
                 <button

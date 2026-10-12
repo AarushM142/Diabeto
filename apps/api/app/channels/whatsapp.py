@@ -92,21 +92,60 @@ async def handle_whatsapp_webhook(
     if not from_phone or (not incoming_text and not incoming_image_url):
         return {"status": "ignored", "reason": "no message content"}
 
-    # 2. Lookup Patient by Phone (last 10 digits)
-    phone_clean = re.sub(r"\D", "", from_phone)[-10:]
-    stmt = select(Patient).where(Patient.phone.contains(phone_clean))
-    res = await db.execute(stmt)
-    patient = res.scalar_one_or_none()
+    # 2. Lookup Patient by ID or Phone
+    patient = None
+    patient_id_param = ""
+    patient_name_param = ""
+    req_lang_param = ""
+    if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
+        patient_id_param = str(form_data.get("PatientId", "")).strip()
+        patient_name_param = str(form_data.get("PatientName", "")).strip()
+        req_lang_param = str(form_data.get("Language", "")).strip().lower()
 
-    # Fallback to Ramesh if testing from unrecognized number
-    if not patient:
-        stmt_fallback = select(Patient).where(Patient.id == "pt_ramesh_001")
-        res_fb = await db.execute(stmt_fallback)
-        patient = res_fb.scalar_one_or_none()
+    if patient_id_param:
+        res = await db.execute(select(Patient).where(Patient.id == patient_id_param))
+        patient = res.scalar_one_or_none()
 
-    patient_name = patient.name if patient else "Valued Senior"
-    patient_id = patient.id if patient else "pt_ramesh_001"
-    patient_lang = patient.language if patient else "hi"
+    if not patient and from_phone:
+        res = await db.execute(select(Patient).where(Patient.id == from_phone))
+        patient = res.scalar_one_or_none()
+
+    if not patient and from_phone:
+        phone_clean = re.sub(r"\D", "", from_phone)[-10:]
+        if phone_clean:
+            stmt = select(Patient).where(Patient.phone.contains(phone_clean))
+            res = await db.execute(stmt)
+            patient = res.scalar_one_or_none()
+
+    # Determine respectful patient name (avoid technical placeholder IDs like "Patient 29FB0A")
+    if patient_name_param and not patient_name_param.lower().startswith("patient ") and patient_name_param.lower() != "your elder":
+        patient_name = patient_name_param
+        if patient and (not patient.name or patient.name.lower().startswith("patient ") or patient.name != patient_name_param):
+            patient.name = patient_name_param
+            await db.flush()
+    elif patient and patient.name and not patient.name.lower().startswith("patient "):
+        patient_name = patient.name
+    else:
+        # Check SAVED_USER_PROFILES if patient_id matches
+        from apps.api.app.modules.auth.router import SAVED_USER_PROFILES
+        found_profile_name = None
+        target_pid = patient.id if patient else patient_id_param
+        for prof in SAVED_USER_PROFILES.values():
+            if prof.get("id") == target_pid:
+                prof_n = prof.get("name")
+                if prof_n and not prof_n.lower().startswith("patient "):
+                    found_profile_name = prof_n
+                    break
+        if found_profile_name:
+            patient_name = found_profile_name
+            if patient:
+                patient.name = found_profile_name
+                await db.flush()
+        else:
+            patient_name = "Valued Senior"
+
+    patient_id = patient.id if patient else (patient_id_param or "")
+    patient_lang = req_lang_param if req_lang_param in ["en", "hi", "mr"] else ((patient.language.lower() if patient and patient.language else "en"))
 
     # --- INBOUND MEAL PHOTO ROUTING ---
     if incoming_image_url or (incoming_text and any(w in incoming_text.lower() for w in ["meal", "plate", "food", "khana", "jevan", "roti", "chapati", "thali", "lunch", "dinner", "nashta", "sabzi", "jamun"])):
@@ -123,10 +162,11 @@ async def handle_whatsapp_webhook(
         cgm_corr = correlate_meal_with_cgm(analysis)
         record_meal_entry(analysis, cgm_corr)
 
-        # Save HealthEvent in database
-        event = HealthEvent(
-            patient_id=patient_id,
-            type="meal",
+        # Save HealthEvent in database (only for onboarded patients)
+        if patient:
+            event = HealthEvent(
+                patient_id=patient_id,
+                type="meal",
             value={
                 "meal_id": analysis.meal_id,
                 "meal_type": analysis.meal_type,
@@ -140,8 +180,9 @@ async def handle_whatsapp_webhook(
             reported_by="patient",
             source_msg_id=source_msg_id or None
         )
-        db.add(event)
-        await db.flush()
+        if patient:
+            db.add(event)
+            await db.flush()
 
         foods_str = ", ".join([f.food for f in analysis.foods])
         reply_msg = (
@@ -184,8 +225,8 @@ async def handle_whatsapp_webhook(
         )
         reply_msg = companion_resp.get("reply_text", "")
 
-        # Record health event if adherence or symptoms mentioned
-        if any(w in incoming_text.lower() for w in ["dawa", "tablet", "goli", "medicine", "metformin", "glimepiride", "teneligliptin"]):
+        # Record health event if adherence or symptoms mentioned (onboarded patients only)
+        if patient and any(w in incoming_text.lower() for w in ["dawa", "tablet", "goli", "medicine", "metformin", "glimepiride", "teneligliptin"]):
             med_event = HealthEvent(
                 patient_id=patient_id,
                 type="adherence",
@@ -213,18 +254,20 @@ async def handle_whatsapp_webhook(
 
     # 4. Plausibility Validation (20 - 600 mg/dL)
     if glucose_val < 20 or glucose_val > 600:
-        err_msg = (
-            f"⚠️ Reading of {glucose_val} mg/dL seems unusual. Please re-check your glucometer and send again."
-            if patient_lang == "en" else
-            f"⚠️ {glucose_val} mg/dL की रीडिंग असामान्य लग रही है। कृपया मीटर दोबारा जांचें और फिर से भेजें।"
-        )
+        if patient_lang == "hi":
+            err_msg = f"⚠️ {glucose_val} mg/dL की रीडिंग असामान्य लग रही है। कृपया मीटर दोबारा जांचें और फिर से भेजें।"
+        elif patient_lang == "mr":
+            err_msg = f"⚠️ {glucose_val} mg/dL चे रिडिंग असामान्य वाटते. कृपया ग्लुकोमीटर पुन्हा तपासा."
+        else:
+            err_msg = f"⚠️ Reading of {glucose_val} mg/dL seems unusual. Please re-check your glucometer and send again."
+
         if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
             twiml = f'<?xml version="1.0" encoding="UTF-8"?><Response><Message>{err_msg}</Message></Response>'
             return Response(content=twiml, media_type="application/xml")
         await send_whatsapp_message(from_phone, err_msg)
         return {"status": "implausible_reading", "value": glucose_val}
 
-    # 5. Save Health Event in Database (Idempotent: skip duplicates if source_msg_id exists)
+    # 5. Save Health Event in Database (Idempotent; onboarded patients only)
     if source_msg_id:
         existing_event = await db.execute(
             select(HealthEvent).where(HealthEvent.source_msg_id == source_msg_id)
@@ -232,47 +275,60 @@ async def handle_whatsapp_webhook(
         if existing_event.scalar_one_or_none():
             return {"status": "duplicate_skipped", "source_msg_id": source_msg_id}
 
-    event = HealthEvent(
-        patient_id=patient_id,
-        type="glucose",
-        value={"mgdl": glucose_val, "context": "fasting", "transcript": incoming_text},
-        measured_at=datetime.now(timezone.utc),
-        reported_by="patient",
-        source_msg_id=source_msg_id or None,
-    )
-    db.add(event)
-    await db.flush()
+    risk_event = None
+    if patient:
+        event = HealthEvent(
+            patient_id=patient_id,
+            type="glucose",
+            value={"mgdl": glucose_val, "context": "fasting", "transcript": incoming_text},
+            measured_at=datetime.now(timezone.utc),
+            reported_by="patient",
+            source_msg_id=source_msg_id or None,
+        )
+        db.add(event)
+        await db.flush()
 
-    # 6. Evaluate Deterministic Risk Engine (Zero-AI)
-    risk_event = await evaluate_and_record_risk(
-        session=db,
-        patient_id=patient_id,
-        event_id=event.id,
-        event_type="glucose",
-        event_value={"mgdl": glucose_val},
-    )
+        # 6. Evaluate Deterministic Risk Engine (Zero-AI)
+        risk_event = await evaluate_and_record_risk(
+            session=db,
+            patient_id=patient_id,
+            event_id=event.id,
+            event_type="glucose",
+            event_value={"mgdl": glucose_val},
+        )
 
     # 7. Construct Immediate WhatsApp Response
     if risk_event and risk_event.severity == "critical":
         if risk_event.type == "critical_hypoglycemia":
-            response_text = (
-                f"🚨 EMERGENCY: Your glucose is {glucose_val} mg/dL (Critically Low). Consume 3 spoons of sugar or fruit juice immediately. If dizzy, call 112 or 108. We have alerted your family."
-                if patient_lang == "en" else
-                f"🚨 आपातकालीन सूचना: आपकी शुगर {glucose_val} mg/dL (बहुत कम) है। तुरंत 3 चम्मच चीनी या फलों का जूस लें। चक्कर आने पर 112 या 108 पर कॉल करें।"
-            )
+            if patient_lang == "hi":
+                response_text = f"🚨 आपातकालीन सूचना: आपकी शुगर {glucose_val} mg/dL (बहुत कम) है। तुरंत 3 चम्मच चीनी या फलों का जूस लें। चक्कर आने पर 112 या 108 पर कॉल करें।"
+            elif patient_lang == "mr":
+                response_text = f"🚨 तातडीची सूचना: आपली साखर {glucose_val} mg/dL (अतिशय कमी) आहे. त्वरित ३ चमचे साखर किंवा फळांचा रस घ्या. ११२ वर फोन करा."
+            else:
+                response_text = f"🚨 EMERGENCY: Your glucose is {glucose_val} mg/dL (Critically Low). Consume 3 spoons of sugar or fruit juice immediately. If dizzy, call 112 or 108. We have alerted your family."
         else:
-            response_text = (
-                f"⚠️ URGENT: Your glucose is {glucose_val} mg/dL (Very High). Please drink water. Your care team has been notified."
-                if patient_lang == "en" else
-                f"⚠️ सूचना: आपकी शुगर {glucose_val} mg/dL (अधिक) है। कृपया पानी पिएं। आपकी केयर टीम को सूचित कर दिया गया है।"
-            )
+            if patient_lang == "hi":
+                response_text = f"⚠️ सूचना: आपकी शुगर {glucose_val} mg/dL (अधिक) है। कृपया पानी पिएं। आपकी केयर टीम को सूचित कर दिया गया है।"
+            elif patient_lang == "mr":
+                response_text = f"⚠️ सूचना: आपली साखर {glucose_val} mg/dL (जास्त) आहे. भरपूर पाणी प्या. आपल्या डॉक्टरांना कळवले आहे."
+            else:
+                response_text = f"⚠️ URGENT: Your glucose is {glucose_val} mg/dL (Very High). Please drink water. Your care team has been notified."
     else:
-        # Normal or Watch confirmation
-        response_text = (
-            f"✅ Namaste {patient_name}! Your glucose reading of {glucose_val} mg/dL has been recorded. Keep up the good work!"
-            if patient_lang == "en" else
-            f"✅ नमस्ते {patient_name} जी! आपकी शुगर {glucose_val} mg/dL दर्ज कर ली गई है।"
-        )
+        # Normal or Watch confirmation (only claim recording for onboarded patients)
+        if patient:
+            if patient_lang == "hi":
+                response_text = f"✅ नमस्ते {patient_name} जी! आपकी शुगर {glucose_val} mg/dL दर्ज कर ली गई है।"
+            elif patient_lang == "mr":
+                response_text = f"✅ नमस्कार {patient_name} जी! आपले {glucose_val} mg/dL ग्लुकोज रिडिंग नोंदवले गेले आहे."
+            else:
+                response_text = f"✅ Namaste {patient_name}! Your glucose reading of {glucose_val} mg/dL has been recorded."
+        else:
+            if patient_lang == "hi":
+                response_text = "✅ नमस्ते! आपकी रीडिंग मिल गई है। इसे सहेजने के लिए कृपया पहले Diabeto ऐप में ऑनबोर्डिंग पूरी करें।"
+            elif patient_lang == "mr":
+                response_text = "✅ नमस्कार! आपले रिडिंग मिळाले आहे. संपूर्ण माहिती सेव्ह करण्यासाठी कृपया Diabeto ॲपमध्ये ऑनबोर्डिंग पूर्ण करा."
+            else:
+                response_text = "✅ Namaste! Your reading is noted. To save readings and link your care team, please complete onboarding in the Diabeto app first."
 
     # If inbound is from Twilio Form, reply directly via TwiML XML (no ContentSid restriction)
     if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
@@ -317,6 +373,7 @@ class VoiceSynthesisResponse(BaseModel):
 
 
 @router.post("/voice/synthesize", response_model=VoiceSynthesisResponse, tags=["Voice Synthesis"])
+@router.post("/whatsapp/voice/synthesize", response_model=VoiceSynthesisResponse, tags=["Voice Synthesis"])
 async def synthesize_voice_reply(payload: VoiceSynthesisRequest):
     """
     Synthesizes multilingual spoken voice audio using Sarvam AI Bulbul TTS (Bulbul v3).

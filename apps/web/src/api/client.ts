@@ -185,13 +185,35 @@ export interface ClinicianPatientSummary {
   clinician_of_record_id?: string | null;
 }
 
+export interface CareMessage {
+  id: string;
+  patient_id: string;
+  sender: 'user' | 'bot' | 'doctor' | 'coach' | 'caretaker' | 'system';
+  author_name?: string | null;
+  author_id?: string | null;
+  text: string;
+  is_voice?: boolean;
+  voice_duration?: string | null;
+  transcript?: string | null;
+  client_msg_id?: string | null;
+  created_at: string;
+}
+
 export interface ConnectionCodeResponse {
   patient_id: string;
   patient_name: string;
   connection_code: string;
-  doctor_id: string;
+  doctor_id?: string;
   doctor_name?: string | null;
+  doctor_connected?: boolean;
+  caregiver_id?: string | null;
+  caregiver_name?: string | null;
+  caregiver_phone?: string | null;
+  caregiver_relation?: string | null;
+  caregiver_connected?: boolean;
   invite_link: string;
+  doctor_invite_link?: string | null;
+  caregiver_invite_link?: string | null;
 }
 
 export interface DetectedFoodItem {
@@ -294,8 +316,11 @@ export const clearAuthSession = () => {
   }
 };
 
-let activeRole: UserRole = 'clinician';
-let activeUserId: string = 'doc_mehta_101';
+// No seed persona defaults: the active user comes from the real auth session.
+// Header fallbacks are empty so unauthenticated calls fail loudly (401)
+// instead of silently acting as a demo doctor.
+let activeRole: UserRole = 'patient';
+let activeUserId: string = '';
 
 export const setGlobalPersona = (role: UserRole, userId?: string) => {
   activeRole = role;
@@ -587,7 +612,7 @@ export const api = {
     return {
       id: bookingRecord.id,
       status: 'confirmed',
-      message: `Appointment confirmed with Dr. Arvind Mehta for ${booking.date} at ${booking.time_slot}`,
+      message: `Appointment confirmed for ${booking.date} at ${booking.time_slot}`,
     };
   },
 
@@ -641,7 +666,7 @@ export const api = {
     if (payload.image_file) {
       const formData = new FormData();
       formData.append('file', payload.image_file);
-      formData.append('patient_id', payload.patient_id || 'pt_ramesh_001');
+      if (payload.patient_id) formData.append('patient_id', payload.patient_id);
       if (payload.meal_type) formData.append('meal_type', payload.meal_type);
       if (payload.notes) formData.append('context_hint', payload.notes);
 
@@ -663,7 +688,7 @@ export const api = {
         body: JSON.stringify({
           image_base64: payload.image_base64,
           notes: payload.notes,
-          patient_id: payload.patient_id || 'pt_ramesh_001',
+          patient_id: payload.patient_id,
           meal_type: payload.meal_type,
         }),
       });
@@ -672,7 +697,8 @@ export const api = {
     }
   },
 
-  async getMealHistory(patientId: string = 'pt_ramesh_001'): Promise<any[]> {
+  async getMealHistory(patientId: string): Promise<any[]> {
+    if (!patientId) return [];
     try {
       const res = await fetch(`${API_BASE}/meals/history/${patientId}`, {
         headers: getHeaders(),
@@ -684,7 +710,8 @@ export const api = {
     }
   },
 
-  async getClinicianPatients(doctorId: string = 'doc_mehta_101'): Promise<ClinicianPatientSummary[]> {
+  async getClinicianPatients(doctorId: string): Promise<ClinicianPatientSummary[]> {
+    if (!doctorId) return [];
     const res = await fetch(`${API_BASE}/clinicians/${doctorId}/patients`, {
       headers: getHeaders(),
     });
@@ -705,27 +732,85 @@ export const api = {
     return res.json();
   },
 
-  async getPatientConnectionCode(patientId: string = 'pt_ramesh_001'): Promise<ConnectionCodeResponse> {
-    try {
-      const res = await fetch(`${API_BASE}/patients/${patientId}/connection-code`, {
-        headers: getHeaders(),
-      });
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch {
-      // ignore and use fallback
+  async getPatientConnectionCode(patientId: string): Promise<ConnectionCodeResponse> {
+    const res = await fetch(`${API_BASE}/patients/${patientId}/connection-code`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to load connection code');
+    return res.json();
+  },
+
+  async connectCaregiver(caregiverId: string, connectionCode: string): Promise<{ success: boolean; message: string; patient: any }> {
+    const res = await fetch(`${API_BASE}/caregivers/connect-patient`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ caregiver_id: caregiverId, connection_code: connectionCode }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to link elder' }));
+      throw new Error(err.detail || 'Failed to link elder');
     }
-    const cleanId = patientId.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-    const suffix = cleanId.slice(-4) || '789';
-    return {
-      patient_id: patientId,
-      patient_name: 'Patient',
-      connection_code: `DIA-RAM${suffix}`,
-      doctor_id: 'doc_mehta_101',
-      doctor_name: 'Dr. Arvind Mehta',
-      invite_link: `http://localhost:5173/?connect_code=DIA-RAM${suffix}`,
-    };
+    return res.json();
+  },
+
+  async getCaregiverPatients(caregiverId: string): Promise<ClinicianPatientSummary[]> {
+    if (!caregiverId) return [];
+    const res = await fetch(`${API_BASE}/caregivers/${caregiverId}/patients`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to load linked elders');
+    return res.json();
+  },
+
+  async connectCaregiverFromPatient(
+    patientId: string,
+    payload: { caregiver_name: string; caregiver_phone: string; relation?: string }
+  ): Promise<{ success: boolean; message: string; caregiver: any }> {
+    const res = await fetch(`${API_BASE}/patients/${patientId}/connect-caregiver`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to link caretaker' }));
+      throw new Error(err.detail || 'Failed to link caretaker');
+    }
+    return res.json();
+  },
+
+  async getCareMessages(patientId: string, limit = 200): Promise<CareMessage[]> {
+    if (!patientId) return [];
+    const res = await fetch(`${API_BASE}/care/${patientId}/messages?limit=${limit}`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) return [];
+    return res.json();
+  },
+
+  async sendCareMessage(
+    patientId: string,
+    msg: {
+      sender: string;
+      author_name?: string;
+      author_id?: string;
+      text: string;
+      is_voice?: boolean;
+      voice_duration?: string;
+      transcript?: string;
+      client_msg_id?: string;
+    },
+  ): Promise<CareMessage | null> {
+    try {
+      const res = await fetch(`${API_BASE}/care/${patientId}/messages`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(msg),
+      });
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
+    }
   },
 };
 

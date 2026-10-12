@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import {
-  Heart, Stethoscope, Sparkles, Terminal, HeartHandshake,
+  Heart, Stethoscope, Sparkles, HeartHandshake,
   Globe, Type, Menu, X, Phone, LogOut, ShieldCheck, UserCog,
   Pill, TrendingUp, Utensils, CalendarCheck, CheckCircle2,
-  Activity
+  Activity, MessageCircle, Users, AlertOctagon, Link as LinkIcon
 } from 'lucide-react';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
 import type { User, UserRole } from '../api/client';
 
-export type ActiveTab = 'patient' | 'clinician' | 'coach' | 'caregiver' | 'simulator';
+export type ActiveTab = 'patient' | 'clinician' | 'coach' | 'caregiver' | 'simulator' | 'caregroup';
 
 export type PatientSection = 'overview' | 'medications' | 'glucose' | 'meals' | 'careteam' | 'wellness';
+
+export type ClinicianSection = 'roster' | 'triage' | 'chart' | 'meals' | 'careplan' | 'connect';
 
 export type TextSize = 'normal' | 'large' | 'xl';
 
@@ -28,6 +30,15 @@ interface SidebarNavProps {
   onOpenEditProfile?: () => void;
   activePatientSection?: PatientSection;
   onSelectPatientSection?: (section: PatientSection) => void;
+  activeClinicianSection?: ClinicianSection;
+  onSelectClinicianSection?: (section: ClinicianSection) => void;
+  selectedPatientSummary?: {
+    name: string;
+    age?: number;
+    latest_glucose?: number | null;
+    tir_percentage?: number | null;
+    severity?: string;
+  };
   onOpenMealScanner?: () => void;
   seniorSimpleMode?: boolean;
   onToggleSeniorSimpleMode?: () => void;
@@ -46,6 +57,9 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   onOpenEditProfile,
   activePatientSection = 'overview',
   onSelectPatientSection,
+  activeClinicianSection = 'roster',
+  onSelectClinicianSection,
+  selectedPatientSummary,
   onOpenMealScanner,
   seniorSimpleMode,
   onToggleSeniorSimpleMode,
@@ -64,6 +78,16 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     }
     if (onSelectPatientSection) {
       onSelectPatientSection(sectionId);
+    }
+    setMobileDrawerOpen(false);
+  };
+
+  const handleClinicianSectionClick = (sectionId: ClinicianSection) => {
+    if (activeTab !== 'clinician') {
+      setActiveTab('clinician');
+    }
+    if (onSelectClinicianSection) {
+      onSelectClinicianSection(sectionId);
     }
     setMobileDrawerOpen(false);
   };
@@ -101,11 +125,14 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     {
       id: 'simulator' as ActiveTab,
       label: t('tabSimulator', language),
-      icon: Terminal,
-      badge: 'Simulate',
-      allowedRoles: ['clinician', 'coach', 'admin'] as UserRole[],
+      icon: MessageCircle,
+      badge: 'WhatsApp AI',
+      allowedRoles: ['admin'] as UserRole[],
     },
   ];
+
+  // Care Group Chat — visible to every authenticated user
+  const isCareGroupActive = activeTab === 'caregroup';
 
   // Strictly filter portals by authenticated user's role
   const visibleNavItems = allNavItems.filter((item) =>
@@ -151,11 +178,105 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     { id: 'careteam', label: t('careTeam', language), icon: CalendarCheck },
   ];
 
+  // Clinician Sub-navigation Sections (Strictly Patient & Clinical Care)
+  const clinicianSections: {
+    id: ClinicianSection;
+    label: string;
+    icon: React.FC<any>;
+    badge?: string;
+    badgeColor?: string;
+  }[] = [
+    {
+      id: 'roster',
+      label: language === 'hi' ? 'मरीज़ निर्देशिका' : language === 'mr' ? 'रुग्ण यादी' : 'Patients Directory',
+      icon: Users,
+      badge: 'All (8)',
+    },
+    {
+      id: 'triage',
+      label: language === 'hi' ? 'ट्राइएज व अलर्ट' : language === 'mr' ? 'ट्रायज व सतर्कता' : 'Triage & Alerts',
+      icon: AlertOctagon,
+      badge: '2 Critical',
+      badgeColor: 'var(--status-danger)',
+    },
+    {
+      id: 'chart',
+      label: language === 'hi' ? 'मरीज़ चार्ट व एजीपी' : language === 'mr' ? 'रुग्ण आलेख व एजीपी' : 'Patient Chart & AGP',
+      icon: TrendingUp,
+      badge: 'Telemetry',
+    },
+    {
+      id: 'meals',
+      label: language === 'hi' ? 'भोजन व पोषण लॉग' : language === 'mr' ? 'जेवण व पोषण नोंद' : 'Meal & Nutrition Logs',
+      icon: Utensils,
+      badge: 'Vision AI',
+    },
+    {
+      id: 'careplan',
+      label: language === 'hi' ? 'दवाएं व देखभाल योजना' : language === 'mr' ? 'औषधे व काळजी योजना' : 'Rx & ABDM Care Plan',
+      icon: Pill,
+      badge: 'Sign-off',
+    },
+    {
+      id: 'connect',
+      label: language === 'hi' ? '+ नया मरीज़ जोड़ें' : language === 'mr' ? '+ नवीन रुग्ण जोडा' : '+ Connect Patient',
+      icon: LinkIcon,
+      badge: 'Code',
+      badgeColor: 'var(--accent-sage-dark)',
+    },
+  ];
+
   const renderNavContent = () => {
     return (
       <>
-        {/* 1. Main Role Portals (If user is Admin or has multiple portals) */}
-        {visibleNavItems.length > 1 && (
+        {/* ── AI Care Companion Group Chat — prominent top nav item for ALL roles ── */}
+        <button
+          type="button"
+          onClick={() => handleTabClick('caregroup')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '12px 14px',
+            borderRadius: '14px',
+            border: isCareGroupActive ? '2px solid #25D366' : '1.5px solid #25D36644',
+            background: isCareGroupActive ? '#075E54' : '#F0FBF4',
+            color: isCareGroupActive ? '#FFFFFF' : '#075E54',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            width: '100%',
+            textAlign: 'left',
+            marginBottom: '16px',
+            transition: 'all 0.18s ease',
+            boxShadow: isCareGroupActive ? '0 2px 12px rgba(7,94,84,0.3)' : '0 1px 4px rgba(37,211,102,0.15)',
+          }}
+        >
+          <div style={{
+            width: '32px', height: '32px', borderRadius: '50%',
+            background: isCareGroupActive ? 'rgba(255,255,255,0.2)' : '#25D366',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.1rem', flexShrink: 0,
+          }}>
+            💬
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '0.88rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {language === 'hi' ? 'केयर ग्रुप चैट' : language === 'mr' ? 'केअर ग्रुप चॅट' : 'AI Care Companion'}
+            </div>
+            <div style={{ fontSize: '0.65rem', opacity: 0.8 }}>
+              {language === 'hi' ? 'मरीज़ + AI + परिवार + डॉक्टर' : language === 'mr' ? 'रुग्ण + AI + कुटुंब + डॉक्टर' : 'Patient • AI • Caretaker • Doctor'}
+            </div>
+          </div>
+          <span style={{
+            fontSize: '0.6rem', fontWeight: 700,
+            background: isCareGroupActive ? 'rgba(255,255,255,0.25)' : '#25D36622',
+            color: isCareGroupActive ? '#FFF' : '#075E54',
+            padding: '2px 7px', borderRadius: '8px', flexShrink: 0,
+          }}>LIVE</span>
+        </button>
+        {/* 1. Main Role Portals (Shown ONLY for Admins with multi-portal access; NEVER for Clinicians) */}
+        {currentUser.role !== 'clinician' && visibleNavItems.length > 1 && (
           <div style={{ marginBottom: '14px' }}>
             <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 8px 6px' }}>
               {t('portalsTitle', language)}
@@ -243,6 +364,79 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                       <Icon size={18} color={isSelected ? 'var(--accent-sage-dark)' : 'var(--text-muted)'} strokeWidth={isSelected ? 2.3 : 1.8} />
                       <span>{sec.label}</span>
                     </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 3. Clinician Practice & Patient Directory Navigation */}
+        {(currentUser.role === 'clinician' || activeTab === 'clinician') && (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 8px 6px',
+            }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {language === 'hi' ? 'मरीज़ व क्लिनिकल टूल्स' : language === 'mr' ? 'रुग्ण व क्लिनिकल साधने' : 'Patients & Clinical Tools'}
+              </span>
+              <span style={{
+                fontSize: '0.62rem',
+                fontWeight: 700,
+                color: 'var(--status-ok)',
+                background: 'var(--surface-clay)',
+                padding: '1px 6px',
+                borderRadius: '4px',
+              }}>
+                8 Patients
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              {clinicianSections.map((sec) => {
+                const Icon = sec.icon;
+                const isSelected = activeTab === 'clinician' && activeClinicianSection === sec.id;
+                return (
+                  <button
+                    key={sec.id}
+                    type="button"
+                    onClick={() => handleClinicianSectionClick(sec.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      border: isSelected ? '1.5px solid var(--accent-sage-dark)' : '1px solid transparent',
+                      background: isSelected ? 'var(--accent-sage-subtle)' : 'transparent',
+                      color: isSelected ? 'var(--text-forest)' : 'var(--text-forest)',
+                      fontWeight: isSelected ? 700 : 500,
+                      fontSize: '0.86rem',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textAlign: 'left',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Icon size={17} color={isSelected ? 'var(--accent-sage-dark)' : 'var(--text-muted)'} strokeWidth={isSelected ? 2.3 : 1.8} />
+                      <span>{sec.label}</span>
+                    </div>
+                    {sec.badge && (
+                      <span style={{
+                        fontSize: '0.64rem',
+                        fontWeight: 700,
+                        padding: '2px 6px',
+                        borderRadius: '6px',
+                        background: sec.badgeColor ? `${sec.badgeColor}15` : 'var(--surface-clay)',
+                        color: sec.badgeColor || 'var(--text-dim)',
+                      }}>
+                        {sec.badge}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -396,13 +590,52 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           </div>
         )}
 
-        {/* Doctor Portal Quick Tools (Shown only when in Clinician Portal) */}
+        {/* Doctor Practice Widgets (Shown for Clinician) */}
         {(currentUser.role === 'clinician' || activeTab === 'clinician') && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
             <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 8px 2px' }}>
-              Clinical Fast Triage
+              {language === 'hi' ? 'क्लिनिक सारांश' : language === 'mr' ? 'क्लिनिक सारांश' : 'Practice Summary'}
             </div>
 
+            {/* Selected Patient Quick Focus Card */}
+            {selectedPatientSummary && (
+              <div style={{
+                background: 'var(--surface-clay)',
+                border: '1px solid var(--border-stone)',
+                borderRadius: '14px',
+                padding: '10px 12px',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Active Patient
+                  </span>
+                  <span style={{
+                    fontSize: '0.65rem',
+                    color: selectedPatientSummary.severity === 'critical' ? 'var(--status-danger)' : 'var(--status-ok)',
+                    fontWeight: 700,
+                    background: selectedPatientSummary.severity === 'critical' ? 'var(--status-danger-bg)' : 'var(--surface-white)',
+                    padding: '1px 6px',
+                    borderRadius: '4px',
+                  }}>
+                    {selectedPatientSummary.severity === 'critical' ? 'Urgent Alert' : 'In Range'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+                  {selectedPatientSummary.name}
+                  {selectedPatientSummary.age ? ` (${selectedPatientSummary.age}y)` : ''}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+                  <span className="font-serif tabular" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+                    {selectedPatientSummary.latest_glucose || 128}
+                  </span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                    mg/dL • TIR {selectedPatientSummary.tir_percentage || 78.6}%
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Practice Statistics */}
             <div style={{
               background: 'var(--surface-clay)',
               border: '1px solid var(--border-stone)',
@@ -429,17 +662,22 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               </div>
             </div>
 
+            {/* ABDM Clinic Health Facility Card */}
             <div style={{
               background: 'var(--accent-sage-subtle)',
               border: '1px solid var(--accent-sage-border)',
               borderRadius: '14px',
               padding: '10px 12px',
             }}>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-forest)', marginBottom: '4px' }}>
-                💡 Quick Patient Link
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                <ShieldCheck size={13} color="var(--accent-sage-dark)" />
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+                  ABDM Facility Active
+                </span>
               </div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                Ask elders to share their 6-letter connection code (e.g. <code>DIA-RAM789</code>) or use the <strong>+ Connect Patient</strong> button.
+              <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)', lineHeight: 1.35 }}>
+                HFR: <code>HFR-MH-PUN-0192</code><br />
+                Pune Central Diabetes Clinic
               </div>
             </div>
           </div>

@@ -8,13 +8,12 @@ from apps.api.app.core.config import settings
 # If running under pytest or test environment, use NullPool to prevent asyncpg event loop leakage across test loops
 is_testing = "pytest" in sys.modules or settings.ENVIRONMENT == "test"
 
-# Create async engine
+# Always use NullPool so connections are released back to the Supabase pooler immediately
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.DEBUG,
+    echo=False,
     future=True,
-    pool_pre_ping=True,
-    **({"poolclass": NullPool} if is_testing else {}),
+    poolclass=NullPool,
 )
 
 # Create async sessionmaker

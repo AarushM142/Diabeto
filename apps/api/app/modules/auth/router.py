@@ -9,7 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 
 from apps.api.app.core.database import get_db
-from apps.api.app.core.auth import get_current_user, require_roles, create_access_token, PREDEFINED_PERSONAS, ensure_db_user
+from apps.api.app.core.auth import (
+    get_current_user,
+    require_roles,
+    create_access_token,
+    PREDEFINED_PERSONAS,
+    ensure_db_user,
+    ensure_db_patient,
+    generate_patient_connection_code,
+)
 from apps.api.app.models.entities import AuditLog, Patient
 
 router = APIRouter(prefix="/v1", tags=["Authentication & Audit"])
@@ -136,10 +144,6 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
                 "title": f"Verified {role.capitalize()}",
                 "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
             }
-    # New user — save to registry
-    if email_clean not in SAVED_USER_PROFILES:
-        SAVED_USER_PROFILES[email_clean] = matched_persona
-        _save_profiles(SAVED_USER_PROFILES)
 
     await ensure_db_user(
         db=db,
@@ -149,6 +153,26 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
         phone=matched_persona.get("phone"),
         language=matched_persona.get("language", "en"),
     )
+
+    if matched_persona.get("role") == "patient":
+        p_row = await ensure_db_patient(
+            db=db,
+            patient_id=matched_persona["id"],
+            name=matched_persona.get("name", "Patient"),
+            phone=matched_persona.get("phone"),
+            language=matched_persona.get("language", "hi"),
+            age=matched_persona.get("age", 65),
+            gender=matched_persona.get("gender", "Male"),
+        )
+        code = (p_row.consent_flags or {}).get("connection_code") or generate_patient_connection_code(matched_persona["id"], matched_persona.get("name"))
+        matched_persona["connection_code"] = code
+        if "patient_profile" not in matched_persona or not isinstance(matched_persona["patient_profile"], dict):
+            matched_persona["patient_profile"] = {}
+        matched_persona["patient_profile"]["connection_code"] = code
+
+    # Save to registry
+    SAVED_USER_PROFILES[email_clean] = matched_persona
+    _save_profiles(SAVED_USER_PROFILES)
     await db.commit()
 
     token = create_access_token(matched_persona)
@@ -204,10 +228,6 @@ async def google_auth(payload: GoogleAuthRequest, db: AsyncSession = Depends(get
         if payload.profile.get("phone"):
             matched_persona["phone"] = payload.profile["phone"]
 
-    # Persist in registry
-    SAVED_USER_PROFILES[email] = matched_persona
-    _save_profiles(SAVED_USER_PROFILES)
-
     await ensure_db_user(
         db=db,
         user_id=matched_persona["id"],
@@ -216,6 +236,26 @@ async def google_auth(payload: GoogleAuthRequest, db: AsyncSession = Depends(get
         phone=matched_persona.get("phone"),
         language=matched_persona.get("language", "en"),
     )
+
+    if matched_persona.get("role") == "patient":
+        p_row = await ensure_db_patient(
+            db=db,
+            patient_id=matched_persona["id"],
+            name=matched_persona.get("name", name),
+            phone=matched_persona.get("phone"),
+            language=matched_persona.get("language", "hi"),
+            age=matched_persona.get("age", 65),
+            gender=matched_persona.get("gender", "Male"),
+        )
+        code = (p_row.consent_flags or {}).get("connection_code") or generate_patient_connection_code(matched_persona["id"], matched_persona.get("name"))
+        matched_persona["connection_code"] = code
+        if "patient_profile" not in matched_persona or not isinstance(matched_persona["patient_profile"], dict):
+            matched_persona["patient_profile"] = {}
+        matched_persona["patient_profile"]["connection_code"] = code
+
+    # Persist in registry
+    SAVED_USER_PROFILES[email] = matched_persona
+    _save_profiles(SAVED_USER_PROFILES)
     await db.commit()
 
     token = create_access_token(matched_persona)
@@ -225,6 +265,7 @@ async def google_auth(payload: GoogleAuthRequest, db: AsyncSession = Depends(get
 async def update_user_profile(
     payload: ProfileUpdateRequest,
     current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     updated_user = current_user.copy()
     if payload.name:
@@ -245,6 +286,23 @@ async def update_user_profile(
         updated_user["clinician_profile"] = payload.clinician_profile
     if payload.coach_profile:
         updated_user["coach_profile"] = payload.coach_profile
+
+    if updated_user.get("role") == "patient" and updated_user.get("id"):
+        p_row = await ensure_db_patient(
+            db=db,
+            patient_id=updated_user["id"],
+            name=updated_user.get("name"),
+            phone=updated_user.get("phone"),
+            language=updated_user.get("language", "hi"),
+            age=updated_user.get("age", 65),
+            gender=updated_user.get("gender", "Male"),
+        )
+        code = (p_row.consent_flags or {}).get("connection_code") or generate_patient_connection_code(updated_user["id"], updated_user.get("name"))
+        updated_user["connection_code"] = code
+        if "patient_profile" not in updated_user or not isinstance(updated_user["patient_profile"], dict):
+            updated_user["patient_profile"] = {}
+        updated_user["patient_profile"]["connection_code"] = code
+        await db.commit()
 
     # Save in global registry and persist to disk
     user_email = updated_user.get("email", "").lower().strip()
@@ -269,8 +327,6 @@ async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)):
         "title": f"Registered {role.capitalize()}",
         "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
     }
-    SAVED_USER_PROFILES[email_clean] = new_user
-    _save_profiles(SAVED_USER_PROFILES)
 
     await ensure_db_user(
         db=db,
@@ -278,6 +334,22 @@ async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)):
         name=new_user["name"],
         role=new_user["role"],
     )
+
+    if role == "patient":
+        p_row = await ensure_db_patient(
+            db=db,
+            patient_id=new_user["id"],
+            name=new_user["name"],
+            language="hi",
+            age=65,
+            gender="Male",
+        )
+        code = (p_row.consent_flags or {}).get("connection_code") or generate_patient_connection_code(new_user["id"], new_user["name"])
+        new_user["connection_code"] = code
+        new_user["patient_profile"] = {"connection_code": code}
+
+    SAVED_USER_PROFILES[email_clean] = new_user
+    _save_profiles(SAVED_USER_PROFILES)
     await db.commit()
 
     token = create_access_token(new_user)

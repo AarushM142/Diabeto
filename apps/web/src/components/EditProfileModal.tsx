@@ -47,20 +47,20 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     'Glimepiride 1mg (Morning)',
   ]);
   const [customMed, setCustomMed] = useState('');
-  const [caregiverName, setCaregiverName] = useState(currentUser.patient_profile?.caregiver_name || 'Ananya (Daughter)');
-  const [caregiverPhone, setCaregiverPhone] = useState(currentUser.patient_profile?.caregiver_phone || '+91 98000 00002');
+  const [caregiverName, setCaregiverName] = useState(currentUser.patient_profile?.caregiver_name || '');
+  const [caregiverPhone, setCaregiverPhone] = useState(currentUser.patient_profile?.caregiver_phone || '');
   const [targetFasting] = useState<number>(currentUser.patient_profile?.target_fasting_glucose || 130);
   const [targetPostmeal] = useState<number>(currentUser.patient_profile?.target_postmeal_glucose || 180);
 
   // Caregiver Profile State
-  const [caregiverRelation, setCaregiverRelation] = useState(currentUser.caregiver_profile?.relation || 'Daughter');
-  const [linkedSeniorName, setLinkedSeniorName] = useState(currentUser.caregiver_profile?.patient_name || 'Father (Ramesh)');
-  const [linkedSeniorAge, setLinkedSeniorAge] = useState<number>(currentUser.caregiver_profile?.patient_age || 72);
-  const [emergencyPhone, setEmergencyPhone] = useState(currentUser.caregiver_profile?.emergency_phone || '+91 98000 00002');
+  const [caregiverRelation, setCaregiverRelation] = useState(currentUser.caregiver_profile?.relation || 'Family Member');
+  const [linkedSeniorName, setLinkedSeniorName] = useState(currentUser.caregiver_profile?.patient_name || '');
+  const [linkedSeniorAge, setLinkedSeniorAge] = useState<number>(currentUser.caregiver_profile?.patient_age || 70);
+  const [emergencyPhone, setEmergencyPhone] = useState(currentUser.caregiver_profile?.emergency_phone || '');
 
   // Clinician Profile State
-  const [doctorTitle, setDoctorTitle] = useState(currentUser.clinician_profile?.doctor_name || currentUser.name || 'Dr. Arvind Mehta, MD');
-  const [clinicName, setClinicName] = useState(currentUser.clinician_profile?.clinic_name || currentUser.clinic_id || 'Pune Central Diabetes Clinic');
+  const [doctorTitle, setDoctorTitle] = useState(currentUser.clinician_profile?.doctor_name || (currentUser.name ? `Dr. ${currentUser.name}, MD` : 'Dr. Diabetologist, MD'));
+  const [clinicName, setClinicName] = useState(currentUser.clinician_profile?.clinic_name || currentUser.clinic_id || 'Diabetes Precision Clinic');
   const [specialty] = useState(currentUser.clinician_profile?.specialty || 'Consultant Endocrinologist & Diabetologist');
 
   const toggleMedication = (med: string) => {
@@ -107,7 +107,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       updates.caregiver_profile = {
         caregiver_name: fullName.trim() || currentUser.name,
         relation: caregiverRelation,
-        patient_name: linkedSeniorName.trim() || 'Ramesh Kulkarni',
+        patient_name: linkedSeniorName.trim() || 'Elder',
         patient_age: Number(linkedSeniorAge) || 72,
         emergency_phone: emergencyPhone.trim(),
       };

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   Pill, CheckCircle2, Clock, 
   Sparkles, Camera, ShieldCheck, 
-  Plus, Copy, Check, Share2, Stethoscope
+  Plus, Copy, Check, Share2, Stethoscope, HeartHandshake
 } from 'lucide-react';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
-import type { User } from '../api/client';
+import type { User, ConnectionCodeResponse } from '../api/client';
 import { api } from '../api/client';
 
 interface TodayScreenProps {
@@ -15,6 +15,7 @@ interface TodayScreenProps {
   onOpenMealScanner?: () => void;
   onNavigateToSection?: (section: string) => void;
   seniorSimpleMode?: boolean;
+  onGlucoseLogged?: (mgdl: number) => void;
 }
 
 interface ChecklistItem {
@@ -31,31 +32,95 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
   onOpenMealScanner,
   onNavigateToSection,
   seniorSimpleMode = false,
+  onGlucoseLogged,
 }) => {
   const [doseConfirmed, setDoseConfirmed] = useState(false);
   const [snoozeActive, setSnoozeActive] = useState(false);
-  const [latestGlucose, setLatestGlucose] = useState<number>(128);
-  const [readingTime] = useState<string>('8:15 AM');
+  const [latestGlucose, setLatestGlucose] = useState<number>(() => {
+    try {
+      const cached = localStorage.getItem(`diabeto_latest_glucose_${currentUser.id}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed.mgdl === 'number') return parsed.mgdl;
+      }
+    } catch {}
+    return 128;
+  });
+  const [readingTime, setReadingTime] = useState<string>(() => {
+    try {
+      const cached = localStorage.getItem(`diabeto_latest_glucose_${currentUser.id}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.time) {
+          const d = new Date(parsed.time);
+          if (!isNaN(d.getTime())) {
+            return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+          }
+        }
+      }
+    } catch {}
+    return '8:15 AM';
+  });
   const [showQuickSugarInput, setShowQuickSugarInput] = useState(false);
   const [newSugarValue, setNewSugarValue] = useState('');
+  const [isSavingSugar, setIsSavingSugar] = useState(false);
   const [copied, setCopied] = useState(false);
   const [connectionCode, setConnectionCode] = useState<string>(
-    currentUser.patient_profile?.connection_code || 'DIA-RAM789'
+    currentUser.patient_profile?.connection_code || ''
   );
+  const [careConnection, setCareConnection] = useState<ConnectionCodeResponse | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchCode = async () => {
       try {
-        const patientId = currentUser.id || 'pt_ramesh_001';
+        const patientId = currentUser.id;
+        if (!patientId) return;
         const res = await api.getPatientConnectionCode(patientId);
-        if (res?.connection_code) {
-          setConnectionCode(res.connection_code);
+        if (res && isMounted) {
+          if (res.connection_code) setConnectionCode(res.connection_code);
+          setCareConnection(res);
         }
       } catch (e) {
-        // use default fallback
+        // leave empty — elder links on next successful fetch
       }
     };
+
+    const fetchLatestReading = async () => {
+      try {
+        const patientId = currentUser.id;
+        if (!patientId) return;
+        const res = await api.getTrends(patientId, 14);
+        if (res?.readings && res.readings.length > 0 && isMounted) {
+          const sorted = [...res.readings].sort(
+            (a, b) => new Date(b.measured_at).getTime() - new Date(a.measured_at).getTime()
+          );
+          const latest = sorted[0];
+          if (latest && latest.mgdl > 0) {
+            setLatestGlucose(latest.mgdl);
+            try {
+              const d = new Date(latest.measured_at);
+              if (!isNaN(d.getTime())) {
+                setReadingTime(d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
+              }
+            } catch {}
+            localStorage.setItem(
+              `diabeto_latest_glucose_${patientId}`,
+              JSON.stringify({ mgdl: latest.mgdl, time: latest.measured_at })
+            );
+          }
+        }
+      } catch (e) {
+        // local cache already rendered
+      }
+    };
+
     fetchCode();
+    fetchLatestReading();
+
+    return () => {
+      isMounted = false;
+    };
   }, [currentUser.id]);
 
   const [checklist, setChecklist] = useState<ChecklistItem[]>([
@@ -109,18 +174,60 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
     setSnoozeActive(true);
   };
 
-  const handleSaveQuickSugar = (e: React.FormEvent) => {
+  const handleSaveQuickSugar = async (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseInt(newSugarValue, 10);
-    if (!isNaN(val) && val > 30 && val < 500) {
+    if (!isNaN(val) && val >= 20 && val <= 600) {
+      const nowIso = new Date().toISOString();
+      const timeFormatted = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const dateFormatted = new Date().toLocaleDateString([], { month: 'short', day: 'numeric' });
+      const timeLabel = `${dateFormatted} ${timeFormatted}`;
+
       setLatestGlucose(val);
+      setReadingTime(timeFormatted);
       setNewSugarValue('');
       setShowQuickSugarInput(false);
+
+      // 1. Immediately cache locally for instant persistence across reload
+      try {
+        localStorage.setItem(
+          `diabeto_latest_glucose_${currentUser.id}`,
+          JSON.stringify({ mgdl: val, time: nowIso })
+        );
+        const existingHistory = JSON.parse(localStorage.getItem(`diabeto_glucose_history_${currentUser.id}`) || '[]');
+        existingHistory.push({ time: timeLabel, mgdl: val, context: 'fasting' });
+        localStorage.setItem(`diabeto_glucose_history_${currentUser.id}`, JSON.stringify(existingHistory));
+      } catch {}
+
+      // 2. Mark fasting task in checklist as completed
+      setChecklist((prev) =>
+        prev.map((item) => (item.id === 'c1' ? { ...item, completed: true } : item))
+      );
+
+      // 3. Dispatch global event so PatientPortal chart updates instantly
+      window.dispatchEvent(new CustomEvent('diabeto:glucose-updated', {
+        detail: { mgdl: val, time: nowIso, context: 'fasting' }
+      }));
+
+      // 4. Persist to Postgres backend via API
+      try {
+        setIsSavingSugar(true);
+        await api.logHealthEvent(currentUser.id, val, 'fasting');
+        onGlucoseLogged?.(val);
+      } catch (err) {
+        console.warn('Failed to persist health event to backend:', err);
+      } finally {
+        setIsSavingSugar(false);
+      }
     }
   };
 
-  const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
+  const whatsappDoctorUrl = `https://wa.me/?text=${encodeURIComponent(
     `Namaste Doctor, here is my Diabeto Care Connection Code: ${connectionCode}. Please enter this in your clinic dashboard to monitor my sugar, medication, and meals.`
+  )}`;
+
+  const whatsappCaregiverUrl = `https://wa.me/?text=${encodeURIComponent(
+    `Namaste, here is my Diabeto Care Connection Code: ${connectionCode}. Please open your Caregiver portal to monitor my daily health, blood sugar, and receive emergency alerts: http://localhost:5173/?role=caregiver&connect_code=${connectionCode}`
   )}`;
 
   // Locale-aware greeting
@@ -324,20 +431,23 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
 
           {/* Expandable Quick Sugar Input */}
           {showQuickSugarInput && (
-            <form onSubmit={handleSaveQuickSugar} style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-stone)', display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <form onSubmit={handleSaveQuickSugar} style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-stone)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
               <input
                 type="number"
                 inputMode="decimal"
                 pattern="[0-9]*"
+                min="20"
+                max="600"
                 value={newSugarValue}
                 onChange={(e) => setNewSugarValue(e.target.value)}
                 placeholder="e.g. 135"
                 className="input-pill"
                 style={{ maxWidth: '180px', fontSize: '1.2rem', padding: '12px 18px' }}
                 autoFocus
+                disabled={isSavingSugar}
               />
-              <button type="submit" className="btn btn-primary" style={{ minHeight: '52px', padding: '12px 24px', fontSize: '1rem' }}>
-                {t('saveReading', language)}
+              <button type="submit" disabled={isSavingSugar} className="btn btn-primary" style={{ minHeight: '52px', padding: '12px 24px', fontSize: '1rem' }}>
+                {isSavingSugar ? 'Saving...' : t('saveReading', language)}
               </button>
               <button type="button" onClick={() => setShowQuickSugarInput(false)} className="btn btn-clay" style={{ minHeight: '52px', padding: '12px 20px' }}>
                 {t('cancelBtn', language)}
@@ -502,7 +612,7 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
           </div>
         </section>
 
-        {/* 7. Doctor Connection Code Card */}
+        {/* 7. Care Circle & Diabeto Connection Code Section (Doctor + Caretaker) */}
         <section
           className="botanical-card"
           style={{
@@ -511,25 +621,30 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
             border: '1.5px solid var(--accent-sage-border)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
             <div style={{
-              width: '32px',
-              height: '32px',
+              width: '36px',
+              height: '36px',
               borderRadius: '10px',
-              background: 'var(--accent-sage)',
+              background: 'var(--text-forest)',
               color: '#FFFFFF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Stethoscope size={18} />
+              <HeartHandshake size={20} />
             </div>
-            <div>
-              <h3 className="font-serif" style={{ fontSize: '1.15rem', color: 'var(--text-forest)', margin: 0 }}>
-                {t('connectDoctorCode', language)}
-              </h3>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
-                Share this unique 6-letter code with your doctor so they can view your sugar, medication, and meal logs.
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <h3 className="font-serif" style={{ fontSize: '1.2rem', color: 'var(--text-forest)', margin: 0 }}>
+                  {t('careCircleConnection', language)}
+                </h3>
+                <span className="status-pill ok" style={{ fontSize: '0.7rem' }}>
+                  Doctor + Caretaker
+                </span>
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                {t('careCircleSub', language)}
               </p>
             </div>
           </div>
@@ -551,7 +666,7 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
                 Your Diabeto Code
               </div>
               <div className="font-mono" style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-forest)', letterSpacing: '0.1em' }}>
-                {connectionCode}
+                {connectionCode || '—'}
               </div>
             </div>
 
@@ -571,15 +686,61 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({
               </button>
 
               <a
-                href={whatsappShareUrl}
+                href={whatsappDoctorUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-primary"
-                style={{ fontSize: '0.82rem', padding: '9px 16px', display: 'flex', alignItems: 'center', gap: '6px', background: '#25D366', borderColor: '#25D366' }}
+                style={{ fontSize: '0.82rem', padding: '9px 14px', display: 'flex', alignItems: 'center', gap: '6px', background: '#128C7E', borderColor: '#128C7E' }}
+                title="Send code to your doctor"
               >
-                <Share2 size={15} />
+                <Stethoscope size={15} />
                 <span>{t('shareWhatsAppDoctor', language)}</span>
               </a>
+
+              <a
+                href={whatsappCaregiverUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary"
+                style={{ fontSize: '0.82rem', padding: '9px 14px', display: 'flex', alignItems: 'center', gap: '6px', background: '#25D366', borderColor: '#25D366' }}
+                title="Send code to your family caregiver"
+              >
+                <Share2 size={15} />
+                <span>{t('shareWhatsAppCaregiver', language)}</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Connected Circle Status Badges */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginTop: '14px' }}>
+            <div style={{ background: 'var(--surface-white)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--border-stone)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Stethoscope size={18} color="var(--accent-sage)" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
+                  Attending Doctor
+                </div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-forest)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {careConnection?.doctor_name || 'Dr. Arvind Mehta, MD'}
+                </div>
+              </div>
+              <span className="status-pill ok" style={{ fontSize: '0.68rem' }}>
+                {careConnection?.doctor_connected ? 'Linked' : 'Ready'}
+              </span>
+            </div>
+
+            <div style={{ background: 'var(--surface-white)', padding: '10px 14px', borderRadius: '12px', border: '1px solid var(--border-stone)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <HeartHandshake size={18} color="var(--terracotta)" />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
+                  Family Caretaker
+                </div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-forest)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {careConnection?.caregiver_name || currentUser.patient_profile?.caregiver_name || 'Family Caretaker'}
+                </div>
+              </div>
+              <span className={`status-pill ${careConnection?.caregiver_connected ? 'ok' : 'pending'}`} style={{ fontSize: '0.68rem' }}>
+                {careConnection?.caregiver_connected ? 'Linked' : 'Share Code'}
+              </span>
             </div>
           </div>
         </section>

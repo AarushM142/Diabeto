@@ -3,15 +3,17 @@ import {
   Pill, Calendar, AlertTriangle, CheckCircle2, 
   Droplets, Footprints, Video, CalendarCheck, 
   TrendingUp, Award, Bell, Shield, X, User as UserIcon, MessageCircle, AlertCircle,
-  Utensils, Camera, Copy, Check, Share2, Phone
+  Utensils, Camera, Copy, Check, Phone, Plus,
+  HeartHandshake, Link, Stethoscope
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
   Tooltip, ReferenceLine 
 } from 'recharts';
-import { api, type TrendAnalytics, type User } from '../api/client';
+import { api, type TrendAnalytics, type User, type ConnectionCodeResponse } from '../api/client';
 import { t } from '../lib/i18n';
 import type { Language } from '../lib/types';
+import { CareGroupChat } from './CareGroupChat';
 import type { PatientSection } from './SidebarNav';
 
 interface PatientPortalProps {
@@ -68,6 +70,98 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
   const [pillToast, setPillToast] = useState<string | null>(null);
   const [doctorCodeCopied, setDoctorCodeCopied] = useState<boolean>(false);
   const [currentFilter, setCurrentFilter] = useState<PatientSection>(activeSection);
+  const [showChartQuickLog, setShowChartQuickLog] = useState<boolean>(false);
+  const [chartQuickLogValue, setChartQuickLogValue] = useState<string>('');
+  const [chartQuickLogContext, setChartQuickLogContext] = useState<string>('fasting');
+  const [isSavingChartSugar, setIsSavingChartSugar] = useState<boolean>(false);
+  const [localLoggedReadings, setLocalLoggedReadings] = useState<Array<{ time: string; mgdl: number; context: string }>>(() => {
+    try {
+      const cached = localStorage.getItem(`diabeto_glucose_history_${currentUser?.id}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  });
+  const [connectionCode, setConnectionCode] = useState<string>(
+    currentUser?.patient_profile?.connection_code || ''
+  );
+  const [careConnection, setCareConnection] = useState<ConnectionCodeResponse | null>(null);
+  const [caregiverCodeCopied, setCaregiverCodeCopied] = useState<boolean>(false);
+  const [inviteLinkCopied, setInviteLinkCopied] = useState<boolean>(false);
+  const [showConnectCaregiverModal, setShowConnectCaregiverModal] = useState<boolean>(false);
+  const [newCaregiverName, setNewCaregiverName] = useState<string>(
+    currentUser?.patient_profile?.caregiver_name || ''
+  );
+  const [newCaregiverPhone, setNewCaregiverPhone] = useState<string>(
+    currentUser?.patient_profile?.caregiver_phone || ''
+  );
+  const [newCaregiverRelation, setNewCaregiverRelation] = useState<string>(
+    currentUser?.patient_profile?.caregiver_relation || 'Son / Daughter'
+  );
+  const [isLinkingCaregiver, setIsLinkingCaregiver] = useState<boolean>(false);
+  const [caregiverLinkToast, setCaregiverLinkToast] = useState<{ type: 'ok' | 'error'; message: string } | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCode = async () => {
+      try {
+        const patientId = currentUser?.id;
+        if (!patientId) return;
+        const res = await api.getPatientConnectionCode(patientId);
+        if (res && isMounted) {
+          if (res.connection_code) setConnectionCode(res.connection_code);
+          setCareConnection(res);
+          if (res.caregiver_name) {
+            setNewCaregiverName(prev => prev || res.caregiver_name || '');
+          }
+          if (res.caregiver_phone) {
+            setNewCaregiverPhone(prev => prev || res.caregiver_phone || '');
+          }
+        }
+      } catch {
+        // Fallback gracefully
+      }
+    };
+    if (currentUser?.id) {
+      fetchCode();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUser?.id]);
+
+  const handleSaveCaregiver = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!currentUser?.id || !newCaregiverName.trim() || !newCaregiverPhone.trim()) {
+      setCaregiverLinkToast({ type: 'error', message: 'Please enter caretaker name and mobile number' });
+      return;
+    }
+    setIsLinkingCaregiver(true);
+    setCaregiverLinkToast(null);
+    try {
+      const res = await api.connectCaregiverFromPatient(currentUser.id, {
+        caregiver_name: newCaregiverName.trim(),
+        caregiver_phone: newCaregiverPhone.trim(),
+        relation: newCaregiverRelation,
+      });
+      setCaregiverLinkToast({ type: 'ok', message: res.message || 'Caretaker connected successfully!' });
+      const updatedConn = await api.getPatientConnectionCode(currentUser.id);
+      if (updatedConn) {
+        setCareConnection(updatedConn);
+        if (updatedConn.connection_code) setConnectionCode(updatedConn.connection_code);
+      }
+      setTimeout(() => {
+        setShowConnectCaregiverModal(false);
+        setCaregiverLinkToast(null);
+      }, 1500);
+    } catch (err: any) {
+      setCaregiverLinkToast({ type: 'error', message: err.message || 'Failed to connect caretaker' });
+    } finally {
+      setIsLinkingCaregiver(false);
+    }
+  };
 
   // Sync external section changes from sidebar
   useEffect(() => {
@@ -98,14 +192,14 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
     },
   ]);
 
-  // Personalized Patient Profile Data
+  // Personalized Patient Profile Data (no seed defaults)
   const patientProfile = currentUser?.patient_profile;
-  const displayName = patientProfile?.name || currentUser?.name || 'Ramesh Kulkarni';
-  const age = patientProfile?.age || currentUser?.age || 68;
-  const gender = patientProfile?.gender || currentUser?.gender || 'Male';
-  const diabetesCondition = patientProfile?.diabetes_type || 'Type 2 Diabetes';
-  const caregiverContact = patientProfile?.caregiver_name || 'Ananya (Daughter)';
-  const caregiverTel = patientProfile?.caregiver_phone || '+91 98000 00002';
+  const displayName = patientProfile?.name || currentUser?.name || 'Your Profile';
+  const age = patientProfile?.age || currentUser?.age || 65;
+  const gender = patientProfile?.gender || currentUser?.gender || 'Not specified';
+  const diabetesCondition = patientProfile?.diabetes_type || 'Diabetes';
+  const caregiverContact = patientProfile?.caregiver_name || 'Family caregiver';
+  const caregiverTel = patientProfile?.caregiver_phone || '';
   const targetFastingGoal = patientProfile?.target_fasting_glucose || 130;
 
   // Medication Schedule with Drug-Exercise & Side Effect Warning Rules
@@ -183,54 +277,93 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
     ];
   });
 
+  const fetchTrends = async () => {
+    try {
+      const targetId = currentUser?.id?.startsWith('pt_') ? currentUser.id : currentUser?.id;
+      if (!targetId) {
+        setTrends(null);
+        return;
+      }
+      const data = await api.getTrends(targetId, 14);
+      setTrends(data);
+    } catch (err) {
+      console.warn('Backend trends API unavailable:', err);
+      setTrends(null);
+    }
+  };
+
   useEffect(() => {
-    const fetchTrends = async () => {
-      try {
-        const targetId = currentUser?.id?.startsWith('pt_') ? currentUser.id : 'pt_ramesh_001';
-        const data = await api.getTrends(targetId, 14);
-        setTrends(data);
-      } catch (err) {
-        console.warn('Backend trends API unavailable, using offline fallback baseline:', err);
-        setTrends({
-          patient_id: currentUser?.id || 'pt_ramesh_001',
-          days: 14,
-          glycemic_metrics: {
-            total_readings: 28,
-            mean_glucose: 132.4,
-            median_glucose: 128.0,
-            mad_glucose: 14.2,
-            min_glucose: 88.0,
-            max_glucose: 194.0,
-            standard_deviation: 22.1,
-            coefficient_of_variation_pct: 16.7,
-            tir_percentage: 78.6,
-            tar_percentage: 17.8,
-            tbr_percentage: 3.6,
-            clinical_status: 'optimal_control',
-          },
-          context_breakdowns: {
-            fasting: { count: 14, mean_mgdl: 118.2, min_mgdl: 96, max_mgdl: 138 },
-            postprandial: { count: 10, mean_mgdl: 148.5, min_mgdl: 122, max_mgdl: 194 },
-            bedtime: { count: 4, mean_mgdl: 124.0, min_mgdl: 110, max_mgdl: 142 },
-            random: { count: 0, mean_mgdl: null, min_mgdl: null, max_mgdl: null },
-          },
-          adherence_metrics: {
-            active_medication_count: 3,
-            total_confirmed_doses: 42,
-            compliance_score_pct: 95.2,
-            readings_per_day: 2.0,
-            status: 'adherent',
-          },
-          readings: [
-            { measured_at: new Date(Date.now() - 86400000 * 2).toISOString(), mgdl: 124, context: 'fasting' },
-            { measured_at: new Date(Date.now() - 86400000 * 1).toISOString(), mgdl: 132, context: 'fasting' },
-            { measured_at: new Date().toISOString(), mgdl: 128, context: 'fasting' },
-          ],
+    fetchTrends();
+
+    const handleGlucoseUpdate = (e: any) => {
+      const val = e.detail?.mgdl;
+      const timeIso = e.detail?.time || new Date().toISOString();
+      const context = e.detail?.context || 'fasting';
+      if (typeof val === 'number') {
+        const d = new Date(timeIso);
+        const timeLabel = `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+        setLocalLoggedReadings(prev => {
+          const updated = [...prev, { time: timeLabel, mgdl: val, context }];
+          try {
+            localStorage.setItem(`diabeto_glucose_history_${currentUser?.id}`, JSON.stringify(updated));
+          } catch {}
+          return updated;
         });
+        fetchTrends();
       }
     };
-    fetchTrends();
+
+    window.addEventListener('diabeto:glucose-updated', handleGlucoseUpdate);
+    return () => {
+      window.removeEventListener('diabeto:glucose-updated', handleGlucoseUpdate);
+    };
   }, [currentUser?.id]);
+
+  const handleQuickLogFromChart = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseInt(chartQuickLogValue, 10);
+    if (!isNaN(val) && val >= 20 && val <= 600 && currentUser?.id) {
+      const now = new Date();
+      const timeIso = now.toISOString();
+      const timeLabel = `${now.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+
+      const newReading = {
+        time: timeLabel,
+        mgdl: val,
+        context: chartQuickLogContext,
+      };
+
+      setLocalLoggedReadings(prev => {
+        const updated = [...prev, newReading];
+        try {
+          localStorage.setItem(`diabeto_glucose_history_${currentUser.id}`, JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      try {
+        localStorage.setItem(`diabeto_latest_glucose_${currentUser.id}`, JSON.stringify({ mgdl: val, time: timeIso }));
+      } catch {}
+
+      setChartQuickLogValue('');
+      setShowChartQuickLog(false);
+
+      // Broadcast update so TodayScreen and other components update
+      window.dispatchEvent(new CustomEvent('diabeto:glucose-updated', {
+        detail: { mgdl: val, time: timeIso, context: chartQuickLogContext }
+      }));
+
+      try {
+        setIsSavingChartSugar(true);
+        await api.logHealthEvent(currentUser.id, val, chartQuickLogContext);
+        await fetchTrends();
+      } catch (err) {
+        console.warn('Failed to log glucose reading to backend:', err);
+      } finally {
+        setIsSavingChartSugar(false);
+      }
+    }
+  };
 
   const handleMarkTaken = (medId: string) => {
     setMedications(prev => prev.map(m => {
@@ -252,17 +385,18 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
   };
 
   const handleBookAppointment = async () => {
+    if (!currentUser?.id) return;
     try {
       await api.bookAppointment({
-        patient_id: 'pt_ramesh_001',
-        doctor_id: 'doc_mehta_101',
+        patient_id: currentUser.id,
+        doctor_id: currentUser.patient_profile?.connection_code ? 'linked_doctor' : 'pending',
         type: selectedVisitType,
         date: selectedDate,
         time_slot: 'Morning OPD',
         notes: bookingNotes,
       });
       setShowBookingModal(false);
-      setBookingToast(`Consultation with Dr. Arvind Mehta confirmed for ${selectedDate}! Confirmation sent to your WhatsApp.`);
+      setBookingToast(`Consultation confirmed for ${selectedDate}! Confirmation sent to your WhatsApp.`);
       setTimeout(() => setBookingToast(null), 5000);
     } catch (err) {
       alert('Booking error: ' + err);
@@ -280,28 +414,100 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
     { label: 'Sun', date: 'Today', status: 'partial', count: '2/3', current: true },
   ];
 
-  // Glucose Chart Data fallback
-  const chartData = trends?.readings && trends.readings.length > 0 
-    ? trends.readings.map((r, i) => ({
-        time: new Date(r.measured_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) + ` ${r.context}`,
-        mgdl: r.mgdl > 0 ? r.mgdl : 130 + (i % 4) * 10,
-        context: r.context,
-      }))
-    : [
-        { time: 'Mon Fasting', mgdl: 122 },
-        { time: 'Mon Post-Lunch', mgdl: 154 },
-        { time: 'Tue Fasting', mgdl: 118 },
-        { time: 'Tue Post-Lunch', mgdl: 148 },
-        { time: 'Wed Fasting', mgdl: 125 },
-        { time: 'Wed Post-Lunch', mgdl: 160 },
-        { time: 'Thu Fasting', mgdl: 130 },
-        { time: 'Thu Post-Lunch', mgdl: 142 },
-        { time: 'Fri Fasting', mgdl: 115 },
-        { time: 'Fri Post-Lunch', mgdl: 150 },
-        { time: 'Sat Fasting', mgdl: 128 },
-        { time: 'Sat Post-Lunch', mgdl: 155 },
-        { time: 'Today Fasting', mgdl: 140 },
-      ];
+  // Glucose Chart Data
+  const chartData = React.useMemo(() => {
+    const verifiedReadings = (trends?.readings || []).map((r, i) => {
+      const d = new Date(r.measured_at);
+      const timeLabel = isNaN(d.getTime()) 
+        ? `Reading ${i + 1}` 
+        : `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+      return {
+        time: timeLabel,
+        mgdl: r.mgdl > 0 ? r.mgdl : 130,
+        context: r.context || 'fasting',
+      };
+    });
+
+    const combined = [...verifiedReadings];
+    for (const lr of localLoggedReadings) {
+      if (!combined.some(c => c.time === lr.time && c.mgdl === lr.mgdl)) {
+        combined.push(lr);
+      }
+    }
+
+    if (combined.length >= 4) {
+      return combined;
+    }
+
+    // Baseline readings incorporating cached latest reading
+    let cachedLatest = 140;
+    try {
+      const cached = localStorage.getItem(`diabeto_latest_glucose_${currentUser?.id}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.mgdl) cachedLatest = parsed.mgdl;
+      }
+    } catch {}
+
+    if (combined.length > 0) {
+      cachedLatest = combined[combined.length - 1].mgdl;
+    }
+
+    const baseline = [
+      { time: 'Mon Fasting', mgdl: 122, context: 'fasting' },
+      { time: 'Mon Post-Lunch', mgdl: 154, context: 'post-lunch' },
+      { time: 'Tue Fasting', mgdl: 118, context: 'fasting' },
+      { time: 'Tue Post-Lunch', mgdl: 148, context: 'post-lunch' },
+      { time: 'Wed Fasting', mgdl: 125, context: 'fasting' },
+      { time: 'Wed Post-Lunch', mgdl: 160, context: 'post-lunch' },
+      { time: 'Thu Fasting', mgdl: 130, context: 'fasting' },
+      { time: 'Thu Post-Lunch', mgdl: 142, context: 'post-lunch' },
+      { time: 'Fri Fasting', mgdl: 115, context: 'fasting' },
+      { time: 'Fri Post-Lunch', mgdl: 150, context: 'post-lunch' },
+      { time: 'Sat Fasting', mgdl: 124, context: 'fasting' },
+      { time: 'Sat Post-Lunch', mgdl: 145, context: 'post-lunch' },
+    ];
+
+    if (combined.length > 0) {
+      return [...baseline, ...combined];
+    } else {
+      return [...baseline, { time: 'Today Logged', mgdl: cachedLatest, context: 'fasting' }];
+    }
+  }, [trends, localLoggedReadings, currentUser?.id]);
+
+  // Derived Dynamic Glycemic Statistics
+  const rawChartValues = chartData.map(d => d.mgdl);
+  const chartAverage = rawChartValues.length > 0 
+    ? Math.round(rawChartValues.reduce((a, b) => a + b, 0) / rawChartValues.length) 
+    : 128;
+  const avgSugar = trends?.glycemic_metrics?.mean_glucose && trends.glycemic_metrics.mean_glucose > 0
+    ? Math.round(trends.glycemic_metrics.mean_glucose)
+    : chartAverage;
+
+  const latestReading = React.useMemo(() => {
+    if (localLoggedReadings.length > 0) {
+      return localLoggedReadings[localLoggedReadings.length - 1].mgdl;
+    }
+    if (trends?.readings && trends.readings.length > 0) {
+      return trends.readings[trends.readings.length - 1].mgdl;
+    }
+    try {
+      const cached = localStorage.getItem(`diabeto_latest_glucose_${currentUser?.id}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.mgdl) return parsed.mgdl;
+      }
+    } catch {}
+    return rawChartValues.length > 0 ? rawChartValues[rawChartValues.length - 1] : 128;
+  }, [trends, localLoggedReadings, rawChartValues, currentUser?.id]);
+
+  const tirPct = trends?.glycemic_metrics?.tir_percentage != null && trends.glycemic_metrics.total_readings > 0
+    ? Math.round(trends.glycemic_metrics.tir_percentage)
+    : (rawChartValues.length > 0 
+        ? Math.round((rawChartValues.filter(v => v >= 70 && v <= 180).length / rawChartValues.length) * 100) 
+        : 88);
+
+  const estHba1c = avgSugar > 0 ? ((avgSugar + 46.7) / 28.7).toFixed(1) : '6.7';
 
   const getGreeting = () => {
     const firstName = displayName.split(' ')[0] || displayName;
@@ -683,31 +889,124 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 </p>
               </div>
 
-              <div className="status-pill ok">
-                <span className="status-dot ok" />
-                88% Time in Range
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <div className={`status-pill ${tirPct >= 70 ? 'ok' : tirPct >= 50 ? 'warn' : 'danger'}`}>
+                  <span className={`status-dot ${tirPct >= 70 ? 'ok' : tirPct >= 50 ? 'warn' : 'danger'}`} />
+                  {tirPct}% Time in Range
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowChartQuickLog(!showChartQuickLog)}
+                  className="btn btn-primary btn-sm"
+                  style={{ fontSize: '0.78rem', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '5px' }}
+                >
+                  <Plus size={14} />
+                  Log Reading
+                </button>
               </div>
             </div>
 
-            <div className="responsive-grid-3" style={{ marginBottom: '16px' }}>
+            {/* Quick Log Sugar Inline Form */}
+            {showChartQuickLog && (
+              <form
+                onSubmit={handleQuickLogFromChart}
+                style={{
+                  marginBottom: '16px',
+                  padding: '14px 18px',
+                  background: 'var(--surface-clay)',
+                  borderRadius: '16px',
+                  border: '1.5px solid var(--accent-sage-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-forest)' }}>
+                  Record Glucose:
+                </span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  pattern="[0-9]*"
+                  min="20"
+                  max="600"
+                  placeholder="mg/dL (e.g. 145)"
+                  value={chartQuickLogValue}
+                  onChange={(e) => setChartQuickLogValue(e.target.value)}
+                  className="input-pill"
+                  style={{ width: '140px', padding: '8px 14px', fontSize: '0.95rem' }}
+                  autoFocus
+                  disabled={isSavingChartSugar}
+                />
+                <select
+                  value={chartQuickLogContext}
+                  onChange={(e) => setChartQuickLogContext(e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border-stone)',
+                    background: 'var(--surface-white)',
+                    fontSize: '0.84rem',
+                    color: 'var(--text-forest)',
+                    fontWeight: 600,
+                  }}
+                >
+                  <option value="fasting">Fasting</option>
+                  <option value="post_meal">Post-Meal (After Food)</option>
+                  <option value="random">Random</option>
+                  <option value="bedtime">Bedtime</option>
+                </select>
+                <button
+                  type="submit"
+                  disabled={isSavingChartSugar}
+                  className="btn btn-primary btn-sm"
+                  style={{ padding: '8px 16px', fontSize: '0.84rem' }}
+                >
+                  {isSavingChartSugar ? 'Saving...' : 'Add to Chart'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowChartQuickLog(false)}
+                  className="btn btn-clay btn-sm"
+                  style={{ padding: '8px 12px', fontSize: '0.84rem' }}
+                >
+                  Cancel
+                </button>
+              </form>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1.5px solid var(--accent-sage-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Latest Sugar</span>
+                  <span className={`status-pill ${latestReading >= 70 && latestReading <= targetFastingGoal ? 'ok' : latestReading > targetFastingGoal ? 'warn' : 'danger'}`} style={{ fontSize: '0.65rem', padding: '1px 6px' }}>
+                    {latestReading >= 70 && latestReading <= targetFastingGoal ? 'In Target' : latestReading > targetFastingGoal ? 'High' : 'Low'}
+                  </span>
+                </div>
+                <div className="font-serif tabular" style={{ fontSize: '1.5rem', color: 'var(--text-forest)', fontWeight: 800, marginTop: '2px' }}>
+                  {latestReading} <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>mg/dL</span>
+                </div>
+              </div>
+
               <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Average Sugar</div>
-                <div className="font-serif tabular" style={{ fontSize: '1.4rem', color: 'var(--text-forest)', fontWeight: 700, marginTop: '2px' }}>
-                  128 <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>mg/dL</span>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>14-Day Average</div>
+                <div className="font-serif tabular" style={{ fontSize: '1.5rem', color: 'var(--text-forest)', fontWeight: 700, marginTop: '2px' }}>
+                  {avgSugar} <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>mg/dL</span>
                 </div>
               </div>
 
               <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
                 <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Estimated HbA1c</div>
-                <div className="font-serif tabular" style={{ fontSize: '1.4rem', color: 'var(--status-ok)', fontWeight: 700, marginTop: '2px' }}>
-                  6.7% <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>(Good)</span>
+                <div className="font-serif tabular" style={{ fontSize: '1.5rem', color: 'var(--status-ok)', fontWeight: 700, marginTop: '2px' }}>
+                  {estHba1c}% <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>({Number(estHba1c) < 7.0 ? 'Optimal' : Number(estHba1c) < 8.0 ? 'Moderate' : 'Watch'})</span>
                 </div>
               </div>
 
               <div style={{ background: 'var(--surface-clay)', padding: '12px 16px', borderRadius: '14px', border: '1px solid var(--border-stone)' }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Hypo Episodes</div>
-                <div className="font-serif tabular" style={{ fontSize: '1.4rem', color: 'var(--text-forest)', fontWeight: 700, marginTop: '2px' }}>
-                  0 <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>this week</span>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Time In Range</div>
+                <div className="font-serif tabular" style={{ fontSize: '1.5rem', color: tirPct >= 70 ? 'var(--status-ok)' : 'var(--terracotta)', fontWeight: 700, marginTop: '2px' }}>
+                  {tirPct}% <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-sans)', fontWeight: 400 }}>(70–180)</span>
                 </div>
               </div>
             </div>
@@ -722,7 +1021,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="time" stroke="var(--text-dim)" fontSize={11} tickLine={false} />
-                  <YAxis domain={[50, 220]} stroke="var(--text-dim)" fontSize={11} tickLine={false} />
+                  <YAxis domain={[50, Math.max(240, Math.max(...rawChartValues, 220) + 20)]} stroke="var(--text-dim)" fontSize={11} tickLine={false} />
                   <Tooltip
                     contentStyle={{
                       background: 'var(--surface-white)',
@@ -850,77 +1149,163 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
           </div>
         );
 
-        const renderCareConnectionCard = () => (
-          <div className="botanical-card" style={{
-            padding: '18px',
-            background: 'var(--accent-sage-subtle)',
-            border: '1.5px dashed var(--accent-sage-dark)',
-            borderRadius: '16px',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', fontWeight: 700, textTransform: 'uppercase' }}>
-                Your Care Connection Code
-              </span>
-              <span className="font-mono" style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-forest)', letterSpacing: '0.05em' }}>
-                {currentUser?.patient_profile?.connection_code || 'DIA-RAM789'}
-              </span>
-            </div>
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px', marginBottom: '10px' }}>
-              Share this code with your doctor to link your charts & telemetry.
-            </p>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText(currentUser?.patient_profile?.connection_code || 'DIA-RAM789');
-                  setDoctorCodeCopied(true);
-                  setTimeout(() => setDoctorCodeCopied(false), 2000);
-                }}
-                className="btn btn-secondary btn-sm"
-                style={{ flex: 1, fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'center' }}
-              >
-                {doctorCodeCopied ? <Check size={13} color="var(--status-ok)" /> : <Copy size={13} />}
-                <span>{doctorCodeCopied ? 'Copied!' : 'Copy Code'}</span>
-              </button>
-              <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Namaste Doctor, here is my Diabeto Care Connection Code: ${currentUser?.patient_profile?.connection_code || 'DIA-RAM789'}.`)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-primary btn-sm"
-                style={{ flex: 1, fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'center', background: '#25D366', borderColor: '#25D366' }}
-              >
-                <Share2 size={13} />
-                <span>WhatsApp</span>
-              </a>
-            </div>
-          </div>
-        );
+        const renderCareConnectionCard = () => {
+          const code = connectionCode || currentUser?.patient_profile?.connection_code || '';
+          const doctorWaUrl = `https://wa.me/?text=${encodeURIComponent(
+            `Namaste Doctor, here is my Diabeto Care Connection Code: ${code || '—'}. Please enter this in your clinic dashboard to monitor my sugar, medication, and meals.`
+          )}`;
+          const caregiverWaUrl = `https://wa.me/?text=${encodeURIComponent(
+            `Namaste, here is my Diabeto Care Connection Code: ${code || '—'}. Please enter this in your Caregiver portal to monitor my daily health, blood sugar, and receive emergency alerts: http://localhost:5173/?role=caregiver&connect_code=${code || ''}`
+          )}`;
+          const inviteUrl = careConnection?.caregiver_invite_link || `http://localhost:5173/?role=caregiver&connect_code=${code}`;
 
-        const renderCaregiverCard = () => (
-          <div className="botanical-card" style={{ padding: '18px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
-                  Primary Caregiver
+          return (
+            <div className="botanical-card" style={{
+              padding: '18px 20px',
+              background: 'var(--accent-sage-subtle)',
+              border: '1.5px dashed var(--accent-sage-dark)',
+              borderRadius: '16px',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', flexWrap: 'wrap', gap: '8px' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', fontWeight: 700, textTransform: 'uppercase' }}>
+                  Your Care Connection Code
                 </span>
-                <strong style={{ fontSize: '0.98rem', color: 'var(--text-forest)', display: 'block', marginTop: '2px' }}>
-                  {caregiverContact}
-                </strong>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Phone: {caregiverTel}
+                <span className="font-mono" style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-forest)', letterSpacing: '0.06em' }}>
+                  {code || '—'}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px', marginBottom: '10px', lineHeight: 1.4 }}>
+                One code links <strong>both your Attending Doctor and Family Caretaker</strong> to your live health stream.
+              </p>
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (code) navigator.clipboard.writeText(code);
+                    setDoctorCodeCopied(true);
+                    setTimeout(() => setDoctorCodeCopied(false), 2000);
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ flex: '1 1 110px', fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'center' }}
+                >
+                  {doctorCodeCopied ? <Check size={13} color="var(--status-ok)" /> : <Copy size={13} />}
+                  <span>{doctorCodeCopied ? 'Code Copied!' : 'Copy Code'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(inviteUrl);
+                    setInviteLinkCopied(true);
+                    setTimeout(() => setInviteLinkCopied(false), 2000);
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ flex: '1 1 110px', fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'center' }}
+                >
+                  {inviteLinkCopied ? <Check size={13} color="var(--status-ok)" /> : <Link size={13} />}
+                  <span>{inviteLinkCopied ? 'Link Copied!' : 'Copy Link'}</span>
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <a
+                  href={doctorWaUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-primary btn-sm"
+                  style={{ flex: '1 1 130px', fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'center', background: '#128C7E', borderColor: '#128C7E' }}
+                >
+                  <Stethoscope size={13} />
+                  <span>WhatsApp Doctor</span>
+                </a>
+
+                <a
+                  href={caregiverWaUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-primary btn-sm"
+                  style={{ flex: '1 1 130px', fontSize: '0.76rem', padding: '7px 10px', justifyContent: 'center', background: '#25D366', borderColor: '#25D366' }}
+                >
+                  <HeartHandshake size={13} />
+                  <span>WhatsApp Caretaker</span>
+                </a>
+              </div>
+            </div>
+          );
+        };
+
+        const renderCaregiverCard = () => {
+          const isCaregiverLinked = Boolean(
+            careConnection?.caregiver_connected ||
+            (currentUser?.patient_profile?.caregiver_name && currentUser?.patient_profile?.caregiver_phone)
+          );
+          const activeCaregiverName = careConnection?.caregiver_name || caregiverContact || 'Family Caretaker';
+          const activeCaregiverTel = careConnection?.caregiver_phone || caregiverTel || '';
+          const activeRelation = careConnection?.caregiver_relation || currentUser?.patient_profile?.caregiver_relation || 'Family Member';
+
+          return (
+            <div className="botanical-card" style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 className="font-serif" style={{ fontSize: '1.12rem', color: 'var(--text-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <HeartHandshake size={18} color="var(--terracotta)" />
+                  Family Caretaker Circle
+                </h3>
+                <span className={`status-pill ${isCaregiverLinked ? 'ok' : 'pending'}`} style={{ fontSize: '0.7rem' }}>
+                  <span className={`status-dot ${isCaregiverLinked ? 'ok' : 'pending'}`} />
+                  {isCaregiverLinked ? 'Connected' : 'Not Connected'}
+                </span>
+              </div>
+
+              <div style={{ background: 'var(--surface-clay)', padding: '14px', borderRadius: '16px', border: '1px solid var(--border-stone)', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <strong style={{ fontSize: '0.95rem', color: 'var(--text-forest)', display: 'block' }}>
+                      {activeCaregiverName}
+                    </strong>
+                    <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      {activeRelation} • {activeCaregiverTel || 'Phone not set'}
+                    </div>
+                  </div>
+                  {isCaregiverLinked && (
+                    <span style={{ fontSize: '0.68rem', background: 'var(--accent-sage-subtle)', color: 'var(--text-forest)', padding: '2px 8px', borderRadius: '6px', fontWeight: 700, border: '1px solid var(--accent-sage-border)' }}>
+                      Alerts Active
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '8px', lineHeight: 1.4 }}>
+                  {isCaregiverLinked
+                    ? 'Receives automated SMS & WhatsApp notifications for hypoglycemia, missed morning tablets, and weekly reports.'
+                    : 'Link your family caretaker so they receive emergency sugar alerts and medication adherence reminders.'}
                 </div>
               </div>
-              <a
-                href={`tel:${caregiverTel}`}
-                className="btn btn-secondary btn-sm"
-                style={{ padding: '7px 14px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Phone size={13} />
-                <span>Call</span>
-              </a>
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {activeCaregiverTel && (
+                  <a
+                    href={`tel:${activeCaregiverTel}`}
+                    className="btn btn-secondary btn-sm"
+                    style={{ flex: 1, padding: '8px 12px', fontSize: '0.78rem', justifyContent: 'center' }}
+                  >
+                    <Phone size={13} />
+                    <span>Call Caretaker</span>
+                  </a>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setShowConnectCaregiverModal(true)}
+                  className="btn btn-primary btn-sm"
+                  style={{ flex: 1, padding: '8px 12px', fontSize: '0.78rem', justifyContent: 'center' }}
+                >
+                  <Plus size={13} />
+                  <span>{isCaregiverLinked ? 'Update Caretaker' : 'Connect Caretaker'}</span>
+                </button>
+              </div>
             </div>
-          </div>
-        );
+          );
+        };
 
         const renderMilestonesCard = () => (
           <div className="botanical-card" style={{ padding: '20px' }}>
@@ -976,6 +1361,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                       {renderDoctorCard()}
                       {renderCareConnectionCard()}
+                      {renderCaregiverCard()}
                     </div>
                     {renderMilestonesCard()}
                   </div>
@@ -1060,9 +1446,9 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                           Continuous glucose monitoring corridor (70–180 mg/dL), average sugar, and estimated A1c analytics.
                         </p>
                       </div>
-                      <div className="status-pill ok" style={{ fontSize: '0.82rem', padding: '6px 14px' }}>
-                        <span className="status-dot ok" />
-                        88% Time in Range
+                      <div className={`status-pill ${tirPct >= 70 ? 'ok' : tirPct >= 50 ? 'warn' : 'danger'}`} style={{ fontSize: '0.82rem', padding: '6px 14px' }}>
+                        <span className={`status-dot ${tirPct >= 70 ? 'ok' : tirPct >= 50 ? 'warn' : 'danger'}`} />
+                        {tirPct}% Time in Range
                       </div>
                     </div>
                     {renderGlucoseChartCard()}
@@ -1100,6 +1486,27 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {renderCareConnectionCard()}
                         {renderCaregiverCard()}
+                      </div>
+                    </div>
+
+                    {/* WhatsApp Care Chat — only the patient can send here; doctor & AI reply into this same thread */}
+                    <div className="botanical-card responsive-card" style={{ borderLeft: '6px solid #25D366' }}>
+                      <div style={{ marginBottom: '14px' }}>
+                        <h2 className="font-serif" style={{ fontSize: 'clamp(1.15rem, 3vw, 1.3rem)', color: 'var(--text-forest)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                          <MessageCircle size={20} color="#25D366" strokeWidth={1.5} />
+                          WhatsApp Care Chat
+                        </h2>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          Chat with the Diabeto AI companion and {`Dr. Arvind Mehta`} — your messages, AI guidance and doctor replies stay in one thread.
+                        </p>
+                      </div>
+                      <div style={{ height: '640px', minHeight: '520px', display: 'flex', flexDirection: 'column' }}>
+                        <CareGroupChat
+                          language={language}
+                          currentUser={currentUser || { id: 'pt_guest', role: 'patient', name: displayName }}
+                          patientId={currentUser?.id || ''}
+                          patientName={displayName}
+                        />
                       </div>
                     </div>
                   </>
@@ -1246,6 +1653,207 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 Confirm Appointment
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Connect Caretaker Modal */}
+      {showConnectCaregiverModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(27, 43, 34, 0.65)',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px',
+        }}>
+          <div className="botanical-card" style={{
+            maxWidth: '460px',
+            width: '100%',
+            padding: '26px',
+            background: 'var(--surface-white)',
+            borderRadius: '20px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+            position: 'relative',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'var(--terracotta-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <HeartHandshake size={20} color="var(--terracotta)" />
+                </div>
+                <div>
+                  <h3 className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--text-forest)', margin: 0 }}>
+                    Connect Family Caretaker
+                  </h3>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                    Link elder care circle with Diabeto Code
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowConnectCaregiverModal(false);
+                  setCaregiverLinkToast(null);
+                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-dim)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Code reminder inside modal */}
+            <div style={{
+              background: 'var(--accent-sage-subtle)',
+              border: '1px dashed var(--accent-sage-dark)',
+              borderRadius: '12px',
+              padding: '12px 14px',
+              marginBottom: '16px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <div>
+                <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
+                  Your Care Connection Code
+                </div>
+                <div className="font-mono" style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-forest)' }}>
+                  {connectionCode || '—'}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (connectionCode) navigator.clipboard.writeText(connectionCode);
+                  setCaregiverCodeCopied(true);
+                  setTimeout(() => setCaregiverCodeCopied(false), 2000);
+                }}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.74rem', padding: '6px 10px' }}
+              >
+                {caregiverCodeCopied ? <Check size={12} color="var(--status-ok)" /> : <Copy size={12} />}
+                <span>{caregiverCodeCopied ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCaregiver}>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>
+                  Caretaker Full Name
+                </label>
+                <input
+                  type="text"
+                  value={newCaregiverName}
+                  onChange={(e) => setNewCaregiverName(e.target.value)}
+                  placeholder="e.g. Rohan Deshmukh"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1.5px solid var(--border-stone)',
+                    background: 'var(--surface-clay)',
+                    fontSize: '0.9rem',
+                    color: 'var(--text-forest)',
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>
+                  Mobile Number (for SMS & WhatsApp Alerts)
+                </label>
+                <input
+                  type="tel"
+                  value={newCaregiverPhone}
+                  onChange={(e) => setNewCaregiverPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1.5px solid var(--border-stone)',
+                    background: 'var(--surface-clay)',
+                    fontSize: '0.9rem',
+                    color: 'var(--text-forest)',
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>
+                  Relationship
+                </label>
+                <select
+                  value={newCaregiverRelation}
+                  onChange={(e) => setNewCaregiverRelation(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1.5px solid var(--border-stone)',
+                    background: 'var(--surface-clay)',
+                    fontSize: '0.88rem',
+                    color: 'var(--text-forest)',
+                  }}
+                >
+                  <option value="Son / Daughter">Son / Daughter</option>
+                  <option value="Spouse">Spouse</option>
+                  <option value="Sibling">Sibling</option>
+                  <option value="Home Nurse / Attendant">Home Nurse / Attendant</option>
+                  <option value="Family Relative">Family Relative</option>
+                </select>
+              </div>
+
+              {caregiverLinkToast && (
+                <div style={{
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  marginBottom: '14px',
+                  background: caregiverLinkToast.type === 'ok' ? 'var(--status-ok-bg)' : 'var(--status-danger-bg)',
+                  color: caregiverLinkToast.type === 'ok' ? 'var(--status-ok)' : 'var(--status-danger)',
+                  border: `1px solid ${caregiverLinkToast.type === 'ok' ? 'var(--status-ok-border)' : 'var(--status-danger-border)'}`,
+                }}>
+                  {caregiverLinkToast.message}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowConnectCaregiverModal(false);
+                    setCaregiverLinkToast(null);
+                  }}
+                  className="btn btn-secondary"
+                  style={{ padding: '9px 16px', fontSize: '0.84rem' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLinkingCaregiver || !newCaregiverName.trim() || !newCaregiverPhone.trim()}
+                  className="btn btn-primary"
+                  style={{ padding: '9px 18px', fontSize: '0.84rem', fontWeight: 700 }}
+                >
+                  {isLinkingCaregiver ? 'Linking Caretaker...' : 'Link Caretaker'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
